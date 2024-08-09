@@ -1,0 +1,13 @@
+services:
+  nyapix:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "31866:31866"
+    command: pdm run src/kids.py
+    volumes:
+      - ./logs:/app/logs
+      - ./.env:/app/.env
+      - ./data:/app/data
