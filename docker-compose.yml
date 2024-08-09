@@ -6,7 +6,7 @@ services:
     restart: always
     ports:
       - "31866:31866"
-    command: pdm run src/kids.py
+    command: pdm run src/main.py
     volumes:
       - ./logs:/app/logs
       - ./.env:/app/.env

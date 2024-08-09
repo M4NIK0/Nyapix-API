@@ -6,7 +6,7 @@ ADD  pyproject.toml .
 RUN pdm install
 COPY  ./src /app/src
 EXPOSE 31866
-CMD pdm run python src/kids.py
+CMD pdm run python src/main.py
 
 LABEL maintainer="Maniko"
 LABEL version="0.2"
