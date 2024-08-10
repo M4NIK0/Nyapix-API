@@ -47,7 +47,7 @@ pdm install
 pdm run src/main.py
 ```
 
-4. Access the application at `http://localhost:8000/docs` via your browser or [API client](https://github.com/M4NIK0/Nyapix-client).
+4. Access the application at `http://localhost:31866/docs` via your browser or [API client](https://github.com/M4NIK0/Nyapix-client).
 5. To stop the application, press `Ctrl + C`.
 
 ## Development
