@@ -11,7 +11,7 @@
 
 #### Without Docker
 
-- Python 3.11 or higher
+- Python 3.12 or higher
 - [PDM](https://pdm-project.org/en/latest/)
 
 ### Install
