@@ -5,7 +5,7 @@ import uvicorn
 from dotenv import load_dotenv
 import logging
 from logging.handlers import RotatingFileHandler
-import db_gestion
+import db_gestion, token_gestion
 import random
 from pydantic import BaseModel
 from typing import List, Generator
@@ -283,10 +283,17 @@ async def ping(data: TagList):
 @app.get("/createdb")
 async def create_db(data: CreateDb):
     logger.info("Got a request to /createdb")
-    db = db_gestion.connect_db("nyapic.db", logger)
-    if db is not None and not db_gestion.check_content_tables(db, logger):
-        db_gestion.create_content_tables(db, logger)
-        db.close()
+
+    content_db = db_gestion.connect_db("nyapix_content.db", logger)
+    if content_db is not None and not db_gestion.check_content_tables(content_db, logger):
+        db_gestion.create_content_tables(content_db, logger)
+    content_db.close()
+
+    users_db = db_gestion.connect_db("nyapix_users.db", logger)
+    if users_db is not None and not token_gestion.check_users_tables(users_db, logger):
+        token_gestion.create_users_tables(users_db, logger)
+    users_db.close()
+
     return {"success": True}
 
 

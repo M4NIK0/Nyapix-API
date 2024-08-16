@@ -101,6 +101,13 @@ def generate_token(username: str):
     return token
 
 
+def check_users_tables(db: sqlite3.Connection, logger):
+    cursor = db.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='users'")
+    if cursor.fetchone() is None:
+        create_users_tables(db, logger)
+
+
 def create_users_tables(db: sqlite3.Connection, logger):
     cursor = db.cursor()
     cursor.execute("CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, token TEXT, created_at TEXT, last_usage TEXT, is_active INTEGER, permissions TEXT)")
