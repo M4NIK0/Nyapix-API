@@ -1,5 +1,7 @@
 import hashlib
 import os
+from fastapi import Header
+
 import fastapi
 import uvicorn
 from dotenv import load_dotenv
@@ -8,13 +10,15 @@ from logging.handlers import RotatingFileHandler
 import db_gestion, token_gestion
 import random
 from pydantic import BaseModel
-from typing import List, Generator
+from typing import List, Generator, Annotated
 from starlette.responses import StreamingResponse
 import re
 import cv2
 import asyncio
 import time
+from fastapi import Depends
 from logging.config import dictConfig
+
 
 log_config = {
     "version": 1,
@@ -78,8 +82,7 @@ class AddItem(BaseModel):
     api_key: str
     tags: List[str]
     name: str
-    type: str
-    file: fastapi.UploadFile
+    filetype: str
 
 
 class SearchTags(BaseModel):
@@ -199,7 +202,7 @@ async def stats_task():
     """Get statistics every day and write them to a CSV file."""
     while True:
         logger.info("Starting statistics task")
-        db = db_gestion.connect_db("nyapic.db", logger)
+        db = db_gestion.connect_db("nyapix_content.db", logger)
         if db is not None:
             stats = db_gestion.get_tags_statistics(db, logger)
             db.close()
@@ -272,17 +275,24 @@ async def nyapix_version():
     return {"version": "0.1"}
 
 
+def get_create_db_headers(api_key: str = Header(...)) -> CreateDb:
+    return CreateDb(api_key=api_key)
+
+
 @app.get("/ping")
-async def ping(data: TagList):
+async def ping(headers: CreateDb = Depends(get_create_db_headers)):
     logger.info("Got a request to /ping")
-    if data.api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     return {"success": True}
 
 
 @app.get("/createdb")
-async def create_db(data: CreateDb):
+async def create_db(headers: CreateDb = Depends(get_create_db_headers)):
     logger.info("Got a request to /createdb")
+
+    if headers.api_key != master_key:
+        return {"success": False, "error": "Invalid API key."}
 
     content_db = db_gestion.connect_db("nyapix_content.db", logger)
     if content_db is not None and not db_gestion.check_content_tables(content_db, logger):
@@ -297,14 +307,18 @@ async def create_db(data: CreateDb):
     return {"success": True}
 
 
+def post_add_tag(api_key: str = Header(...), tag: str = Header(...)) -> Tag:
+    return Tag(api_key=api_key, tag=tag)
+
+
 @app.post("/addtag")
-async def addtag(tag: Tag):
+async def addtag(headers: Tag = Depends(post_add_tag)):
     logger.info(f"Got a request to /addtag")
-    if tag.api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     if db is not None:
-        db_gestion.add_tag(db, tag.tag, logger)
+        db_gestion.add_tag(db, headers.tag, logger)
         db.close()
         return {"success": True}
     else:
@@ -312,30 +326,34 @@ async def addtag(tag: Tag):
 
 
 @app.post("/removetag")
-async def removetag(tag: Tag):
+async def removetag(headers: Tag = Depends(post_add_tag)):
     logger.info(f"Got a request to /removetag")
-    if tag.api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     if db is not None:
-        db_gestion.remove_tag(db, tag.tag, logger)
+        db_gestion.remove_tag(db, headers.tag, logger)
         db.close()
         return {"success": True}
     else:
         return {"success": False, "error": "Database error."}
 
 
+def post_edit_tag(api_key: str = Header(...), tag: str = Header(...), new_tag: str = Header(...)) -> TagEdit:
+    return TagEdit(api_key=api_key, tag=tag, new_tag=new_tag)
+
+
 @app.post("/edittag")
-async def edittag(data: TagEdit):
+async def edittag(headers: TagEdit = Depends(post_edit_tag)):
     logger.info(f"Got a request to /tagedit")
-    if data.api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     if db is not None:
-        tag_id = db_gestion.get_tag_id(db, data.tag, logger)
+        tag_id = db_gestion.get_tag_id(db, headers.tag, logger)
         if tag_id is None:
             return {"success": False, "error": "Tag not found."}
-        db_gestion.edit_tag(db, tag_id, data.new_tag, logger)
+        db_gestion.edit_tag(db, tag_id, headers.new_tag, logger)
         db.close()
         return {"success": True}
     else:
@@ -343,11 +361,11 @@ async def edittag(data: TagEdit):
 
 
 @app.get("/taglist")
-async def taglist(data: TagList):
+async def taglist(headers: CreateDb = Depends(get_create_db_headers)):
     logger.info(f"Got a request to /taglist")
-    if data.api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     if db is not None:
         taglistfinal = db_gestion.get_taglist(db, logger)
         db.close()
@@ -356,10 +374,14 @@ async def taglist(data: TagList):
         return {"success": False, "error": "Database error."}
 
 
+def post_additem(api_key: str = Header(...), name: str = Header(...), tags: List[str] = Header(...), filetype: str = Header(...)):
+    return AddItem(api_key=api_key, name=name, tags=tags, filetype=filetype)
+
+
 @app.post("/additem")
-async def additem(api_key: str, name: str, tags: List[str], filetype: str, file: fastapi.UploadFile = fastapi.File(...)):
+async def additem(headers: AddItem = Depends(post_additem), file: fastapi.UploadFile = fastapi.File(...)):
     logger.info(f"Got a request to /additem")
-    if api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
 
     # Ensure the directory exists
@@ -378,19 +400,19 @@ async def additem(api_key: str, name: str, tags: List[str], filetype: str, file:
     with open(f"data/nyapix-content/tmp/{tmp_filename}", "rb") as tmpfile:
         filename = calculate_file_sha256(tmpfile)
 
-    filepath = f"data/nyapix-content/content/{filename}.{filetype}"
+    filepath = f"data/nyapix-content/content/{filename}.{headers.filetype}"
     thumbpath = f"data/nyapix-content/thumbs/{filename}.png"
 
     if os.path.exists(filepath):
         os.remove(f"data/nyapix-content/tmp/{tmp_filename}")
         return {"success": False, "error": "Content already on server"}
 
-    tags = [tag.strip() for tag in tags]
-    newitem = {"tags": tags, "name": name, "type": filetype, "path": filepath}
-    if get_html_type_from_extension(filetype) is None:
+    tags = [tag.strip() for tag in headers.tags]
+    newitem = {"tags": tags, "name": headers.name, "type": headers.filetype, "path": filepath}
+    if get_html_type_from_extension(headers.filetype) is None:
         return {"success": False, "error": "Unsupported file type."}
 
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
 
     if db is not None:
         result = db_gestion.add_item(db, {"name": newitem["name"], "path": newitem["path"], "tags": newitem["tags"]}, logger)
@@ -403,18 +425,22 @@ async def additem(api_key: str, name: str, tags: List[str], filetype: str, file:
         return {"success": False, "error": "Database error."}
 
 
+def get_getitem(api_key: str = Header(...), id: int = Header(...)) -> ItemId:
+    return ItemId(api_key=api_key, id=id)
+
+
 @app.get("/getitem")
-async def getitem(data: ItemId):
+async def getitem(headers: ItemId = Depends(get_getitem)):
     '''
     :param data: {"api_key": str, "id": int}
     :return:
     '''
     logger.info(f"Got a request to /getitem")
-    if data.api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     if db is not None:
-        item = db_gestion.get_item(db, data.id, logger)
+        item = db_gestion.get_item(db, headers.id, logger)
         db.close()
         if item is None:
             return {"success": False, "error": "Item not found."}
@@ -424,15 +450,15 @@ async def getitem(data: ItemId):
 
 
 @app.post("/removeitem")
-async def removeitem(data: ItemId):
+async def removeitem(headers: ItemId = Depends(get_getitem)):
     logger.info(f"Got a request to /removeitem")
-    if data.api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
 
     if db is not None:
         # remove file
-        item = db_gestion.get_item(db, data.id, logger)
+        item = db_gestion.get_item(db, headers.id, logger)
         if item is None:
             db.close()
             return {"success": False, "error": "Item not found."}
@@ -441,26 +467,30 @@ async def removeitem(data: ItemId):
             os.remove(item["path"])
         if os.path.isfile(thumbnail_location):
             os.remove(thumbnail_location)
-        success = db_gestion.remove_item(db, data.id, logger)
+        success = db_gestion.remove_item(db, headers.id, logger)
         db.close()
         return {"success": success}
     else:
         return {"success": False, "error": "Database error."}
 
 
+def get_search(api_key: str = Header(...), tags: List[str] = Header(...)) -> Search:
+    return Search(api_key=api_key, tags=tags)
+
+
 @app.get("/search")
-async def searchbytags(data: SearchTags):
+async def searchbytags(headers: Search = Depends(get_search)):
     logger.info(f"Got a request to /search")
-    if data.api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     if db is not None:
-        for tag in data.tags:
+        for tag in headers.tags:
             if db_gestion.get_tag_id(db, tag, logger) is None:
                 db.close()
                 return {"success": False, "error": "Tag not found."}
 
-        items = db_gestion.get_items_with_tags(db, data.tags, logger)
+        items = db_gestion.get_items_with_tags(db, headers.tags, logger)
         result = [{"id": item["id"], "name": item["name"], "tags": item["tags"]} for item in items]
         db.close()
         return {"success": True, "result": result}
@@ -468,18 +498,22 @@ async def searchbytags(data: SearchTags):
         return {"success": False, "error": "Database error."}
 
 
+def post_edititem(api_key: str = Header(...), id: int = Header(...), name: str = Header(...), tags: List[str] = Header(...)) -> EditItem:
+    return EditItem(api_key=api_key, id=id, name=name, tags=tags)
+
+
 @app.post("/edititem")
-async def edititem(data: EditItem):
+async def edititem(headers: EditItem = Depends(post_edititem)):
     logger.info(f"Got a request to /edititem")
-    if data.api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     if db is not None:
-        item = db_gestion.get_item(db, data.id, logger)
+        item = db_gestion.get_item(db, headers.id, logger)
         if item is None:
             db.close()
             return {"success": False, "error": "Item not found."}
-        success_edit = db_gestion.edititem(db, data.id, data.name, data.tags, logger)
+        success_edit = db_gestion.edititem(db, headers.id, headers.name, headers.tags, logger)
         db.close()
         return {"success": success_edit}
     else:
@@ -489,7 +523,7 @@ async def edititem(data: EditItem):
 @app.get("/content/{content_id}/stream")
 async def stream_content(content_id: int, request: fastapi.Request):
     logger.info(f"Got a request to stream /content/{content_id}/stream")
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     path = db_gestion.get_item(db, content_id, logger)
 
     if path is None or not os.path.isfile(path["path"]):
@@ -536,7 +570,7 @@ async def stream_content(content_id: int, request: fastapi.Request):
 @app.get("/content/{content_id}")
 def get_content(content_id: int):
     logger.info(f"Got a request to /content/{content_id}")
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     path = db_gestion.get_item(db, content_id, logger)
 
     if path is None or "path" not in path.keys() or not os.path.isfile(path["path"]):
@@ -574,7 +608,7 @@ def get_content(content_id: int):
 @app.get("/content/{content_id}/thumb")
 def get_thumb(content_id: int):
     logger.info(f"Got a request to /content/{content_id}/thumb")
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     path = db_gestion.get_item(db, content_id, logger)
 
     if path is None:
@@ -593,9 +627,9 @@ def get_thumb(content_id: int):
 
 
 @app.post("/purge_non_existing")
-def purge_non_existing(data: CreateDb):
+def purge_non_existing(headers: CreateDb = Depends(get_create_db_headers)):
     logger.info(f"Got a request to /purge_non_existing")
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     if db is not None:
         db_gestion.purge_non_existing(db, logger)
         db.close()
@@ -606,11 +640,11 @@ def purge_non_existing(data: CreateDb):
 
 
 @app.get("/statistics/current")
-def statistics(data: TagList):
+def statistics(headers: CreateDb = Depends(get_create_db_headers)):
     logger.info(f"Got a request to /statistics")
-    if data.api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     if db is not None:
         stats = db_gestion.get_tags_statistics(db, logger)
         db.close()
@@ -620,9 +654,9 @@ def statistics(data: TagList):
 
 
 @app.get("/statistics/all-time")
-def statistics_csv(data: TagList):
+def statistics_csv(headers: CreateDb = Depends(get_create_db_headers)):
     logger.info(f"Got a request to /statistics/csv")
-    if data.api_key != master_key:
+    if headers.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     if not os.path.exists("data/nyapix-content/stats.csv"):
         return {"success": False, "error": "No statistics available."}
@@ -633,7 +667,7 @@ def statistics_csv(data: TagList):
 @app.get("/content/{content_id}/download")
 def download_content(content_id: int):
     logger.info(f"Got a request to /content/{content_id}/download")
-    db = db_gestion.connect_db("nyapic.db", logger)
+    db = db_gestion.connect_db("nyapix_content.db", logger)
     path = db_gestion.get_item(db, content_id, logger)
 
     if path is None or "path" not in path.keys() or not os.path.isfile(path["path"]):

@@ -77,7 +77,7 @@ def check_content_tables(db: sqlite3.Connection, logger) -> bool:
 
 
 def get_taglist(db: sqlite3.Connection, logger) -> list:
-    '''Get the list of tags from the database.'''
+    """Get the list of tags from the database."""
     try:
         cursor = db.cursor()
         cursor.execute("SELECT name FROM Tag")
@@ -85,6 +85,7 @@ def get_taglist(db: sqlite3.Connection, logger) -> list:
         cursor.execute("SELECT id FROM Tag")
         ids = cursor.fetchall()
         tagsdata = []
+
         for i in range(len(tags)):
             newtag = {"name": tags[i][0], "id": ids[i][0]}
             tagsdata.append(newtag)
@@ -95,17 +96,19 @@ def get_taglist(db: sqlite3.Connection, logger) -> list:
 
 
 def add_tag(db: sqlite3.Connection, tag: str, logger) -> bool:
-    '''Add a tag to the database.'''
+    """Add a tag to the database."""
     tag = tag.lower()
     try:
-        if tag in get_taglist(db, logger):
-            logger.error(f"Tag {tag} already exists.")
-            return True
+        for t in get_taglist(db, logger):
+            if t['name'] == tag:
+                logger.error(f"Tag {tag} already exists.")
+                return True
 
         cursor = db.cursor()
         cursor.execute(f"INSERT INTO Tag (name) VALUES ('{tag}')")
         db.commit()
         logger.info(f"Tag {tag} added.")
+
         return True
     except sqlite3.Error as e:
         logger.error(f"Error adding tag {tag}: {e}")
@@ -113,7 +116,7 @@ def add_tag(db: sqlite3.Connection, tag: str, logger) -> bool:
 
 
 def edit_tag(db: sqlite3.Connection, tag_id: int, new_name: str, logger) -> bool:
-    '''Edit a tag in the database.'''
+    """Edit a tag in the database."""
     try:
         cursor = db.cursor()
         cursor.execute(f"UPDATE Tag SET name = '{new_name}' WHERE id = {tag_id}")
