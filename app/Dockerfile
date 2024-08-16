@@ -5,7 +5,6 @@ RUN apt-get update && apt-get install libgl1 -y
 ADD  pyproject.toml .
 RUN pdm install
 COPY  ./src /app/src
-EXPOSE 31866
 CMD pdm run python src/main.py
 
 LABEL maintainer="Maniko"

@@ -162,10 +162,13 @@ def get_chunk(file_path: str, start: int, end: int) -> Generator[bytes, None, No
 
 load_dotenv()
 
-api_keys_raw = os.getenv("nyapix_api_keys").split(",")
-api_keys = {}
-for i in range(len(api_keys_raw)):
-    api_keys[api_keys_raw[i].split(":")[1]] = api_keys_raw[i].split(":")[0]
+master_key = os.getenv("MASTER_KEY")
+if master_key is None:
+    raise Exception("No master key found in .env file.")
+
+port = int(os.getenv("PORT"))
+if port is None:
+    raise Exception("No port found in .env file.")
 
 logger = logging.getLogger("main_logger")
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
@@ -290,7 +293,7 @@ async def create_db(data: CreateDb):
 @app.post("/addtag")
 async def addtag(tag: Tag):
     logger.info(f"Got a request to /addtag")
-    if tag.api_key not in api_keys:
+    if tag.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     db = db_gestion.connect_db("nyapic.db", logger)
     if db is not None:
@@ -304,7 +307,7 @@ async def addtag(tag: Tag):
 @app.post("/removetag")
 async def removetag(tag: Tag):
     logger.info(f"Got a request to /removetag")
-    if tag.api_key not in api_keys:
+    if tag.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     db = db_gestion.connect_db("nyapic.db", logger)
     if db is not None:
@@ -318,7 +321,7 @@ async def removetag(tag: Tag):
 @app.post("/edittag")
 async def edittag(data: TagEdit):
     logger.info(f"Got a request to /tagedit")
-    if data.api_key not in api_keys:
+    if data.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     db = db_gestion.connect_db("nyapic.db", logger)
     if db is not None:
@@ -335,7 +338,7 @@ async def edittag(data: TagEdit):
 @app.get("/taglist")
 async def taglist(data: TagList):
     logger.info(f"Got a request to /taglist")
-    if data.api_key not in api_keys:
+    if data.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     db = db_gestion.connect_db("nyapic.db", logger)
     if db is not None:
@@ -349,7 +352,7 @@ async def taglist(data: TagList):
 @app.post("/additem")
 async def additem(api_key: str, name: str, tags: List[str], filetype: str, file: fastapi.UploadFile = fastapi.File(...)):
     logger.info(f"Got a request to /additem")
-    if api_key not in api_keys:
+    if api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
 
     # Ensure the directory exists
@@ -400,7 +403,7 @@ async def getitem(data: ItemId):
     :return:
     '''
     logger.info(f"Got a request to /getitem")
-    if data.api_key not in api_keys:
+    if data.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     db = db_gestion.connect_db("nyapic.db", logger)
     if db is not None:
@@ -416,7 +419,7 @@ async def getitem(data: ItemId):
 @app.post("/removeitem")
 async def removeitem(data: ItemId):
     logger.info(f"Got a request to /removeitem")
-    if data.api_key not in api_keys:
+    if data.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     db = db_gestion.connect_db("nyapic.db", logger)
 
@@ -441,7 +444,7 @@ async def removeitem(data: ItemId):
 @app.get("/search")
 async def searchbytags(data: SearchTags):
     logger.info(f"Got a request to /search")
-    if data.api_key not in api_keys:
+    if data.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     db = db_gestion.connect_db("nyapic.db", logger)
     if db is not None:
@@ -461,7 +464,7 @@ async def searchbytags(data: SearchTags):
 @app.post("/edititem")
 async def edititem(data: EditItem):
     logger.info(f"Got a request to /edititem")
-    if data.api_key not in api_keys:
+    if data.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     db = db_gestion.connect_db("nyapic.db", logger)
     if db is not None:
@@ -598,7 +601,7 @@ def purge_non_existing(data: CreateDb):
 @app.get("/statistics/current")
 def statistics(data: TagList):
     logger.info(f"Got a request to /statistics")
-    if data.api_key not in api_keys:
+    if data.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     db = db_gestion.connect_db("nyapic.db", logger)
     if db is not None:
@@ -612,7 +615,7 @@ def statistics(data: TagList):
 @app.get("/statistics/all-time")
 def statistics_csv(data: TagList):
     logger.info(f"Got a request to /statistics/csv")
-    if data.api_key not in api_keys:
+    if data.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     if not os.path.exists("data/nyapix-content/stats.csv"):
         return {"success": False, "error": "No statistics available."}
@@ -636,4 +639,4 @@ def download_content(content_id: int):
 # TODO : add endpoints for client updates
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=31866)
+    uvicorn.run(app, host="0.0.0.0", port=port)
