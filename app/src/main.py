@@ -275,7 +275,7 @@ async def nyapix_version():
 @app.get("/ping")
 async def ping(data: TagList):
     logger.info("Got a request to /ping")
-    if data.api_key not in api_keys:
+    if data.api_key != master_key:
         return {"success": False, "error": "Invalid API key."}
     return {"success": True}
 

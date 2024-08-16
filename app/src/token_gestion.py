@@ -208,4 +208,3 @@ def remove_user(db: sqlite3.Connection, username: str) -> None:
 # #
 # is_admin
 #####################
-w
