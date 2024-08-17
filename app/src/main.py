@@ -19,6 +19,17 @@ from fastapi import Depends
 from logging.config import dictConfig
 
 
+############################################################################################################
+# Logging setup
+#
+# The logging setup is used to configure the logging system of the server.
+#
+# logger - The main logger of the server
+# formatter - The formatter used for the logs
+# console_handler - The console handler for the logs
+# file_handler - The file handler for the logs
+############################################################################################################
+
 log_config = {
     "version": 1,
     "disable_existing_loggers": False,
@@ -41,18 +52,6 @@ log_config = {
         "main_logger": {"handlers": ["default"], "level": "DEBUG"},
     },
 }
-
-
-############################################################################################################
-# Logging setup
-#
-# The logging setup is used to configure the logging system of the server.
-#
-# logger - The main logger of the server
-# formatter - The formatter used for the logs
-# console_handler - The console handler for the logs
-# file_handler - The file handler for the logs
-############################################################################################################
 
 dictConfig(log_config)
 
