@@ -6,7 +6,7 @@ import db_gestion
 import logging
 
 class Permission:
-    def __init__(self):
+    def __init__(self, string: str = None):
         self.create_content = 0
         self.remove_content = 0
         self.edit_content = 0
@@ -29,6 +29,9 @@ class Permission:
         self.search_author = 0
 
         self.is_admin = 0
+
+        if string is not None:
+            self.decode(string)
 
     def encode(self):
         content_slot = 0b1000 * self.create_content + 0b0100 * self.remove_content + 0b0010 * self.edit_content + 0b0001 * self.search_content
@@ -79,6 +82,28 @@ class Permission:
         self.is_admin = 1 if (admin_slot & 0b0001) != 0 else 0
 
         return self
+
+    def dictionnary(self):
+        return {
+            "create_content": True if self.create_content == 1 else False,
+            "remove_content": True if self.remove_content == 1 else False,
+            "edit_content": True if self.edit_content == 1 else False,
+            "search_content": True if self.search_content == 1 else False,
+            "create_tag": True if self.create_tag == 1 else False,
+            "remove_tag": True if self.remove_tag == 1 else False,
+            "edit_tag": True if self.edit_tag == 1 else False,
+            "create_album": True if self.create_album == 1 else False,
+            "remove_album": True if self.remove_album == 1 else False,
+            "dissolve_album": True if self.dissolve_album == 1 else False,
+            "edit_album_content": True if self.edit_album_content == 1 else False,
+            "edit_album_tags": True if self.edit_album_tags == 1 else False,
+            "search_album": True if self.search_album == 1 else False,
+            "add_author": True if self.add_author == 1 else False,
+            "delete_author": True if self.delete_author == 1 else False,
+            "edit_author": True if self.edit_author == 1 else False,
+            "search_author": True if self.search_author == 1 else False,
+            "is_admin": True if self.is_admin == 1 else False
+        }
 
 class User:
     def __init__(self):
@@ -165,17 +190,20 @@ def get_user(db: sqlite3.Connection, username: str) -> User or None:
     return user
 
 
-def create_user(db: sqlite3.Connection, username: str, permissions: Permission) -> User or None:
+def create_user(db: sqlite3.Connection, username: str, permissions: Permission, logger) -> User or None:
     if get_user(db, username) is not None:
+        logger.error("User already exists")
         return None
-    print("Permission: ", permissions.encode())
+    logger.info(f"Creating user {username} with permissions {permissions.encode()}")
     new_token = generate_token(username)
     cursor = db.cursor()
     cursor.execute("INSERT INTO users (username, token, created_at, last_usage, is_active, permissions) VALUES (?, ?, ?, ?, ?, ?)", (username, new_token, datetime.now(), None, 1, permissions.encode()))
     db.commit()
     cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
-    return cursor.fetchone()[0]
 
+    logger.info(f"User {username} created successfully")
+
+    return {"id": cursor.fetchone()[0], "username": username, "token": new_token, "permissions": permissions.encode()}
 
 def remove_user(db: sqlite3.Connection, username: str) -> None:
     cursor = db.cursor()

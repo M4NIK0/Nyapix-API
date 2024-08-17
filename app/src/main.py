@@ -19,57 +19,26 @@ from fastapi import Depends
 from logging.config import dictConfig
 
 
+
 ############################################################################################################
-# Logging setup
+# Models
 #
-# The logging setup is used to configure the logging system of the server.
-#
-# logger - The main logger of the server
-# formatter - The formatter used for the logs
-# console_handler - The console handler for the logs
-# file_handler - The file handler for the logs
+# These models are used to define the data that is sent to and from the API.
 ############################################################################################################
-
-log_config = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "default": {
-            "()": "uvicorn.logging.DefaultFormatter",
-            "fmt": "%(levelprefix)s %(asctime)s %(message)s",
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-
-        },
-    },
-    "handlers": {
-        "default": {
-            "formatter": "default",
-            "class": "logging.StreamHandler",
-            "stream": "ext://sys.stderr",
-        },
-    },
-    "loggers": {
-        "main_logger": {"handlers": ["default"], "level": "DEBUG"},
-    },
-}
-
-dictConfig(log_config)
-
-logger = logging.getLogger("main_logger")
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
-console_handler = logging.StreamHandler()
-file_handler = RotatingFileHandler('logs/nyapix.log', maxBytes=1024*1024, backupCount=5)
-console_handler.setFormatter(formatter)
-console_handler.setLevel(logging.INFO)
-file_handler.setFormatter(formatter)
-file_handler.setLevel(logging.DEBUG)
-logger.addHandler(console_handler)
-logger.addHandler(file_handler)
-
-app = fastapi.FastAPI(debug=True)
 
 class CreateDb(BaseModel):
     api_key: str
+
+
+class CreateUser(BaseModel):
+    api_key: str
+    username: str
+    permissions: str
+
+
+class RemoveUser(BaseModel):
+    api_key: str
+    username: str
 
 
 class Item(BaseModel):
@@ -122,6 +91,14 @@ class ItemId(BaseModel):
     api_key: str
     id: int
 
+
+class GenericResponse(BaseModel):
+    success: bool
+    error: str = None
+    data: dict = None
+
+
+app = fastapi.FastAPI(debug=True) # API client instance
 
 def calculate_file_sha256(file):
     file_hash = hashlib.sha256()
@@ -779,12 +756,119 @@ def download_content(content_id: int):
 #
 # The user management endpoints are used to manage the users of the API.
 #
-# adduser - Add a user to the database # TODO : add this endpoint
+# adduser - Add a user to the database
 # removeuser - Remove a user from the database # TODO : add this endpoint
 # getuser - Get a user from the database # TODO : add this endpoint
 # setpermissions - Set the permissions of a user # TODO : add this endpoint
 # getpermissions - Get the permissions of a user # TODO : add this endpoint
 ############################################################################################################
+
+def get_create_user(api_key: str = Header(...), username: str = Header(...), permissions: str = Header(...)) -> CreateUser:
+    return CreateUser(api_key=api_key, username=username, permissions=permissions)
+
+
+@app.post("/user/add")
+def add_user(headers: CreateUser = Depends(get_create_user)) -> GenericResponse:
+    logger.info(f"Got a request to /user/add")
+
+    has_permission = False
+
+    if headers.api_key == master_key:
+        has_permission = True
+    else:
+        db = db_gestion.connect_db("nyapix_users.db", logger)
+        if db is not None:
+            user = token_gestion.get_token_info(db, headers.api_key)
+            if user is None:
+                logger.error(f"User {headers.username} does not exist.")
+                db.close()
+                return GenericResponse(success=False, error="User does not exist.")
+            if user is not None and user.permissions.is_admin and user.is_active:
+                logger.info(f"User {headers.username} has permission to add users.")
+                has_permission = True
+            else:
+                logger.error(f"User {headers.username} does not have permission to add users.")
+            db.close()
+
+    if not has_permission:
+        return GenericResponse(success=False, error="Invalid API key for this operation.")
+    db = db_gestion.connect_db("nyapix_users.db", logger)
+    if db is not None:
+        user = token_gestion.create_user(db, headers.username, token_gestion.Permission(headers.permissions), logger)
+        if user is None:
+            db.close()
+            return GenericResponse(success=False, error="User already exists.")
+        db.close()
+        return GenericResponse(success=True, data = user)
+    return GenericResponse(success=False, error="Database error.")
+
+
+def get_remove_user(api_key: str = Header(...), username: str = Header(...)) -> RemoveUser:
+    return RemoveUser(api_key=api_key, username=username)
+
+
+@app.post("/user/remove")
+def remove_user(headers: RemoveUser = Depends(get_remove_user)) -> GenericResponse:
+    logger.info(f"Got a request to /user/remove")
+    has_permission = False
+
+    if headers.api_key == master_key:
+        has_permission = True
+    else:
+        db = db_gestion.connect_db("nyapix_users.db", logger)
+        if db is not None:
+            user = token_gestion.get_token_info(db, headers.api_key)
+            if user is None:
+                logger.error(f"User {headers.username} does not exist.")
+                db.close()
+                return GenericResponse(success=False, error="User does not exist.")
+            if user is not None and user.permissions.is_admin and user.is_active:
+                logger.info(f"User {headers.username} has permission to remove users.")
+                has_permission = True
+            else:
+                logger.error(f"User {headers.username} does not have permission to remove users.")
+            db.close()
+
+    if not has_permission:
+        return GenericResponse(success=False, error="Invalid API key for this operation.")
+    db = db_gestion.connect_db("nyapix_users.db", logger)
+    if db is not None:
+        token_gestion.remove_user(db, headers.username)
+        db.close()
+        return GenericResponse(success=True)
+    return GenericResponse(success=False, error="Database error.")
+
+
+@app.post("/user/info")
+def get_user(headers: RemoveUser = Depends(get_remove_user)) -> GenericResponse:
+    logger.info(f"Got a request to /user/info")
+    has_permission = False
+
+    if headers.api_key == master_key:
+        has_permission = True
+    else:
+        db = db_gestion.connect_db("nyapix_users.db", logger)
+        if db is not None:
+            user = token_gestion.get_token_info(db, headers.api_key)
+            if user is None:
+                logger.error(f"User {headers.username} does not exist.")
+                db.close()
+                return GenericResponse(success=False, error="User does not exist.")
+            if user is not None and user.permissions.is_admin and user.is_active:
+                logger.info(f"User {headers.username} has permission to get user info.")
+                has_permission = True
+            else:
+                logger.error(f"User {headers.username} does not have permission to get user info.")
+            db.close()
+
+    if not has_permission:
+        return GenericResponse(success=False, error="Invalid API key for this operation.")
+    db = db_gestion.connect_db("nyapix_users.db", logger)
+    if db is not None:
+        user = token_gestion.get_user(db, headers.username)
+        db.close()
+        return GenericResponse(success=True, data={"username": user.username, "permissions": user.permissions.dictionnary(), "is_active": user.is_active})
+    return GenericResponse(success=False, error="Database error.")
 
 
 
@@ -800,10 +884,50 @@ def download_content(content_id: int):
 
 
 ############################################################################################################
-# Main
+# Config
 #
-# The main function starts the FastAPI server using config.
+# Configuration of the API server and run the server.
+#
+# logger - The main logger of the server
+# fastapi client - The FastAPI client
+# run - Run the server
 ############################################################################################################
+
+log_config = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "default": {
+            "()": "uvicorn.logging.DefaultFormatter",
+            "fmt": "%(levelprefix)s %(asctime)s %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+
+        },
+    },
+    "handlers": {
+        "default": {
+            "formatter": "default",
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stderr",
+        },
+    },
+    "loggers": {
+        "main_logger": {"handlers": ["default"], "level": "DEBUG"},
+    },
+}
+
+dictConfig(log_config)
+
+logger = logging.getLogger("main_logger")
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
+console_handler = logging.StreamHandler()
+file_handler = RotatingFileHandler('logs/nyapix.log', maxBytes=1024*1024, backupCount=5)
+console_handler.setFormatter(formatter)
+console_handler.setLevel(logging.INFO)
+file_handler.setFormatter(formatter)
+file_handler.setLevel(logging.DEBUG)
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=port)
