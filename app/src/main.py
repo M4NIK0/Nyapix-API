@@ -270,6 +270,11 @@ async def shutdown_event():
     print("Background task stopped.")
 
 
+
+############################################################################################################
+# Technical endpoints
+############################################################################################################
+
 @app.get("/nyapix_version")
 async def nyapix_version():
     return {"version": "0.1"}
@@ -310,6 +315,16 @@ async def create_db(headers: CreateDb = Depends(get_create_db_headers)):
 def post_add_tag(api_key: str = Header(...), tag: str = Header(...)) -> Tag:
     return Tag(api_key=api_key, tag=tag)
 
+
+
+############################################################################################################
+# Tags management endpoints
+#
+# addtag - Add a tag to the database
+# removetag - Remove a tag from the database
+# edittag - Edit a tag in the database
+# taglist - Get a list of all tags in the database
+############################################################################################################
 
 @app.post("/addtag")
 async def addtag(headers: Tag = Depends(post_add_tag)):
@@ -373,6 +388,22 @@ async def taglist(headers: CreateDb = Depends(get_create_db_headers)):
     else:
         return {"success": False, "error": "Database error."}
 
+
+
+############################################################################################################
+# Content management endpoints
+#
+# additem - Add an item to the database
+# getitem - Get an item from the database
+# removeitem - Remove an item from the database
+# search - Search for items in the database
+# edititem - Edit an item in the database
+# stream_content - Stream content from the server (only for video files and from the content folder)
+# get_content - Get content from the server (only for video files and from the content folder)
+# get_thumb - Get the thumbnail of an item from the server
+# download_content - Download content from the server
+# purge_non_existing - Purge non-existing files from the database
+############################################################################################################
 
 def post_additem(api_key: str = Header(...), name: str = Header(...), tags: List[str] = Header(...), filetype: str = Header(...)):
     return AddItem(api_key=api_key, name=name, tags=tags, filetype=filetype)
@@ -638,6 +669,13 @@ def purge_non_existing(headers: CreateDb = Depends(get_create_db_headers)):
         db.close()
         return {"success": False, "error": "Database error."}
 
+
+############################################################################################################
+# Statistics endpoints
+#
+# statistics - Get statistics for the current day
+# statistics_csv - Get statistics for all time in CSV format
+############################################################################################################
 
 @app.get("/statistics/current")
 def statistics(headers: CreateDb = Depends(get_create_db_headers)):
