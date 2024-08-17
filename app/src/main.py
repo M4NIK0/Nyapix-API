@@ -703,6 +703,28 @@ def purge_non_existing(headers: CreateDb = Depends(get_create_db_headers)):
         return {"success": False, "error": "Database error."}
 
 
+
+############################################################################################################
+# Album management endpoints
+#
+# The album management endpoints are used to manage the albums in the database.
+#
+# album_creation - Create an album # TODO : add this endpoint
+# - from archive # TODO : add this endpoint
+# - from content IDs # TODO : add this endpoint
+# album_deletion - Delete an album # TODO : add this endpoint
+# - delete album and content from database # TODO : add this endpoint
+# - dissolve album and keep content in database (apply album tags and album name to content) # TODO : add this endpoint
+# album_edit - Edit an album # TODO : add this endpoint
+# - edit album name and tags # TODO : add this endpoint
+# - remove content from album # TODO : add this endpoint
+# - add content to album # TODO : add this endpoint
+# album_search - Search for albums # TODO : add this endpoint
+# album_get - Get an album # TODO : add this endpoint
+############################################################################################################
+
+
+
 ############################################################################################################
 # Statistics endpoints
 #
