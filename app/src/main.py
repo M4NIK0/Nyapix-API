@@ -1,7 +1,6 @@
 import hashlib
 import os
 from fastapi import Header
-
 import fastapi
 import uvicorn
 from dotenv import load_dotenv
@@ -44,8 +43,31 @@ log_config = {
 }
 
 
+############################################################################################################
+# Logging setup
+#
+# The logging setup is used to configure the logging system of the server.
+#
+# logger - The main logger of the server
+# formatter - The formatter used for the logs
+# console_handler - The console handler for the logs
+# file_handler - The file handler for the logs
+############################################################################################################
+
 dictConfig(log_config)
 
+logger = logging.getLogger("main_logger")
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
+console_handler = logging.StreamHandler()
+file_handler = RotatingFileHandler('logs/nyapix.log', maxBytes=1024*1024, backupCount=5)
+console_handler.setFormatter(formatter)
+console_handler.setLevel(logging.INFO)
+file_handler.setFormatter(formatter)
+file_handler.setLevel(logging.DEBUG)
+logger.addHandler(console_handler)
+logger.addHandler(file_handler)
+
+app = fastapi.FastAPI(debug=True)
 
 class CreateDb(BaseModel):
     api_key: str
@@ -163,6 +185,13 @@ def get_chunk(file_path: str, start: int, end: int) -> Generator[bytes, None, No
             yield data
 
 
+
+############################################################################################################
+# Configuration
+#
+# Load the configuration from the .env file.
+############################################################################################################
+
 load_dotenv()
 
 master_key = os.getenv("MASTER_KEY")
@@ -173,18 +202,6 @@ port = int(os.getenv("PORT"))
 if port is None:
     raise Exception("No port found in .env file.")
 
-logger = logging.getLogger("main_logger")
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', '%Y-%m-%d %H:%M:%S')
-console_handler = logging.StreamHandler()
-file_handler = RotatingFileHandler('logs/nyapix.log', maxBytes=1024*1024, backupCount=5)
-console_handler.setFormatter(formatter)
-console_handler.setLevel(logging.INFO)
-file_handler.setFormatter(formatter)
-file_handler.setLevel(logging.DEBUG)
-logger.addHandler(console_handler)
-logger.addHandler(file_handler)
-
-app = fastapi.FastAPI(debug=True)
 bg_task = None
 
 
@@ -197,6 +214,13 @@ def get_content_size():
             total_size += os.path.getsize(fp)
     return total_size
 
+
+
+############################################################################################################
+# Background tasks
+#
+# For now, the only background task is the statistics task.
+###########################################################################################################
 
 async def stats_task():
     """Get statistics every day and write them to a CSV file."""
@@ -273,6 +297,12 @@ async def shutdown_event():
 
 ############################################################################################################
 # Technical endpoints
+#
+# The technical endpoints are used to get information about the server.
+#
+# nyapix_version - Get the version of the Nyapix server
+# ping - Ping the server and check if api key is valid
+# createdb - Create the database tables (admin only)
 ############################################################################################################
 
 @app.get("/nyapix_version")
@@ -319,6 +349,8 @@ def post_add_tag(api_key: str = Header(...), tag: str = Header(...)) -> Tag:
 
 ############################################################################################################
 # Tags management endpoints
+#
+# The tags management endpoints are used to manage the tags in the database.
 #
 # addtag - Add a tag to the database
 # removetag - Remove a tag from the database
@@ -392,6 +424,8 @@ async def taglist(headers: CreateDb = Depends(get_create_db_headers)):
 
 ############################################################################################################
 # Content management endpoints
+#
+# The content management endpoints are used to manage the content in the database.
 #
 # additem - Add an item to the database
 # getitem - Get an item from the database
@@ -673,6 +707,8 @@ def purge_non_existing(headers: CreateDb = Depends(get_create_db_headers)):
 ############################################################################################################
 # Statistics endpoints
 #
+# The statistics endpoints are used to get statistics about the content in the database.
+#
 # statistics - Get statistics for the current day
 # statistics_csv - Get statistics for all time in CSV format
 ############################################################################################################
@@ -715,7 +751,38 @@ def download_content(content_id: int):
     db.close()
     return fastapi.responses.FileResponse(path["path"])
 
-# TODO : add endpoints for client updates
+
+
+############################################################################################################
+# User management endpoints (admin only)
+#
+# The user management endpoints are used to manage the users of the API.
+#
+# adduser - Add a user to the database # TODO : add this endpoint
+# removeuser - Remove a user from the database # TODO : add this endpoint
+# getuser - Get a user from the database # TODO : add this endpoint
+# setpermissions - Set the permissions of a user # TODO : add this endpoint
+# getpermissions - Get the permissions of a user # TODO : add this endpoint
+############################################################################################################
+
+
+
+############################################################################################################
+# Client management endpoints
+#
+# The client management endpoints are used to manage the clients of the API.
+#
+# version - Get the version of the Nyapix client # TODO : add this endpoint
+# download - Download the Nyapix client # TODO : add this endpoint
+############################################################################################################
+
+
+
+############################################################################################################
+# Main
+#
+# The main function starts the FastAPI server using config.
+############################################################################################################
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=port)
