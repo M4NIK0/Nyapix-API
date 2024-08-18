@@ -298,7 +298,7 @@ async def ping(headers: CreateDb = Depends(get_create_db_headers)):
     return {"success": True}
 
 
-@app.get("/createdb")
+@app.get("/admin/setup")
 async def create_db(headers: CreateDb = Depends(get_create_db_headers)):
     logger.info("Got a request to /createdb")
 
