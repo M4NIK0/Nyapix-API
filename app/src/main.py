@@ -21,9 +21,10 @@ from logging.config import dictConfig
 
 
 ############################################################################################################
-# Models
+# Models & data manipulation
 #
 # These models are used to define the data that is sent to and from the API.
+# The data manipulation functions are used to generate names, calculate hashes and create thumbnails.
 ############################################################################################################
 
 class CreateDb(BaseModel):
@@ -161,6 +162,16 @@ def get_chunk(file_path: str, start: int, end: int) -> Generator[bytes, None, No
             yield data
 
 
+def get_content_size():
+    total_size = 0
+
+    for dirpath, dirnames, filenames in os.walk("data/nyapix-content/content"):
+        for f in filenames:
+            fp = os.path.join(dirpath, f)
+            total_size += os.path.getsize(fp)
+    return total_size
+
+
 
 ############################################################################################################
 # Configuration
@@ -179,16 +190,6 @@ if port is None:
     raise Exception("No port found in .env file.")
 
 bg_task = None
-
-
-def get_content_size():
-    total_size = 0
-
-    for dirpath, dirnames, filenames in os.walk("data/nyapix-content/content"):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-            total_size += os.path.getsize(fp)
-    return total_size
 
 
 
@@ -293,8 +294,16 @@ def get_create_db_headers(api_key: str = Header(...)) -> CreateDb:
 @app.get("/ping")
 async def ping(headers: CreateDb = Depends(get_create_db_headers)):
     logger.info("Got a request to /ping")
-    if headers.api_key != master_key:
-        return {"success": False, "error": "Invalid API key."}
+
+    user_db = db_gestion.connect_db("nyapix_users.db", logger)
+    if user_db is not None:
+        user = token_gestion.get_token_info(user_db, headers.api_key)
+        user_db.close()
+        if user is None and headers.api_key != master_key:
+            return {"success": False, "error": "Invalid API key."}
+        if headers.api_key != master_key and not user.is_active:
+            return {"success": False, "error": "API key is disabled."}
+
     return {"success": True}
 
 
@@ -337,8 +346,9 @@ def post_add_tag(api_key: str = Header(...), tag: str = Header(...)) -> Tag:
 @app.post("/tag/add")
 async def addtag(headers: Tag = Depends(post_add_tag)):
     logger.info(f"Got a request to /addtag")
-    if headers.api_key != master_key:
-        return {"success": False, "error": "Invalid API key."}
+
+    user = token_gestion.get_token_info(headers.api_key)
+
     db = db_gestion.connect_db("nyapix_content.db", logger)
     if db is not None:
         db_gestion.add_tag(db, headers.tag, logger)
