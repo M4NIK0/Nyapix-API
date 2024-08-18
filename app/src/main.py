@@ -334,7 +334,7 @@ def post_add_tag(api_key: str = Header(...), tag: str = Header(...)) -> Tag:
 # taglist - Get a list of all tags in the database
 ############################################################################################################
 
-@app.post("/addtag")
+@app.post("/tag/add")
 async def addtag(headers: Tag = Depends(post_add_tag)):
     logger.info(f"Got a request to /addtag")
     if headers.api_key != master_key:
@@ -348,7 +348,7 @@ async def addtag(headers: Tag = Depends(post_add_tag)):
         return {"success": False, "error": "Database error."}
 
 
-@app.post("/removetag")
+@app.post("/tag/remove")
 async def removetag(headers: Tag = Depends(post_add_tag)):
     logger.info(f"Got a request to /removetag")
     if headers.api_key != master_key:
@@ -366,7 +366,7 @@ def post_edit_tag(api_key: str = Header(...), tag: str = Header(...), new_tag: s
     return TagEdit(api_key=api_key, tag=tag, new_tag=new_tag)
 
 
-@app.post("/edittag")
+@app.post("/tag/edit")
 async def edittag(headers: TagEdit = Depends(post_edit_tag)):
     logger.info(f"Got a request to /tagedit")
     if headers.api_key != master_key:
@@ -383,7 +383,7 @@ async def edittag(headers: TagEdit = Depends(post_edit_tag)):
         return {"success": False, "error": "Database error."}
 
 
-@app.get("/taglist")
+@app.get("/tag/list")
 async def taglist(headers: CreateDb = Depends(get_create_db_headers)):
     logger.info(f"Got a request to /taglist")
     if headers.api_key != master_key:
@@ -419,7 +419,7 @@ def post_additem(api_key: str = Header(...), name: str = Header(...), tags: List
     return AddItem(api_key=api_key, name=name, tags=tags, filetype=filetype)
 
 
-@app.post("/additem")
+@app.post("/item/add")
 async def additem(headers: AddItem = Depends(post_additem), file: fastapi.UploadFile = fastapi.File(...)):
     logger.info(f"Got a request to /additem")
     if headers.api_key != master_key:
@@ -470,7 +470,7 @@ def get_getitem(api_key: str = Header(...), id: int = Header(...)) -> ItemId:
     return ItemId(api_key=api_key, id=id)
 
 
-@app.get("/getitem")
+@app.get("/item/info")
 async def getitem(headers: ItemId = Depends(get_getitem)):
     '''
     :param data: {"api_key": str, "id": int}
@@ -490,7 +490,7 @@ async def getitem(headers: ItemId = Depends(get_getitem)):
         return {"success": False, "error": "Database error."}
 
 
-@app.post("/removeitem")
+@app.post("/item/remove")
 async def removeitem(headers: ItemId = Depends(get_getitem)):
     logger.info(f"Got a request to /removeitem")
     if headers.api_key != master_key:
@@ -519,7 +519,42 @@ def get_search(api_key: str = Header(...), tags: List[str] = Header(...)) -> Sea
     return Search(api_key=api_key, tags=tags)
 
 
-@app.get("/search")
+def post_edititem(api_key: str = Header(...), id: int = Header(...), name: str = Header(...), tags: List[str] = Header(...)) -> EditItem:
+    return EditItem(api_key=api_key, id=id, name=name, tags=tags)
+
+
+@app.post("/item/edit")
+async def edititem(headers: EditItem = Depends(post_edititem)):
+    logger.info(f"Got a request to /edititem")
+    if headers.api_key != master_key:
+        return {"success": False, "error": "Invalid API key."}
+    db = db_gestion.connect_db("nyapix_content.db", logger)
+    if db is not None:
+        item = db_gestion.get_item(db, headers.id, logger)
+        if item is None:
+            db.close()
+            return {"success": False, "error": "Item not found."}
+        success_edit = db_gestion.edititem(db, headers.id, headers.name, headers.tags, logger)
+        db.close()
+        return {"success": success_edit}
+    else:
+        return {"success": False, "error": "Database error."}
+
+
+@app.post("/item/purge_nofile")
+def purge_non_existing(headers: CreateDb = Depends(get_create_db_headers)):
+    logger.info(f"Got a request to /purge_non_existing")
+    db = db_gestion.connect_db("nyapix_content.db", logger)
+    if db is not None:
+        db_gestion.purge_non_existing(db, logger)
+        db.close()
+        return {"success": True}
+    else:
+        db.close()
+        return {"success": False, "error": "Database error."}
+
+
+@app.get("/content/search")
 async def searchbytags(headers: Search = Depends(get_search)):
     logger.info(f"Got a request to /search")
     if headers.api_key != master_key:
@@ -535,28 +570,6 @@ async def searchbytags(headers: Search = Depends(get_search)):
         result = [{"id": item["id"], "name": item["name"], "tags": item["tags"]} for item in items]
         db.close()
         return {"success": True, "result": result}
-    else:
-        return {"success": False, "error": "Database error."}
-
-
-def post_edititem(api_key: str = Header(...), id: int = Header(...), name: str = Header(...), tags: List[str] = Header(...)) -> EditItem:
-    return EditItem(api_key=api_key, id=id, name=name, tags=tags)
-
-
-@app.post("/edititem")
-async def edititem(headers: EditItem = Depends(post_edititem)):
-    logger.info(f"Got a request to /edititem")
-    if headers.api_key != master_key:
-        return {"success": False, "error": "Invalid API key."}
-    db = db_gestion.connect_db("nyapix_content.db", logger)
-    if db is not None:
-        item = db_gestion.get_item(db, headers.id, logger)
-        if item is None:
-            db.close()
-            return {"success": False, "error": "Item not found."}
-        success_edit = db_gestion.edititem(db, headers.id, headers.name, headers.tags, logger)
-        db.close()
-        return {"success": success_edit}
     else:
         return {"success": False, "error": "Database error."}
 
@@ -665,19 +678,6 @@ def get_thumb(content_id: int):
 
     db.close()
     return fastapi.responses.FileResponse(thumb_path, media_type="image/png")
-
-
-@app.post("/purge_non_existing")
-def purge_non_existing(headers: CreateDb = Depends(get_create_db_headers)):
-    logger.info(f"Got a request to /purge_non_existing")
-    db = db_gestion.connect_db("nyapix_content.db", logger)
-    if db is not None:
-        db_gestion.purge_non_existing(db, logger)
-        db.close()
-        return {"success": True}
-    else:
-        db.close()
-        return {"success": False, "error": "Database error."}
 
 
 
