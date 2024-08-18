@@ -866,6 +866,9 @@ def get_user(headers: RemoveUser = Depends(get_remove_user)) -> GenericResponse:
     db = db_gestion.connect_db("nyapix_users.db", logger)
     if db is not None:
         user = token_gestion.get_user(db, headers.username)
+        if user is None:
+            db.close()
+            return GenericResponse(success=False, error="User does not exist.")
         db.close()
         return GenericResponse(success=True, data={"username": user.username, "permissions": user.permissions.dictionnary(), "is_active": user.is_active})
     return GenericResponse(success=False, error="Database error.")
