@@ -470,26 +470,6 @@ def get_getitem(api_key: str = Header(...), id: int = Header(...)) -> ItemId:
     return ItemId(api_key=api_key, id=id)
 
 
-@app.get("/item/info")
-async def getitem(headers: ItemId = Depends(get_getitem)):
-    '''
-    :param data: {"api_key": str, "id": int}
-    :return:
-    '''
-    logger.info(f"Got a request to /getitem")
-    if headers.api_key != master_key:
-        return {"success": False, "error": "Invalid API key."}
-    db = db_gestion.connect_db("nyapix_content.db", logger)
-    if db is not None:
-        item = db_gestion.get_item(db, headers.id, logger)
-        db.close()
-        if item is None:
-            return {"success": False, "error": "Item not found."}
-        return {"success": True, "item": {"id": item["id"], "type": item["extension"], "size": item["size"], "name": item["name"], "tags": item["tags"]}}
-    else:
-        return {"success": False, "error": "Database error."}
-
-
 @app.post("/item/remove")
 async def removeitem(headers: ItemId = Depends(get_getitem)):
     logger.info(f"Got a request to /removeitem")
@@ -570,6 +550,26 @@ async def searchbytags(headers: Search = Depends(get_search)):
         result = [{"id": item["id"], "name": item["name"], "tags": item["tags"]} for item in items]
         db.close()
         return {"success": True, "result": result}
+    else:
+        return {"success": False, "error": "Database error."}
+
+
+@app.get("/content/{content_id}/info")
+async def getitem(content_id: int, headers: CreateDb = Depends(get_create_db_headers)):
+    '''
+    :param data: {"api_key": str, "id": int}
+    :return:
+    '''
+    logger.info(f"Got a request to /getitem")
+    if headers.api_key != master_key:
+        return {"success": False, "error": "Invalid API key."}
+    db = db_gestion.connect_db("nyapix_content.db", logger)
+    if db is not None:
+        item = db_gestion.get_item(db, content_id, logger)
+        db.close()
+        if item is None:
+            return {"success": False, "error": "Item not found."}
+        return {"success": True, "item": {"id": item["id"], "type": item["extension"], "size": item["size"], "name": item["name"], "tags": item["tags"]}}
     else:
         return {"success": False, "error": "Database error."}
 
