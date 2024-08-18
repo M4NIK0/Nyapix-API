@@ -102,19 +102,19 @@ The API uses an API key for authentication. The API key is passed as a header as
 
 #### \/statistics/ - Statistics endpoints
 
-| Method | Endpoint | Description                          |
-|--------|----------|--------------------------------------|
-| GET    | current  | Get current statistics.              |
-| GET    | all-time | Get all-time statistics.             |
+| Method | Endpoint | Description              |
+|--------|----------|--------------------------|
+| GET    | current  | Get current statistics.  |
+| GET    | all-time | Get all-time statistics. |
 
 #### \/user - User management endpoints
 
-| Method | Endpoint | Description                                       |
-|--------|----------|---------------------------------------------------|
-| POST   | add      | Add a new user (admin only), returns user's token |
-| POST   | remove   | Remove a user (admin only)                        |
-| POST   | info     | Get a user's permission                           |
-| POST   | edit     | Edit a user's permission                          |
+| Method | Endpoint | Description                                                     |
+|--------|----------|-----------------------------------------------------------------|
+| POST   | add      | Add a new user (admin only), returns user's token               |
+| POST   | remove   | Remove a user (admin only)                                      |
+| POST   | info     | Get a user's permission (admin only), return user's permissions |
+| POST   | edit     | Edit a user's permission (admin only)                           |
 
 ## Development
 
