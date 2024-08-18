@@ -757,10 +757,9 @@ def download_content(content_id: int):
 # The user management endpoints are used to manage the users of the API.
 #
 # adduser - Add a user to the database
-# removeuser - Remove a user from the database # TODO : add this endpoint
-# getuser - Get a user from the database # TODO : add this endpoint
-# setpermissions - Set the permissions of a user # TODO : add this endpoint
-# getpermissions - Get the permissions of a user # TODO : add this endpoint
+# removeuser - Remove a user from the database
+# getuser - Get a user from the database
+# edituser - Set the permissions of a user
 ############################################################################################################
 
 def get_create_user(api_key: str = Header(...), username: str = Header(...), permissions: str = Header(...)) -> CreateUser:
@@ -839,7 +838,7 @@ def remove_user(headers: RemoveUser = Depends(get_remove_user)) -> GenericRespon
     return GenericResponse(success=False, error="Database error.")
 
 
-@app.post("/user/info")
+@app.get("/user/info")
 def get_user(headers: RemoveUser = Depends(get_remove_user)) -> GenericResponse:
     logger.info(f"Got a request to /user/info")
     has_permission = False
@@ -871,6 +870,43 @@ def get_user(headers: RemoveUser = Depends(get_remove_user)) -> GenericResponse:
             return GenericResponse(success=False, error="User does not exist.")
         db.close()
         return GenericResponse(success=True, data={"username": user.username, "permissions": user.permissions.dictionnary(), "is_active": user.is_active})
+    return GenericResponse(success=False, error="Database error.")
+
+
+@app.post("/user/edit")
+def edit_user(headers: CreateUser = Depends(get_create_user)) -> GenericResponse:
+    logger.info(f"Got a request to /user/edit")
+    has_permission = False
+
+    if headers.api_key == master_key:
+        has_permission = True
+    else:
+        db = db_gestion.connect_db("nyapix_users.db", logger)
+        if db is not None:
+            user = token_gestion.get_token_info(db, headers.api_key)
+            if user is None:
+                logger.error(f"User {headers.username} does not exist.")
+                db.close()
+                return GenericResponse(success=False, error="User does not exist.")
+            if user is not None and user.permissions.is_admin and user.is_active:
+                logger.info(f"User {headers.username} has permission to edit users.")
+                has_permission = True
+            else:
+                logger.error(f"User {headers.username} does not have permission to edit users.")
+            db.close()
+
+    if not has_permission:
+        return GenericResponse(success=False, error="Invalid API key for this operation.")
+    db = db_gestion.connect_db("nyapix_users.db", logger)
+    if db is not None:
+        user = get_user(db, headers.username)
+        if user is None:
+            db.close()
+            return GenericResponse(success=False, error="User does not exist.")
+        new_permissions = token_gestion.Permission(headers.permissions)
+        token_gestion.set_token_permissions(db, user.token, new_permissions)
+        db.close()
+        return GenericResponse(success=True)
     return GenericResponse(success=False, error="Database error.")
 
 
