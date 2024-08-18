@@ -483,11 +483,12 @@ async def removeitem(headers: ItemId = Depends(get_getitem)):
         if item is None:
             db.close()
             return {"success": False, "error": "Item not found."}
-        thumbnail_location = "data/nyapix_content/" + item["path"].split("/")[-1]
+        thumbnail_location = "data/nyapix-content/thumbs/" + item["path"].split("/")[-1].split(".")[0] + ".png"
         if os.path.isfile(item["path"]):
             os.remove(item["path"])
         if os.path.isfile(thumbnail_location):
             os.remove(thumbnail_location)
+        logger.info(f"thumbnail location: {thumbnail_location}")
         success = db_gestion.remove_item(db, headers.id, logger)
         db.close()
         return {"success": success}

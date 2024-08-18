@@ -175,7 +175,7 @@ def get_item(db: sqlite3.Connection, item_id: int, logger) -> dict:
         if item is None:
             logger.error(f"Item {item_id} not found.")
             return None
-        return {"id": item[0], "name": item[1], "path": item[2], "extension": item[2].split('.')[-1], "size": os.path.getsize(item[2]), "tags": [get_tag_name(db, tag, logger) for tag in get_item_tags(db, item_id, logger)]}
+        return {"id": item[0], "name": item[1], "path": item[2], "extension": item[2].split('.')[-1], "size": os.path.getsize(item[2]) if os.path.exists(item[2]) else 0, "tags": [get_tag_name(db, tag, logger) for tag in get_item_tags(db, item_id, logger)]}
     except sqlite3.Error as e:
         logger.error(f"Error getting item {item_id}: {e}")
         return None
