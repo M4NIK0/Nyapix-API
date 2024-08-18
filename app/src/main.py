@@ -680,6 +680,20 @@ def get_thumb(content_id: int):
     return fastapi.responses.FileResponse(thumb_path, media_type="image/png")
 
 
+@app.get("/content/{content_id}/download")
+def download_content(content_id: int):
+    logger.info(f"Got a request to /content/{content_id}/download")
+    db = db_gestion.connect_db("nyapix_content.db", logger)
+    path = db_gestion.get_item(db, content_id, logger)
+
+    if path is None or "path" not in path.keys() or not os.path.isfile(path["path"]):
+        db.close()
+        raise fastapi.HTTPException(status_code=404, detail="File not found")
+
+    db.close()
+    return fastapi.responses.FileResponse(path["path"])
+
+
 
 ############################################################################################################
 # Album management endpoints
@@ -734,20 +748,6 @@ def statistics_csv(headers: CreateDb = Depends(get_create_db_headers)):
         return {"success": False, "error": "No statistics available."}
     with open("data/nyapix-content/stats.csv", "r") as f:
         return f.read()
-
-
-@app.get("/content/{content_id}/download")
-def download_content(content_id: int):
-    logger.info(f"Got a request to /content/{content_id}/download")
-    db = db_gestion.connect_db("nyapix_content.db", logger)
-    path = db_gestion.get_item(db, content_id, logger)
-
-    if path is None or "path" not in path.keys() or not os.path.isfile(path["path"]):
-        db.close()
-        raise fastapi.HTTPException(status_code=404, detail="File not found")
-
-    db.close()
-    return fastapi.responses.FileResponse(path["path"])
 
 
 
