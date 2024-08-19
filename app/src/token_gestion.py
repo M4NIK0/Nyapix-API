@@ -231,12 +231,15 @@ def remove_user(db: sqlite3.Connection, username: str) -> None:
     cursor.execute("DELETE FROM users WHERE username = ?", (username,))
     db.commit()
 
-def check_token_permission(db: sqlite3.Connection, token: str, permission: Permissions = None) -> bool:
+def check_token_permission(db: sqlite3.Connection, logger, token: str, permission: Permissions = None) -> bool:
     user = get_token_info(db, token)
-    if user is None or not user.is_active:
+    if user is None:
+        logger.info(f"User with token {token} not found")
         return False
     if permission is None or user.permissions.dictionnary()[permission.name.lower()]:
+        logger.info(f"User {user.username} ({user.id}) has permission {permission.name.lower()}" if permission is not None else f"User {user.username} ({user.id}) key is valid")
         return True
+    logger.info(f"User {user.username} does not have permission {permission.name}")
     return False
 
 

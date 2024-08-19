@@ -299,7 +299,7 @@ async def ping(headers: CreateDb = Depends(get_create_db_headers)):
 
     user_db = db_gestion.connect_db("nyapix_users.db", logger)
     if user_db is not None:
-        has_permission = check_token_permission(user_db, headers.api_key, None)
+        has_permission = check_token_permission(user_db, logger, headers.api_key, None)
         user_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -349,7 +349,7 @@ async def addtag(headers: Tag = Depends(post_add_tag)):
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.CREATE_TAG)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.CREATE_TAG)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -371,7 +371,7 @@ async def removetag(headers: Tag = Depends(post_add_tag)):
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.REMOVE_TAG)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.REMOVE_TAG)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -397,7 +397,7 @@ async def edittag(headers: TagEdit = Depends(post_edit_tag)):
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.EDIT_TAG)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.EDIT_TAG)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -422,7 +422,7 @@ async def taglist(headers: CreateDb = Depends(get_create_db_headers)):
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.SEARCH_CONTENT)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.SEARCH_CONTENT)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -466,7 +466,7 @@ async def additem(headers: AddItem = Depends(post_additem), file: fastapi.Upload
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.CREATE_CONTENT)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.CREATE_CONTENT)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -525,7 +525,7 @@ async def removeitem(headers: ItemId = Depends(get_getitem)):
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.REMOVE_CONTENT)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.REMOVE_CONTENT)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -567,7 +567,7 @@ async def edititem(headers: EditItem = Depends(post_edititem)):
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.EDIT_CONTENT)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.EDIT_CONTENT, logger)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -593,7 +593,7 @@ def purge_non_existing(headers: CreateDb = Depends(get_create_db_headers)):
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.IS_ADMIN)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.IS_ADMIN)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -616,7 +616,7 @@ async def searchbytags(headers: Search = Depends(get_search)):
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.SEARCH_CONTENT)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.SEARCH_CONTENT)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -648,7 +648,7 @@ async def getitem(content_id: int, headers: CreateDb = Depends(get_create_db_hea
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.SEARCH_CONTENT)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.SEARCH_CONTENT)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -823,7 +823,7 @@ def statistics(headers: CreateDb = Depends(get_create_db_headers)):
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.IS_ADMIN)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.IS_ADMIN)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -845,7 +845,7 @@ def statistics_csv(headers: CreateDb = Depends(get_create_db_headers)):
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.IS_ADMIN)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.IS_ADMIN)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -880,7 +880,7 @@ def add_user(headers: CreateUser = Depends(get_create_user)) -> GenericResponse:
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.IS_ADMIN)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.IS_ADMIN)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return GenericResponse(success=False, error="Invalid API key.")
@@ -908,7 +908,7 @@ def remove_user(headers: RemoveUser = Depends(get_remove_user)) -> GenericRespon
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.IS_ADMIN)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.IS_ADMIN)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return GenericResponse(success=False, error="Invalid API key.")
@@ -929,7 +929,7 @@ def get_user(headers: RemoveUser = Depends(get_remove_user)) -> GenericResponse:
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.IS_ADMIN)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.IS_ADMIN)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return GenericResponse(success=False, error="Invalid API key.")
@@ -953,7 +953,7 @@ def edit_user(headers: CreateUser = Depends(get_create_user)) -> GenericResponse
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, headers.api_key, Permissions.IS_ADMIN)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.IS_ADMIN)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return GenericResponse(success=False, error="Invalid API key.")
