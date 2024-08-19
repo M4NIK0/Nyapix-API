@@ -1,6 +1,7 @@
 import sqlite3
 from datetime import datetime
 import random
+from enum import Enum
 
 import db_gestion
 import logging
@@ -104,6 +105,26 @@ class Permission:
             "search_author": True if self.search_author == 1 else False,
             "is_admin": True if self.is_admin == 1 else False
         }
+
+class Permissions(Enum):
+    CREATE_CONTENT = 0
+    REMOVE_CONTENT = 1
+    EDIT_CONTENT = 2
+    SEARCH_CONTENT = 3
+    CREATE_TAG = 4
+    REMOVE_TAG = 5
+    EDIT_TAG = 6
+    CREATE_ALBUM = 7
+    REMOVE_ALBUM = 8
+    DISSOLVE_ALBUM = 9
+    EDIT_ALBUM_CONTENT = 10
+    EDIT_ALBUM_TAGS = 11
+    SEARCH_ALBUM = 12
+    ADD_AUTHOR = 13
+    DELETE_AUTHOR = 14
+    EDIT_AUTHOR = 15
+    SEARCH_AUTHOR = 16
+    IS_ADMIN = 17
 
 class User:
     def __init__(self):
@@ -209,6 +230,14 @@ def remove_user(db: sqlite3.Connection, username: str) -> None:
     cursor = db.cursor()
     cursor.execute("DELETE FROM users WHERE username = ?", (username,))
     db.commit()
+
+def check_token_permission(db: sqlite3.Connection, token: str, permission: Permissions = None) -> bool:
+    user = get_token_info(db, token)
+    if user is None or not user.is_active:
+        return False
+    if user.permissions.dictionnary()[permission.name.lower()] or permission is None:
+        return True
+    return False
 
 
 # Defined permissions for now

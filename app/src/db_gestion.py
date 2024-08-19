@@ -44,11 +44,11 @@ def create_content_tables(db: sqlite3.Connection, logger) -> bool:
     '''Create the content tables in the database.'''
     try:
         cursor = db.cursor()
-        cursor.execute("CREATE TABLE Item (id INTEGER PRIMARY KEY, name TEXT, path TEXT)")
-        db.commit()
+        cursor.execute("CREATE TABLE Item (id INTEGER PRIMARY KEY, name TEXT, path TEXT, creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
         cursor.execute("CREATE TABLE Tag (id INTEGER PRIMARY KEY, name TEXT)")
-        db.commit()
         cursor.execute("CREATE TABLE ItemTag (ItemId INTEGER, TagId INTEGER)")
+        cursor.execute("CREATE TABLE Author (id INTEGER PRIMARY KEY, name TEXT)")
+        cursor.execute("CREATE TABLE ItemAuthor (ItemId INTEGER, AuthorId INTEGER)")
         db.commit()
         logger.info("Content tables created.")
         return True
@@ -61,14 +61,15 @@ def check_content_tables(db: sqlite3.Connection, logger) -> bool:
     '''Check if the content tables exist in the database.'''
     try:
         cursor = db.cursor()
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Item'")
-        if cursor.fetchone() is None:
+        if not cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Item'").fetchone():
             return False
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Tag'")
-        if cursor.fetchone() is None:
+        if not cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Tag'").fetchone():
             return False
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ItemTag'")
-        if cursor.fetchone() is None:
+        if not cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ItemTag'").fetchone():
+            return False
+        if not cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Author'").fetchone():
+            return False
+        if not cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ItemAuthor'").fetchone():
             return False
         return True
     except sqlite3.Error as e:
@@ -407,3 +408,110 @@ def get_images_statistics(db: sqlite3.Connection, logger) -> dict:
     except sqlite3.Error as e:
         logger.error(f"Error getting images statistics: {e}")
         return {"images": 0, "size": 0, "error": f"{e}"}
+
+
+def get_authorslist(db: sqlite3.Connection, logger) -> list:
+    """Get the list of authors from the database."""
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT name FROM Author")
+        authors = cursor.fetchall()
+        cursor.execute("SELECT id FROM Author")
+        ids = cursor.fetchall()
+        authorsdata = []
+
+        for i in range(len(authors)):
+            newauthor = {"name": authors[i][0], "id": ids[i][0]}
+            authorsdata.append(newauthor)
+
+        return authorsdata
+    except sqlite3.Error as e:
+        logger.error(f"Error getting authors list: {e}")
+
+
+def get_author_id(db: sqlite3.Connection, author_name: str, logger) -> int:
+    '''Get the ID of an author from the database.'''
+    try:
+        cursor = db.cursor()
+        cursor.execute(f"SELECT id FROM Author WHERE name = '{author_name}'")
+        author = cursor.fetchone()
+        if author is None:
+            logger.error(f"Author {author_name} not found.")
+            return None
+        return author[0]
+    except sqlite3.Error as e:
+        logger.error(f"Error getting author {author_name}: {e}")
+        return None
+
+
+def add_author(db: sqlite3.Connection, author: str, logger) -> bool:
+    """Add an author to the database."""
+    author = author.lower()
+    try:
+        for a in get_authorslist(db, logger):
+            if a['name'] == author:
+                logger.error(f"Author {author} already exists.")
+                return True
+
+        cursor = db.cursor()
+        cursor.execute(f"INSERT INTO Author (name) VALUES ('{author}')")
+        db.commit()
+        logger.info(f"Author {author} added.")
+
+        return True
+    except sqlite3.Error as e:
+        logger.error(f"Error adding author {author}: {e}")
+        return False
+
+
+def edit_author(db: sqlite3.Connection, author_id: int, new_name: str, logger) -> bool:
+    """Edit an author in the database."""
+    try:
+        cursor = db.cursor()
+        cursor.execute(f"UPDATE Author SET name = '{new_name}' WHERE id = {author_id}")
+        db.commit()
+        logger.info(f"Author {author_id} edited with new name {new_name}.")
+        return True
+    except sqlite3.Error as e:
+        logger.error(f"Error editing author {author_id}: {e}")
+        return False
+
+
+def remove_author(db: sqlite3.Connection, author: str, logger) -> bool:
+    '''Remove an author from the database.'''
+    author = author.lower()
+    try:
+        cursor = db.cursor()
+        cursor.execute(f"SELECT id FROM Author WHERE name = '{author}'")
+        author_id = cursor.fetchone()
+        if author_id is None:
+            logger.error(f"Author {author} not found.")
+            return False
+        author_id = author_id[0]
+        cursor.execute(f"DELETE FROM Author WHERE id = {author_id}")
+        db.commit()
+        cursor.execute(f"DELETE FROM ItemAuthor WHERE AuthorId = {author_id}")
+        db.commit()
+        logger.info(f"Author {author} removed.")
+        return True
+    except sqlite3.Error as e:
+        logger.error(f"Error removing author {author}: {e}")
+        return False
+
+
+def get_item_authors(db: sqlite3.Connection, item_id: int, logger) -> list:
+    '''Get the authors of an item from the database.'''
+    try:
+        cursor = db.cursor()
+        cursor.execute(f"SELECT AuthorId FROM ItemAuthor WHERE ItemId = {item_id}")
+        authors = cursor.fetchall()
+        authorsdata = []
+        for i in range(len(authors)):
+            authorsdata.append(authors[i][0])
+
+        logger.info(f"Got authors for item {item_id}: {authorsdata}")
+        return authorsdata
+    except sqlite3.Error as e:
+        logger.error(f"Error getting authors for item {item_id}: {e}")
+
+
