@@ -235,7 +235,7 @@ def check_token_permission(db: sqlite3.Connection, token: str, permission: Permi
     user = get_token_info(db, token)
     if user is None or not user.is_active:
         return False
-    if user.permissions.dictionnary()[permission.name.lower()] or permission is None:
+    if permission is None or user.permissions.dictionnary()[permission.name.lower()]:
         return True
     return False
 
