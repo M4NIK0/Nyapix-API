@@ -18,7 +18,7 @@ import time
 from fastapi import Depends
 from logging.config import dictConfig
 
-from app.src.token_gestion import check_token_permission, Permissions
+from token_gestion import check_token_permission, Permissions
 
 
 ############################################################################################################
