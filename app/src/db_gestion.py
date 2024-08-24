@@ -212,7 +212,7 @@ def get_tag_id(db: sqlite3.Connection, tag_name: str, logger) -> int:
         return None
 
 
-def get_items_with_tags(db: sqlite3.Connection, tags: list, logger) -> list:
+def get_items_with_tags(db: sqlite3.Connection, tags: list, logger) -> list: # TODO: Add author search and advanced search
     '''Get only items that have all the specified tags from the database.'''
     try:
         cursor = db.cursor()

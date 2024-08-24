@@ -68,6 +68,7 @@ class TagList(BaseModel):
 class Search(BaseModel):
     api_key: str
     tags: List[str]
+    authors: List[str]
 
 
 class Author(BaseModel):
@@ -681,8 +682,14 @@ async def removeitem(headers: ItemId = Depends(get_getitem)):
         return {"success": False, "error": "Database error."}
 
 
-def get_search(api_key: str = Header(...), tags: List[str] = Header(...)) -> Search:
-    return Search(api_key=api_key, tags=tags[0].split(","))
+def get_search(
+        api_key: str = Header(...),
+        tags: List[str] = Header(None),
+        authors: List[str] = Header(None)
+) -> Search:
+    taglist = tags[0].split(",") if tags else []
+    authorlist = authors[0].split(",") if authors else []
+    return Search(api_key=api_key, tags=taglist, authors=authorlist)
 
 
 def post_edititem(api_key: str = Header(...), id: int = Header(...), name: str = Header(...), tags: List[str] = Header(...), authors: List[str] = Header(...)):
@@ -742,6 +749,10 @@ def purge_non_existing(headers: CreateDb = Depends(get_create_db_headers)):
 @app.get("/content/search")
 async def searchbytags(headers: Search = Depends(get_search)):
     logger.info(f"Got a request to /search")
+
+    if len(headers.tags) is 0 and len(headers.authors) is 0:
+        resp = fastapi.Response(status_code=422)
+        resp.body = {"success": False, "error": "No tags or authors provided."} # TODO: Return an error on wrong request
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
