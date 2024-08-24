@@ -70,6 +70,17 @@ class Search(BaseModel):
     tags: List[str]
 
 
+class Author(BaseModel):
+    api_key: str
+    author: str
+
+
+class AuthorEdit(BaseModel):
+    api_key: str
+    author: str
+    new_author: str
+
+
 class AddItem(BaseModel):
     api_key: str
     tags: List[str]
@@ -437,6 +448,98 @@ async def taglist(headers: CreateDb = Depends(get_create_db_headers)):
     else:
         return {"success": False, "error": "Database error."}
 
+
+
+############################################################################################################
+# Author management endpoints
+#
+# The author management endpoints are used to manage the authors in the database.
+#
+# addauthor - Add an author to the database
+# removeauthor - Remove an author from the database
+# editauthor - Edit an author in the database
+# authorlist - Get a list of all authors in the database
+############################################################################################################
+
+def post_add_author(api_key: str = Header(...), author: str = Header(...)) -> Author:
+    return Author(api_key=api_key, author=author)
+
+
+@app.post("/author/create")
+async def addauthor(headers: Author = Depends(post_add_author)):
+    logger.info(f"Got a request to /addauthor")
+
+    users_db = db_gestion.connect_db("nyapix_users.db", logger)
+    if users_db is not None:
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.ADD_AUTHOR)
+        users_db.close()
+        if not has_permission and headers.api_key != master_key:
+            return {"success": False, "error": "Invalid API key."}
+    else:
+        return {"success": False, "error": "User database error."}
+
+    db = db_gestion.connect_db("nyapix_content.db", logger)
+    if db is not None:
+        db_gestion.add_author(db, headers.author, logger)
+        db.close()
+        return {"success": True}
+    else:
+        return {"success": False, "error": "Database error."}
+
+
+def post_remove_author(api_key: str = Header(...), author: str = Header(...)) -> Author:
+    return Author(api_key=api_key, author=author)
+
+
+@app.post("/author/remove")
+async def removeauthor(headers: Author = Depends(post_remove_author)):
+    logger.info(f"Got a request to /removeauthor")
+
+    users_db = db_gestion.connect_db("nyapix_users.db", logger)
+    if users_db is not None:
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.DELETE_AUTHOR)
+        users_db.close()
+        if not has_permission and headers.api_key != master_key:
+            return {"success": False, "error": "Invalid API key."}
+    else:
+        return {"success": False, "error": "User database error."}
+
+    db = db_gestion.connect_db("nyapix_content.db", logger)
+    if db is not None:
+        db_gestion.remove_author(db, headers.author, logger)
+        db.close()
+        return {"success": True}
+    else:
+        return {"success": False, "error": "Database error."}
+
+
+def post_edit_author(api_key: str = Header(...), author: str = Header(...), new_author: str = Header(...)) -> AuthorEdit:
+    return AuthorEdit(api_key=api_key, author=author, new_author=new_author)
+
+
+@app.post("/author/edit")
+async def editauthor(headers: AuthorEdit = Depends(post_edit_author)):
+    logger.info(f"Got a request to /editauthor")
+
+    users_db = db_gestion.connect_db("nyapix_users.db", logger)
+    if users_db is not None:
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.EDIT_AUTHOR)
+        users_db.close()
+        if not has_permission and headers.api_key != master_key:
+            return {"success": False, "error": "Invalid API key."}
+    else:
+        return {"success": False, "error": "User database error."}
+
+    db = db_gestion.connect_db("nyapix_content.db", logger)
+    if db is not None:
+        author_id = db_gestion.get_author_id(db, headers.author, logger)
+        if author_id is None:
+            return {"success": False, "error": "Author not found."}
+        db_gestion.edit_author(db, author_id, headers.new_author, logger)
+        db.close()
+        return {"success": True}
+    else:
+        return {"success": False, "error": "Database error."}
 
 
 ############################################################################################################

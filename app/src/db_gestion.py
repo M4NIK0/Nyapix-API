@@ -468,6 +468,9 @@ def edit_author(db: sqlite3.Connection, author_id: int, new_name: str, logger) -
     """Edit an author in the database."""
     try:
         cursor = db.cursor()
+        if get_author_id(db, new_name, logger) is not None:
+            logger.error(f"Author {new_name} already exists.")
+            return False
         cursor.execute(f"UPDATE Author SET name = '{new_name}' WHERE id = {author_id}")
         db.commit()
         logger.info(f"Author {author_id} edited with new name {new_name}.")
@@ -513,5 +516,3 @@ def get_item_authors(db: sqlite3.Connection, item_id: int, logger) -> list:
         return authorsdata
     except sqlite3.Error as e:
         logger.error(f"Error getting authors for item {item_id}: {e}")
-
-
