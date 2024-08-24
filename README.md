@@ -26,7 +26,8 @@ docker-compose up -d
 ```
 
 3. Access the application at `http://<ip>:<port>/docs` via your browser or [API client](https://github.com/M4NIK0/Nyapix-client).
-4. To stop the application, run the following command:
+4. Call the `/admin/setup` endpoint with the `MASTER_KEY` to set up the database structure.
+5. To stop the application, run the following command:
 
 ```bash
 docker-compose down
@@ -48,7 +49,8 @@ pdm run src/main.py
 ```
 
 4. Access the application at `http://<ip>:<port>/docs` via your browser or [API client](https://github.com/M4NIK0/Nyapix-client).
-5. To stop the application, press `Ctrl + C`.
+5. Call the `/admin/setup` endpoint with the `MASTER_KEY` to set up the database structure.
+6. To stop the application, press `Ctrl + C`.
 
 ## API Documentation
 
