@@ -82,6 +82,15 @@ The API uses an API key for authentication. The API key is passed as a header as
 | POST   | edit     | Edit a tag if it exists.             |
 | GET    | list     | Get all tags.                        |
 
+#### \/author/ - Author management endpoints
+
+| Method | Endpoint | Description                             |
+|--------|----------|-----------------------------------------|
+| GET    | list     | Get all authors.                        |
+| POST   | create   | Adds a new author if it does not exist. |
+| POST   | remove   | Remove an author if it exists.          |
+| POST   | edit     | Edit an author if it exists.            |
+
 #### \/item/ - Item management endpoints
 
 | Method | Endpoint     | Description                                            |
