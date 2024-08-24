@@ -99,6 +99,7 @@ class EditItem(BaseModel):
     id: int
     tags: List[str]
     name: str
+    authors: List[str]
 
 
 class ItemId(BaseModel):
@@ -580,8 +581,8 @@ async def editauthor(headers: AuthorEdit = Depends(post_edit_author)):
 # purge_non_existing - Purge non-existing files from the database
 ############################################################################################################
 
-def post_additem(api_key: str = Header(...), name: str = Header(...), tags: List[str] = Header(...), filetype: str = Header(...)):
-    return AddItem(api_key=api_key, name=name, tags=tags, filetype=filetype)
+def post_additem(api_key: str = Header(...), name: str = Header(...), tags: List[str] = Header(...), authors: List[str] = Header(...), filetype: str = Header(...)) -> AddItem:
+    return AddItem(api_key=api_key, name=name, tags=tags[0].split(","), authors=authors[0].split(","), filetype=filetype)
 
 
 @app.post("/item/add")
@@ -622,17 +623,20 @@ async def additem(headers: AddItem = Depends(post_additem), file: fastapi.Upload
         return {"success": False, "error": "Content already on server"}
 
     tags = [tag.strip() for tag in headers.tags]
-    newitem = {"tags": tags, "name": headers.name, "type": headers.filetype, "path": filepath}
+    newitem = {"tags": tags, "name": headers.name, "type": headers.filetype, "path": filepath, "authors": headers.authors}
     if get_html_type_from_extension(headers.filetype) is None:
+        os.remove(f"data/nyapix-content/tmp/{tmp_filename}")
         return {"success": False, "error": "Unsupported file type."}
 
     db = db_gestion.connect_db("nyapix_content.db", logger)
 
     if db is not None:
-        result = db_gestion.add_item(db, {"name": newitem["name"], "path": newitem["path"], "tags": newitem["tags"]}, logger)
+        result = db_gestion.add_item(db, {"name": newitem["name"], "path": newitem["path"], "tags": newitem["tags"], "authors": newitem["authors"]}, logger)
         if result["success"]:
             os.rename(f"data/nyapix-content/tmp/{tmp_filename}", filepath)
             create_thumbnail(filepath, thumbpath)
+        else:
+            os.remove(f"data/nyapix-content/tmp/{tmp_filename}")
         db.close()
         return result
     else:
@@ -678,11 +682,11 @@ async def removeitem(headers: ItemId = Depends(get_getitem)):
 
 
 def get_search(api_key: str = Header(...), tags: List[str] = Header(...)) -> Search:
-    return Search(api_key=api_key, tags=tags)
+    return Search(api_key=api_key, tags=tags[0].split(","))
 
 
-def post_edititem(api_key: str = Header(...), id: int = Header(...), name: str = Header(...), tags: List[str] = Header(...)) -> EditItem:
-    return EditItem(api_key=api_key, id=id, name=name, tags=tags)
+def post_edititem(api_key: str = Header(...), id: int = Header(...), name: str = Header(...), tags: List[str] = Header(...), authors: List[str] = Header(...)):
+    return EditItem(api_key=api_key, id=id, name=name, tags=tags[0].split(","), authors=authors[0].split(","))
 
 
 @app.post("/item/edit")
@@ -691,7 +695,7 @@ async def edititem(headers: EditItem = Depends(post_edititem)):
 
     users_db = db_gestion.connect_db("nyapix_users.db", logger)
     if users_db is not None:
-        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.EDIT_CONTENT, logger)
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.EDIT_CONTENT)
         users_db.close()
         if not has_permission and headers.api_key != master_key:
             return {"success": False, "error": "Invalid API key."}
@@ -704,7 +708,8 @@ async def edititem(headers: EditItem = Depends(post_edititem)):
         if item is None:
             db.close()
             return {"success": False, "error": "Item not found."}
-        success_edit = db_gestion.edititem(db, headers.id, headers.name, headers.tags, logger)
+        logger.info(str(headers.tags) + " " + str(headers.authors))
+        success_edit = db_gestion.edititem(db, headers.id, headers.name, headers.tags, headers.authors, logger)
         db.close()
         return {"success": success_edit}
     else:
@@ -785,7 +790,7 @@ async def getitem(content_id: int, headers: CreateDb = Depends(get_create_db_hea
         db.close()
         if item is None:
             return {"success": False, "error": "Item not found."}
-        return {"success": True, "item": {"id": item["id"], "type": item["extension"], "size": item["size"], "name": item["name"], "tags": item["tags"]}}
+        return {"success": True, "item": {"id": item["id"], "type": item["extension"], "size": item["size"], "name": item["name"], "tags": item["tags"], "authors": item["authors"]}}
     else:
         return {"success": False, "error": "Database error."}
 

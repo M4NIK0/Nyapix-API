@@ -176,7 +176,7 @@ def get_item(db: sqlite3.Connection, item_id: int, logger) -> dict:
         if item is None:
             logger.error(f"Item {item_id} not found.")
             return None
-        return {"id": item[0], "name": item[1], "path": item[2], "extension": item[2].split('.')[-1], "size": os.path.getsize(item[2]) if os.path.exists(item[2]) else 0, "tags": [get_tag_name(db, tag, logger) for tag in get_item_tags(db, item_id, logger)]}
+        return {"id": item[0], "name": item[1], "path": item[2], "extension": item[2].split('.')[-1], "size": os.path.getsize(item[2]) if os.path.exists(item[2]) else 0, "tags": [get_tag_name(db, tag, logger) for tag in get_item_tags(db, item_id, logger)], "authors": [get_author_name(db, author, logger) for author in get_item_authors(db, item_id, logger)]}
     except sqlite3.Error as e:
         logger.error(f"Error getting item {item_id}: {e}")
         return None
@@ -242,6 +242,7 @@ def add_item(db: sqlite3.Connection, item: dict, logger) -> dict:
     try:
         cursor = db.cursor()
         tag_ids = []
+        author_ids = []
         for tag in item['tags']:
             cursor.execute(f"SELECT id FROM Tag WHERE name = '{tag}'")
             tag_id = cursor.fetchone()
@@ -250,6 +251,14 @@ def add_item(db: sqlite3.Connection, item: dict, logger) -> dict:
                 return {"id": None, "success": False, "error": f"Tag {tag} not found."}
             tag_id = tag_id[0]
             tag_ids.append(tag_id)
+        for author in item['authors']:
+            cursor.execute(f"SELECT id FROM Author WHERE name = '{author}'")
+            author_id = cursor.fetchone()
+            if author_id is None:
+                logger.error(f"Author {author} not found.")
+                return {"id": None, "success": False, "error": f"Author {author} not found."}
+            author_id = author_id[0]
+            author_ids.append(author_id)
         cursor.execute(f"INSERT INTO Item (name, path) VALUES ('{item['name']}', '{item['path']}')")
         db.commit()
         cursor.execute(f"SELECT id FROM Item WHERE name = '{item['name']}' AND path = '{item['path']}'")
@@ -257,6 +266,10 @@ def add_item(db: sqlite3.Connection, item: dict, logger) -> dict:
 
         for tag_id in tag_ids:
             cursor.execute(f"INSERT INTO ItemTag (ItemId, TagId) VALUES ({item_id}, {tag_id})")
+            db.commit()
+
+        for author_id in author_ids:
+            cursor.execute(f"INSERT INTO ItemAuthor (ItemId, AuthorId) VALUES ({item_id}, {author_id})")
             db.commit()
 
         logger.info(f"Item {item['name']} added.")
@@ -293,6 +306,8 @@ def remove_item(db: sqlite3.Connection, item_id: int, logger) -> bool:
         db.commit()
         cursor.execute(f"DELETE FROM ItemTag WHERE ItemId = {item_id}")
         db.commit()
+        cursor.execute(f"DELETE FROM ItemAuthor WHERE ItemId = {item_id}")
+        db.commit()
         logger.info(f"Item {item_id} removed.")
         return True
     except sqlite3.Error as e:
@@ -300,13 +315,15 @@ def remove_item(db: sqlite3.Connection, item_id: int, logger) -> bool:
         return False
 
 
-def edititem(db: sqlite3.Connection, item_id: int, name: str, tags: list, logger) -> bool:
+def edititem(db: sqlite3.Connection, item_id: int, name: str, tags: list, authors: list, logger) -> bool:
     '''Edit an item in the database.'''
     try:
         cursor = db.cursor()
         cursor.execute(f"UPDATE Item SET name = '{name}' WHERE id = {item_id}")
         db.commit()
         cursor.execute(f"DELETE FROM ItemTag WHERE ItemId = {item_id}")
+        db.commit()
+        cursor.execute(f"DELETE FROM ItemAuthor WHERE ItemId = {item_id}")
         db.commit()
         for tag in tags:
             cursor.execute(f"SELECT id FROM Tag WHERE name = '{tag}'")
@@ -316,6 +333,15 @@ def edititem(db: sqlite3.Connection, item_id: int, name: str, tags: list, logger
                 return False
             tag_id = tag_id[0]
             cursor.execute(f"INSERT INTO ItemTag (ItemId, TagId) VALUES ({item_id}, {tag_id})")
+            db.commit()
+        for author in authors:
+            cursor.execute(f"SELECT id FROM Author WHERE name = '{author}'")
+            author_id = cursor.fetchone()
+            if author_id is None:
+                logger.error(f"Author {author} not found.")
+                return False
+            author_id = author_id[0]
+            cursor.execute(f"INSERT INTO ItemAuthor (ItemId, AuthorId) VALUES ({item_id}, {author_id})")
             db.commit()
 
         logger.info(f"Item {item_id} edited.")
@@ -516,3 +542,17 @@ def get_item_authors(db: sqlite3.Connection, item_id: int, logger) -> list:
         return authorsdata
     except sqlite3.Error as e:
         logger.error(f"Error getting authors for item {item_id}: {e}")
+
+def get_author_name(db: sqlite3.Connection, author_id: int, logger) -> str:
+    '''Get the name of an author from the database.'''
+    try:
+        cursor = db.cursor()
+        cursor.execute(f"SELECT name FROM Author WHERE id = {author_id}")
+        author = cursor.fetchone()
+        if author is None:
+            logger.error(f"Author {author_id} not found.")
+            return None
+        return author[0]
+    except sqlite3.Error as e:
+        logger.error(f"Error getting author {author_id}: {e}")
+        return None
