@@ -6,7 +6,7 @@
 
 #### Inside a Docker Container
 
-- Clone/Download this repository
+- Clone/Download latest release of the repository
 - Docker and Docker Compose
 
 #### Without Docker
