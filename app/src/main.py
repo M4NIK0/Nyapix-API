@@ -461,6 +461,27 @@ async def taglist(headers: CreateDb = Depends(get_create_db_headers)):
 # authorlist - Get a list of all authors in the database
 ############################################################################################################
 
+@app.get("/author/list")
+async def authorlist(headers: CreateDb = Depends(get_create_db_headers)):
+    logger.info(f"Got a request to /authorlist")
+
+    users_db = db_gestion.connect_db("nyapix_users.db", logger)
+    if users_db is not None:
+        has_permission = check_token_permission(users_db, logger, headers.api_key, Permissions.SEARCH_CONTENT)
+        users_db.close()
+        if not has_permission and headers.api_key != master_key:
+            return {"success": False, "error": "Invalid API key."}
+    else:
+        return {"success": False, "error": "User database error."}
+
+    db = db_gestion.connect_db("nyapix_content.db", logger)
+    if db is not None:
+        authorlistfinal = db_gestion.get_authorslist(db, logger)
+        db.close()
+        return {"authors": authorlistfinal, "success": True}
+    else:
+        return {"success": False, "error": "Database error."}
+
 def post_add_author(api_key: str = Header(...), author: str = Header(...)) -> Author:
     return Author(api_key=api_key, author=author)
 
