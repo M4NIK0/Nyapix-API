@@ -49,6 +49,8 @@ def create_content_tables(db: sqlite3.Connection, logger) -> bool:
         cursor.execute("CREATE TABLE ItemTag (ItemId INTEGER, TagId INTEGER)")
         cursor.execute("CREATE TABLE Author (id INTEGER PRIMARY KEY, name TEXT)")
         cursor.execute("CREATE TABLE ItemAuthor (ItemId INTEGER, AuthorId INTEGER)")
+        cursor.execute("CREATE TABLE Source (id INTEGER PRIMARY KEY, name TEXT)")
+        cursor.execute("CREATE TABLE ItemSource (ItemId INTEGER, SourceId INTEGER)")
         db.commit()
         logger.info("Content tables created.")
         return True
@@ -70,6 +72,10 @@ def check_content_tables(db: sqlite3.Connection, logger) -> bool:
         if not cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Author'").fetchone():
             return False
         if not cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ItemAuthor'").fetchone():
+            return False
+        if not cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='Source'").fetchone():
+            return False
+        if not cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ItemSource'").fetchone():
             return False
         return True
     except sqlite3.Error as e:
@@ -556,3 +562,137 @@ def get_author_name(db: sqlite3.Connection, author_id: int, logger) -> str:
     except sqlite3.Error as e:
         logger.error(f"Error getting author {author_id}: {e}")
         return None
+
+
+def get_source_id(db: sqlite3.Connection, source_name: str, logger) -> int or None:
+    '''Get the ID of a source from the database.'''
+    try:
+        cursor = db.cursor()
+        cursor.execute(f"SELECT id FROM Source WHERE name = '{source_name}'")
+        source = cursor.fetchone()
+        if source is None:
+            logger.error(f"Source {source_name} not found.")
+            return None
+        return source[0]
+    except sqlite3.Error as e:
+        logger.error(f"Error getting source {source_name}: {e}")
+        return None
+
+
+def get_sourceslist(db: sqlite3.Connection, logger) -> list:
+    """Get the list of sources from the database."""
+    try:
+        cursor = db.cursor()
+        cursor.execute("SELECT name FROM Source")
+        sources = cursor.fetchall()
+        cursor.execute("SELECT id FROM Source")
+        ids = cursor.fetchall()
+        sourcesdata = []
+
+        for i in range(len(sources)):
+            newsource = {"name": sources[i][0], "id": ids[i][0]}
+            sourcesdata.append(newsource)
+
+        return sourcesdata
+    except sqlite3.Error as e:
+        logger.error(f"Error getting sources list: {e}")
+
+
+def add_source(db: sqlite3.Connection, source: str, logger) -> bool:
+    """Add a source to the database."""
+    source = source.lower()
+    try:
+        for s in get_sourceslist(db, logger):
+            if s['name'] == source:
+                logger.error(f"Source {source} already exists.")
+                return True
+
+        cursor = db.cursor()
+        cursor.execute(f"INSERT INTO Source (name) VALUES ('{source}')")
+        db.commit()
+        logger.info(f"Source {source} added.")
+
+        return True
+    except sqlite3.Error as e:
+        logger.error(f"Error adding source {source}: {e}")
+        return False
+
+
+def edit_source(db: sqlite3.Connection, source_id: int, new_name: str, logger) -> bool:
+    """Edit a source in the database."""
+    try:
+        cursor = db.cursor()
+        if get_source_id(db, new_name, logger) is not None:
+            logger.error(f"Source {new_name} already exists.")
+            return False
+        cursor.execute(f"UPDATE Source SET name = '{new_name}' WHERE id = {source_id}")
+        db.commit()
+        logger.info(f"Source {source_id} edited with new name {new_name}.")
+        return True
+    except sqlite3.Error as e:
+        logger.error(f"Error editing source {source_id}: {e}")
+        return False
+
+
+def remove_source(db: sqlite3.Connection, source: str, logger) -> bool:
+    '''Remove a source from the database.'''
+    source = source.lower()
+    try:
+        cursor = db.cursor()
+        cursor.execute(f"SELECT id FROM Source WHERE name = '{source}'")
+        source_id = cursor.fetchone()
+        if source_id is None:
+            logger.error(f"Source {source} not found.")
+            return False
+        source_id = source_id[0]
+        cursor.execute(f"DELETE FROM Source WHERE id = {source_id}")
+        db.commit()
+        cursor.execute(f"DELETE FROM ItemSource WHERE SourceId = {source_id}")
+        db.commit()
+        logger.info(f"Source {source} removed.")
+        return True
+    except sqlite3.Error as e:
+        logger.error(f"Error removing source {source}: {e}")
+        return False
+
+
+def get_item_sources(db: sqlite3.Connection, item_id: int, logger) -> list:
+    '''Get the sources of an item from the database.'''
+    try:
+        cursor = db.cursor()
+        cursor.execute(f"SELECT SourceId FROM ItemSource WHERE ItemId = {item_id}")
+        sources = cursor.fetchall()
+        sourcesdata = []
+        for i in range(len(sources)):
+            sourcesdata.append(sources[i][0])
+
+        logger.info(f"Got sources for item {item_id}: {sourcesdata}")
+        return sourcesdata
+    except sqlite3.Error as e:
+        logger.error(f"Error getting sources for item {item_id}: {e}")
+
+
+def add_item_source(db: sqlite3.Connection, item_id: int, source_id: int, logger) -> bool:
+    '''Add a source to an item in the database.'''
+    try:
+        cursor = db.cursor()
+        cursor.execute(f"INSERT INTO ItemSource (ItemId, SourceId) VALUES ({item_id}, {source_id})")
+        db.commit()
+        logger.info(f"Source {source_id} added to item {item_id}.")
+        return True
+    except sqlite3.Error as e:
+        logger.error(f"Error adding source {source_id} to item {item_id}: {e}")
+        return False
+
+
+def remove_item_source(db: sqlite3.Connection, item_id: int, source_id: int, logger) -> bool:
+    '''Remove a source from an item in the database.'''
+    try:
+        cursor = db.cursor()
+        cursor.execute(f"DELETE FROM ItemSource WHERE ItemId = {item_id} AND SourceId = {source_id}")
+        db.commit()
+        logger.info(f"Source {source_id} removed from item {item_id}.")
+        return True
+    except sqlite3.Error as e:
+        logger.error(f"Error removing source {source_id} from item {item_id}: {e}")
+        return False

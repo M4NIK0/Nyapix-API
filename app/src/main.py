@@ -69,6 +69,7 @@ class Search(BaseModel):
     api_key: str
     tags: List[str]
     authors: List[str]
+    sources: List[str]
 
 
 class Author(BaseModel):
@@ -685,11 +686,13 @@ async def removeitem(headers: ItemId = Depends(get_getitem)):
 def get_search(
         api_key: str = Header(...),
         tags: List[str] = Header(None),
-        authors: List[str] = Header(None)
+        authors: List[str] = Header(None),
+        sources: List[str] = Header(None)
 ) -> Search:
     taglist = tags[0].split(",") if tags else []
     authorlist = authors[0].split(",") if authors else []
-    return Search(api_key=api_key, tags=taglist, authors=authorlist)
+    sourceslist = sources[0].split(",") if sources else []
+    return Search(api_key=api_key, tags=taglist, authors=authorlist, sources=sourceslist)
 
 
 def post_edititem(api_key: str = Header(...), id: int = Header(...), name: str = Header(...), tags: List[str] = Header(...), authors: List[str] = Header(...)):
@@ -750,7 +753,7 @@ def purge_non_existing(headers: CreateDb = Depends(get_create_db_headers)):
 async def searchbytags(headers: Search = Depends(get_search)):
     logger.info(f"Got a request to /search")
 
-    if len(headers.tags) is 0 and len(headers.authors) is 0:
+    if len(headers.tags) is 0 and len(headers.authors) is 0 and len(headers.sources) is 0:
         resp = fastapi.Response(status_code=422)
         resp.body = {"success": False, "error": "No tags or authors provided."} # TODO: Return an error on wrong request
 
