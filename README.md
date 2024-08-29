@@ -1,5 +1,7 @@
 # Nyapix API
 
+# THIS BRANCH IS ON REWORK SO IT IS NOT STABLE AND DOCUMENTATION MIGHT BE OUTDATED
+
 ## Installation
 
 ### Requirements
