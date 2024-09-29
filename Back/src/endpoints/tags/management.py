@@ -12,6 +12,16 @@ import src.models.content as content_models
 router = APIRouter()
 
 
+@router.get("/search/{string}", dependencies=[Depends(get_current_user)], response_model=List[content_models.Tag])
+@decorators.user_not_guest_required()
+def search_tags_endpoint(string: str, current_user: users_models.User = Depends(get_current_user)):
+    tags = tags_db.search_tags(string)
+    if not tags:
+        raise HTTPException(status_code=404, detail="No tags found")
+
+    return tags
+
+
 @router.get("/name/{tag_name}", dependencies=[Depends(get_current_user)], response_model=content_models.Tag)
 @decorators.user_not_guest_required()
 @decorators.tag_name_existence_required()

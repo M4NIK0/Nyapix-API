@@ -74,3 +74,12 @@ def update_tag_by_id(tag_id: int, tag_name: str) -> bool:
             cursor.execute("UPDATE nyapixtag SET tag_name = %s WHERE id = %s", (tag_name, tag_id,))
             connection.commit()
             return True
+
+
+def search_tags(string: str) -> List[content_models.Tag]:
+    with get_connection() as connection:
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT id, tag_name FROM nyapixtag WHERE tag_name LIKE %s", (f"%{string}%",))
+            tags = cursor.fetchall()
+
+            return [content_models.Tag(id=tag[0], name=tag[1]) for tag in tags]
