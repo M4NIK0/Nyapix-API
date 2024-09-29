@@ -7,7 +7,7 @@ from os import getenv
 from src.logs import logger
 import bcrypt
 import src.models.users as users_models
-import src.db_management.users as db_user
+import src.db_management.users.users as db_user
 
 # Define the OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")

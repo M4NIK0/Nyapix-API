@@ -2,6 +2,7 @@ from typing import Union
 from typing import List
 import src.models.users as users_models
 import src.db_management.connection as db_connection
+from src.logs import logger
 
 
 def get_password_hash_by_nickname(username: str) -> Union[str, None]:
@@ -69,7 +70,7 @@ def create_user(username: str, nickname: str, hashed_password: str, user_type: i
     query = "INSERT INTO nyapixuser (nickname, username, password, user_type) VALUES (%s, %s, %s, %s) RETURNING id, created_at"
     with db_connection.get_connection() as conn:
         with conn.cursor() as cur:
-            cur.execute(query, (username, nickname, hashed_password, user_type))
+            cur.execute(query, (nickname, username, hashed_password, user_type))
             result = cur.fetchone()
             if result:
                 return users_models.User(id=result[0], username=username, nickname=nickname, type=user_type, creation_date=result[1])
@@ -86,21 +87,25 @@ def update_user(user_id: int, nickname: str = None, username: str = None, hashed
     :param user_type: The type of the user (almost always 'user', sometimes 'admin')
     :return:
     """
-    with db_connection.get_connection() as conn:
-        with conn.cursor() as cur:
-            if hashed_password:
-                query = "UPDATE nyapixuser SET password = %s WHERE id = %s"
-                cur.execute(query, (hashed_password, user_id))
-            if nickname:
-                query = "UPDATE nyapixuser SET nickname = %s WHERE id = %s"
-                cur.execute(query, (nickname, user_id))
-            if username:
-                query = "UPDATE nyapixuser SET username = %s WHERE id = %s"
-                cur.execute(query, (username, user_id))
-            if user_type:
-                query = "UPDATE nyapixuser SET user_type = %s WHERE id = %s"
-                cur.execute(query, (user_type, user_id))
-    return get_user_by_id(user_id)
+    try:
+        with db_connection.get_connection() as conn:
+            with conn.cursor() as cur:
+                if hashed_password:
+                    query = "UPDATE nyapixuser SET password = %s WHERE id = %s"
+                    cur.execute(query, (hashed_password, user_id))
+                if nickname:
+                    query = "UPDATE nyapixuser SET nickname = %s WHERE id = %s"
+                    cur.execute(query, (nickname, user_id))
+                if username:
+                    query = "UPDATE nyapixuser SET username = %s WHERE id = %s"
+                    cur.execute(query, (username, user_id))
+                if user_type:
+                    query = "UPDATE nyapixuser SET user_type = %s WHERE id = %s"
+                    cur.execute(query, (user_type, user_id))
+        return get_user_by_id(user_id)
+    except Exception as e:
+        logger.error(f"Error updating user: {e}")
+        return None
 
 
 def delete_user(user_id: int) -> bool:

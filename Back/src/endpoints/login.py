@@ -4,7 +4,7 @@ import src.login_management as login_management
 import src.models.login as login_models
 import src.models.users as user_models
 import src.models.general_responses as general_responses
-import src.db_management.users as users_db
+import src.db_management.users.users as users_db
 import re
 
 
@@ -92,6 +92,9 @@ def endpoint_register_post(user: user_models.BasicUserCreation):
     if users_db.get_user_by_username(user.username):
         raise HTTPException(status_code=400, detail="User already exists")
 
-    users_db.create_user(user.username, user.nickname, login_management.hash_password(user.password), 2)
+    if user.username == "" or not re.match(r"^[a-z0-9_]*$", user.username):
+        raise HTTPException(status_code=400, detail="Invalid username")
+
+    users_db.create_user(username=user.username, nickname=user.nickname, hashed_password=login_management.hash_password(user.password), user_type=3)
 
     return general_responses.Message(message="Account created")

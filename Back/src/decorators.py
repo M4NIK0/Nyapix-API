@@ -2,7 +2,7 @@ from functools import wraps
 from fastapi import Depends, HTTPException
 from src.login_management import get_current_user
 from src.models import users as users_models
-import src.db_management.users as users_db
+import src.db_management.users.users as users_db
 
 
 def admin_required(func):
@@ -46,6 +46,17 @@ def user_id_existence_required():
             current_user: users_models.User = kwargs.get('current_user', Depends(get_current_user))
             if not users_db.get_user_by_id(user_id):
                 raise HTTPException(status_code=404, detail="User not found")
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def user_existence_required():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            current_user: users_models.User = kwargs.get('current_user', Depends(get_current_user))
+            if not users_db.get_user_by_username(current_user.username):
+                raise HTTPException(status_code=401, detail="Invalid token")
             return func(*args, **kwargs)
         return wrapper
     return decorator

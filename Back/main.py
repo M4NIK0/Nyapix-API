@@ -7,7 +7,7 @@ import uvicorn
 import src.endpoints.login as login
 import src.models.users as users_models
 
-import src.endpoints.user_info as user_info
+import src.endpoints.users.users as users_endpoints
 
 # Setup FastAPI app
 app = FastAPI(openapi_url="/api/openapi.json", docs_url="/api/docs", name="AREA API - Ragnamod VI", version="Beta 0.0.1", title="Ragnamod VI")
@@ -15,7 +15,7 @@ app = FastAPI(openapi_url="/api/openapi.json", docs_url="/api/docs", name="AREA 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
 
 app.include_router(login.router, prefix="/api", tags=["Login"])
-app.include_router(user_info.router, prefix="/api", tags=["User Info"])
+app.include_router(users_endpoints.router, prefix="/api/users", tags=["Users"])
 
 @app.middleware("http")
 async def check_auth(request: Request, call_next):

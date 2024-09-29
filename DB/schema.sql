@@ -118,6 +118,7 @@ CREATE TABLE IF NOT EXISTS nyapixuser_content_history ( -- user content history 
     user_id INT NOT NULL,
     content_id INT NOT NULL,
     accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    access_type INT NOT NULL CHECK (access_type IN (1, 2, 3)), -- 1:view, 2:download, 3:edit
     PRIMARY KEY (user_id, content_id),
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE,
     FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
@@ -127,6 +128,7 @@ CREATE TABLE IF NOT EXISTS nyapixuser_album_history ( -- user album history tabl
     user_id INT NOT NULL,
     album_id INT NOT NULL,
     accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    access_type INT NOT NULL CHECK (access_type IN (1, 2, 3)), -- 1:view, 2:download, 3:edit
     PRIMARY KEY (user_id, album_id),
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE,
     FOREIGN KEY (album_id) REFERENCES nyapixalbum(id) ON DELETE CASCADE
