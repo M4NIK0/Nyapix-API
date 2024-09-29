@@ -52,6 +52,22 @@ CREATE TABLE IF NOT EXISTS nyapixalbum (
     FOREIGN KEY (miniature_id) REFERENCES nyapixdata_miniature(id)
 );
 
+CREATE TABLE IF NOT EXISTS nyapixguest_content_authorizations ( -- guest authorizations table
+    id SERIAL PRIMARY KEY,
+    guest_id INT NOT NULL,
+    content_id INT NOT NULL,
+    FOREIGN KEY (guest_id) REFERENCES nyapixuser(id) ON DELETE CASCADE,
+    FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS nyapixguest_album_authorizations ( -- guest authorizations table
+    id SERIAL PRIMARY KEY,
+    guest_id INT NOT NULL,
+    album_id INT NOT NULL,
+    FOREIGN KEY (guest_id) REFERENCES nyapixuser(id) ON DELETE CASCADE,
+    FOREIGN KEY (album_id) REFERENCES nyapixalbum(id) ON DELETE CASCADE
+);
+
 -- Tags & authors related tables
 
 CREATE TABLE IF NOT EXISTS nyapixtag ( -- tag table

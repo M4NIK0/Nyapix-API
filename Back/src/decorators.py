@@ -3,6 +3,7 @@ from fastapi import Depends, HTTPException
 from src.login_management import get_current_user
 from src.models import users as users_models
 import src.db_management.users.users as users_db
+import src.db_management.content.tags as tags_db
 
 
 def admin_required(func):
@@ -57,6 +58,52 @@ def user_existence_required():
             current_user: users_models.User = kwargs.get('current_user', Depends(get_current_user))
             if not users_db.get_user_by_username(current_user.username):
                 raise HTTPException(status_code=401, detail="Invalid token")
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def user_not_guest_required():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            current_user: users_models.User = kwargs.get('current_user', Depends(get_current_user))
+            if current_user.type == 3:
+                raise HTTPException(status_code=403, detail="As a guest user, you can't access this endpoint")
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def tag_id_existence_required():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            tag_id: int = kwargs.get('tag_id')
+            if not tags_db.get_tag_by_id(tag_id):
+                raise HTTPException(status_code=404, detail="Tag not found")
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def tag_name_existence_required():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            tag_name: str = kwargs.get('tag_name')
+            if not tags_db.get_tag_by_name(tag_name):
+                raise HTTPException(status_code=404, detail="Tag not found")
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def tag_owner_or_admin_required():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            tag_id: int = kwargs.get('tag_id')
+            current_user: users_models.User = kwargs.get('current_user', Depends(get_current_user))
+            tag = tags_db.get_tag_info_by_id(tag_id)
+            if current_user.type != "admin" and tag.user_id != current_user.id:
+                raise HTTPException(status_code=403, detail="You can only access or edit your own data")
             return func(*args, **kwargs)
         return wrapper
     return decorator
