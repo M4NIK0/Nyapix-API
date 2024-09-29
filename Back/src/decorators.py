@@ -4,6 +4,7 @@ from src.login_management import get_current_user
 from src.models import users as users_models
 import src.db_management.users.users as users_db
 import src.db_management.content.tags as tags_db
+import src.db_management.content.authors as authors_db
 
 
 def admin_required(func):
@@ -104,6 +105,52 @@ def tag_owner_or_admin_required():
             tag = tags_db.get_tag_info_by_id(tag_id)
             if current_user.type != "admin" and tag.user_id != current_user.id:
                 raise HTTPException(status_code=403, detail="You can only access or edit your own data")
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def author_id_existence_required():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            author_id: int = kwargs.get('author_id')
+            if not authors_db.get_author_by_id(author_id):
+                raise HTTPException(status_code=404, detail="Author not found")
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def author_name_existence_required():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            author_name: str = kwargs.get('author_name')
+            if not authors_db.get_author_by_name(author_name):
+                raise HTTPException(status_code=404, detail="Author not found")
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def author_owner_or_admin_required():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            author_id: int = kwargs.get('author_id')
+            current_user: users_models.User = kwargs.get('current_user', Depends(get_current_user))
+            author = authors_db.get_author_info_by_id(author_id)
+            if current_user.type != "admin" and author.user_id != current_user.id:
+                raise HTTPException(status_code=403, detail="You can only access or edit your own data")
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+def author_existence_required():
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            current_user: users_models.User = kwargs.get('current_user', Depends(get_current_user))
+            if not authors_db.get_author_by_name(current_user.username):
+                raise HTTPException(status_code=404, detail="Author not found")
             return func(*args, **kwargs)
         return wrapper
     return decorator

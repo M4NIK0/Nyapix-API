@@ -12,5 +12,12 @@ class TagInfo(BaseModel):
     user_id: int
     creation_date: datetime.datetime
 
-class TagCreation(BaseModel):
+class Author(BaseModel):
+    id: int
     name: str
+
+class AuthorInfo(BaseModel):
+    id: int
+    name: str
+    user_id: int
+    creation_date: datetime.datetime
