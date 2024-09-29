@@ -12,9 +12,9 @@ import src.endpoints.tags.management as tags_endpoints
 import src.endpoints.authors.management as authors_endpoints
 
 # Setup FastAPI app
-app = FastAPI(openapi_url="/api/openapi.json", docs_url="/api/docs", name="AREA API - Ragnamod VI", version="Beta 0.0.1", title="Ragnamod VI")
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
+
+app = FastAPI(openapi_url="/api/openapi.json", docs_url="/api/docs", name="NyapixAPI", version="Beta 0.0.1", title="NyapixAPI")
 
 app.include_router(login.router, prefix="/api", tags=["Login"])
 app.include_router(users_endpoints.router, prefix="/api/users", tags=["Users"])
@@ -44,6 +44,7 @@ async def check_auth(request: Request, call_next):
     response = await call_next(request)
     return response
 
+
 # Dependency to get the current user
 def get_current_user(token: str = Depends(oauth2_scheme)) -> users_models.User:
     try:
@@ -53,6 +54,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> users_models.User:
         raise HTTPException(status_code=401, detail="Token has expired")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=5000)
