@@ -9,9 +9,26 @@ from typing import List
 from fastapi import Form, Query
 import src.db_management.content.tags as tags_db
 import src.db_management.content.authors as authors_db
+import hashlib
+import magic
 
 
 router = APIRouter()
+
+
+def get_random_tmp_filename():
+    import random
+    import string
+
+    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=50))
+
+
+def get_file_type(filename: str):
+    return magic.Magic(mime=True).from_file(filename)
+
+
+def check_supported_formats(file_format: str):
+    return file_format in ["image/jpeg", "image/png", "image/gif", "video/mp4"]
 
 
 @router.post("", dependencies=[Depends(get_current_user)], response_model=general_responses_models.Message)
@@ -39,6 +56,22 @@ def post_content_endpoint(
         if not authors_db.get_author_by_id(author_id):
             raise HTTPException(status_code=404, detail="Author not found")
 
-    logger.error(f"Content created by user {current_user.username} with data {data.model_dump()}")
+    # Save the file to the server
+
+    filename = get_random_tmp_filename()
+    with open(f"/tmp/{filename}", "wb") as buffer:
+        buffer.write(file.file.read())
+
+    logger.info(f"File saved as {filename}")
+
+    # Compute SHA256 hash of the file
+    with open(f"/tmp/{filename}", "rb") as buffer:
+        sha256 = hashlib.sha256()
+        sha256.update(buffer.read())
+        file_hash = sha256.hexdigest()
+
+    # Check file type
+    file_format = get_file_type(f"/tmp/{filename}")
+    logger.error(f"File format: {file_format}")
 
     return general_responses_models.Message(message="Content created successfully")
