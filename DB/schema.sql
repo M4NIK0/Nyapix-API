@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS nyapixuser ( -- user table
 CREATE TABLE IF NOT EXISTS nyapixdata ( -- data table
     id SERIAL PRIMARY KEY,
     bytes BYTEA NOT NULL,
-    hash TEXT NOT NULL
+    file_hash TEXT NOT NULL, -- hashed using SHA256
+    file_format TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS nyapixdata_miniature ( -- miniature data table

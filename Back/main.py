@@ -12,6 +12,8 @@ import src.endpoints.tags.management as tags_endpoints
 import src.endpoints.authors.management as authors_endpoints
 import src.endpoints.content.management as content_endpoints
 
+import src.db_management.users.users as users_db
+
 # Setup FastAPI app
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
 
@@ -38,6 +40,8 @@ async def check_auth(request: Request, call_next):
         token = auth_header.split(" ")[1]
         try:
             payload = jwt.decode(token, getenv("SECRET_KEY"), algorithms=[getenv("ALGORITHM")])
+            if not users_db.get_user_by_id(payload.get("id")):
+                return JSONResponse(content={"detail": "Invalid token"}, status_code=401)
         except jwt.ExpiredSignatureError:
             return JSONResponse(content={"detail": "Token has expired"}, status_code=401)
         except jwt.InvalidTokenError:

@@ -9,6 +9,7 @@ from typing import List
 from fastapi import Form, Query
 import src.db_management.content.tags as tags_db
 import src.db_management.content.authors as authors_db
+import src.db_management.content.content as content_db
 import hashlib
 import magic
 
@@ -62,7 +63,7 @@ def post_content_endpoint(
     with open(f"/tmp/{filename}", "wb") as buffer:
         buffer.write(file.file.read())
 
-    logger.info(f"File saved as {filename}")
+    logger.info(f"File saved as /tmp/{filename}")
 
     # Compute SHA256 hash of the file
     with open(f"/tmp/{filename}", "rb") as buffer:
@@ -72,6 +73,18 @@ def post_content_endpoint(
 
     # Check file type
     file_format = get_file_type(f"/tmp/{filename}")
-    logger.error(f"File format: {file_format}")
+    logger.info(f"File format: {file_format}")
 
-    return general_responses_models.Message(message="Content created successfully")
+    if not check_supported_formats(file_format):
+        raise HTTPException(status_code=400, detail="Unsupported file format")
+
+    if content_db.check_hash_existence(file_hash):
+        raise HTTPException(status_code=400, detail="This content already exists")
+
+    result = content_db.add_content(data, f"/tmp/{filename}", file_hash, current_user.id, file_format)
+
+    if not result:
+        raise HTTPException(status_code=500, detail="An error occurred while creating the content")
+
+    return general_responses_models.Message(message="Content created successfully with ID: " + str(result))
+
