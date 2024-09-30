@@ -10,6 +10,7 @@ import src.models.users as users_models
 import src.endpoints.users.users as users_endpoints
 import src.endpoints.tags.management as tags_endpoints
 import src.endpoints.authors.management as authors_endpoints
+import src.endpoints.content.management as content_endpoints
 
 # Setup FastAPI app
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
@@ -20,6 +21,7 @@ app.include_router(login.router, prefix="/api", tags=["Login"])
 app.include_router(users_endpoints.router, prefix="/api/users", tags=["Users"])
 app.include_router(tags_endpoints.router, prefix="/api/tags", tags=["Tags"])
 app.include_router(authors_endpoints.router, prefix="/api/authors", tags=["Authors"])
+app.include_router(content_endpoints.router, prefix="/api/content", tags=["Content"])
 
 
 @app.middleware("http")

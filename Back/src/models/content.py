@@ -1,5 +1,7 @@
 from pydantic import BaseModel
 import datetime
+from typing import List
+from fastapi import UploadFile
 
 
 class Tag(BaseModel):
@@ -21,3 +23,18 @@ class AuthorInfo(BaseModel):
     name: str
     user_id: int
     creation_date: datetime.datetime
+
+class ContentDescription(BaseModel):
+    id: int
+    title: str
+    description: str
+    uploader_nickname: str
+    tags: List[str]
+    authors: List[str]
+    creation_date: datetime.datetime
+
+class ContentCreation(BaseModel):
+    title: str
+    description: str
+    tags: List[int]
+    authors: List[int]

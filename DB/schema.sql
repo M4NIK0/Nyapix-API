@@ -18,13 +18,15 @@ CREATE TABLE IF NOT EXISTS nyapixuser ( -- user table
 
 CREATE TABLE IF NOT EXISTS nyapixdata ( -- data table
     id SERIAL PRIMARY KEY,
-    bytes BYTEA NOT NULL
+    bytes BYTEA NOT NULL,
+    hash TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS nyapixdata_miniature ( -- miniature data table
     id SERIAL PRIMARY KEY,
     data_id INT NOT NULL,
     bytes BYTEA NOT NULL,
+    hash TEXT NOT NULL,
     FOREIGN KEY (data_id) REFERENCES nyapixdata(id) ON DELETE CASCADE
 );
 
