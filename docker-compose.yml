@@ -1,0 +1,22 @@
+services:
+  nyapix:
+    build:
+      context: ./Back
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${NYAPIX_PORT}:5000"
+    env_file:
+      - .env
+    volumes:
+      - ./logs:/app/logs
+
+  db:
+    image: postgres
+    restart: unless-stopped
+    volumes:
+      - ./DB/data:/var/lib/postgresql/data
+      - ./DB/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    ports:
+      - "${DB_PORT}:5432"
+    env_file: ".env"
