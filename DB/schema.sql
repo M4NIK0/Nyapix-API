@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS nyapixcharacters ( -- character table
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (character_name),
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE
-)
+    );
 
 CREATE TABLE IF NOT EXISTS nyapixcontent_tag ( -- content tag table
     content_id INT NOT NULL,
