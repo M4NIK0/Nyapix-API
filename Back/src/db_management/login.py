@@ -65,20 +65,6 @@ def get_session_user(db, token: str) -> Union[users_models.UserModel, None]:
     finally:
         cursor.close()
 
-def get_session(db, session_id: int) -> Union[login_models.UserSessionModel, None]:
-    """Returns the session token"""
-    cursor = db.cursor()
-    try:
-        cursor.execute("SELECT user_id FROM nyapixuser_session WHERE id = %s", (session_id,))
-        result = cursor.fetchone()
-        return login_models.UserSessionModel(session_id=session_id, user_id=result[0])
-    except Exception as e:
-        logger.error("Error getting session")
-        logger.error(e)
-        return None
-    finally:
-        cursor.close()
-
 def check_user_login(db, username: str, password: str) -> bool:
     """Returns the token if the login is successful, None otherwise"""
     cursor = db.cursor()

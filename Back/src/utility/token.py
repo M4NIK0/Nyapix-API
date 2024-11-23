@@ -10,6 +10,7 @@ def encode_jwt(data: dict) -> Union[str, None]:
     try:
         return jwt.encode(data, secret, algorithm="HS256")
     except Exception as e:
+        logger.error("Error encoding JWT")
         logger.error(e)
         return None
 
@@ -20,5 +21,6 @@ def decode_jwt(token: str) -> Union[dict, None]:
     try:
         return jwt.decode(token, secret, algorithms=["HS256"])
     except Exception as e:
+        logger.error("Error decoding JWT")
         logger.error(e)
         return None

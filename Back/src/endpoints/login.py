@@ -22,6 +22,7 @@ async def post_register_endpoint(new_user: users_models.UserRegisterModel):
         if result is None:
             return fastapi.responses.Response(status_code=409)
     except Exception as e:
+        logger.error("Error registering user")
         logger.error(e)
         return fastapi.responses.Response(status_code=500)
     finally:
@@ -42,6 +43,7 @@ async def post_login_endpoint(login: users_models.UserLoginModel):
         token = login_db.create_session(db, user.id)
         return {"token": token}
     except Exception as e:
+        logger.error("Error logging in")
         logger.error(e)
         return fastapi.responses.Response(status_code=500)
     finally:
