@@ -1,14 +1,16 @@
 import utility.users as users_utility
 from typing import Union
 from utility.logging import logger
+import bcrypt
 
 def register(db, username: str, nickname: str, password: str) -> bool:
     """Register a new user in the database, returns True if the user was registered successfully, False otherwise"""
     cursor = db.cursor()
+    password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
     try:
         cursor.execute(
             "INSERT INTO nyapixuser (username, nickname, password, user_type) VALUES (%s, %s, %s, %s)",
-            (username, nickname, password, users_utility.USER_TYPE.GUEST)
+            (username, nickname, password_hash, users_utility.USER_TYPE.GUEST)
         )
         db.commit()
     except Exception as e:

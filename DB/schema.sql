@@ -17,7 +17,6 @@ CREATE TABLE IF NOT EXISTS nyapixuser ( -- user table
 CREATE TABLE IF NOT EXISTS nyapixuser_session ( -- user session table
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
-    session_id TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE
 );

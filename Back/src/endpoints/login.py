@@ -1,5 +1,6 @@
 import fastapi
 import utility.token as token_utility
+from db_management.users import check_user_exists
 from utility.logging import logger
 from db_management.connection import connect_db
 import db_management.users as users_db
@@ -27,14 +28,17 @@ async def post_register_endpoint(new_user: users_models.UserRegisterModel):
 
 @router.post("/login")
 async def post_login_endpoint():
+    db = None
     try:
         db = connect_db()
-        db.close()
-        token = token_utility.generate_session_token(None)
+
         return {"token": token}
     except Exception as e:
         logger.error(e)
         return fastapi.responses.Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
 
 @router.delete("/logout")
 async def delete_logout_endpoint():
