@@ -23,5 +23,6 @@ def connect_db():
 
         return conn
     except Exception as e:
+        logger.error("Error connecting to database")
         print(e)
         return None

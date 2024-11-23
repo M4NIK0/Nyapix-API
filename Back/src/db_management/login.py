@@ -9,12 +9,13 @@ def create_session(db, user_id: int) -> str:
     """Returns the session token"""
     cursor = db.cursor()
     try:
-        cursor.execute("INSERT INTO nyapixuser_session (user_id) VALUES (%s) RETURNING session_id", (user_id,))
+        cursor.execute("INSERT INTO nyapixuser_session (user_id) VALUES (%s) RETURNING id", (user_id,))
         session_id = cursor.fetchone()[0]
         db.commit()
         token = encode_jwt({"session_id": session_id, "user_id": user_id})
         return token
     except Exception as e:
+        logger.error("Error creating session")
         raise e
     finally:
         cursor.close()
@@ -27,6 +28,7 @@ def delete_session(db, token: str) -> bool:
         cursor.execute("DELETE FROM nyapixuser_session WHERE id = %s", (data["session_id"],))
         db.commit()
     except Exception as e:
+        logger.error("Error deleting session")
         logger.error(e)
         return False
     finally:
@@ -42,6 +44,7 @@ def check_session(db, token: str) -> bool:
         result = cursor.fetchone()
         return result is not None
     except Exception as e:
+        logger.error("Error checking session")
         logger.error(e)
         return False
     finally:
@@ -56,6 +59,7 @@ def get_session_user(db, token: str) -> Union[users_models.UserModel, None]:
         result = cursor.fetchone()
         return users_models.UserModel(username=result[0], nickname=result[1], type=result[2], id=data["user_id"])
     except Exception as e:
+        logger.error("Error getting user from session")
         logger.error(e)
         return None
     finally:
@@ -69,6 +73,7 @@ def get_session(db, session_id: int) -> Union[login_models.UserSessionModel, Non
         result = cursor.fetchone()
         return login_models.UserSessionModel(session_id=session_id, user_id=result[0])
     except Exception as e:
+        logger.error("Error getting session")
         logger.error(e)
         return None
     finally:
@@ -82,10 +87,11 @@ def check_user_login(db, username: str, password: str) -> bool:
         result = cursor.fetchone()
         if result is None:
             return False
-        if bcrypt.checkpw(password.encode("utf-8"), result[1]):
+        if bcrypt.checkpw(password.encode("utf-8"), result[1].encode("utf-8")):
             return True
         return False
     except Exception as e:
+        logger.error("Error checking user login")
         logger.error(e)
         return False
     finally:
