@@ -31,6 +31,7 @@ async def post_register_endpoint(new_user: users_models.UserRegisterModel):
     finally:
         if db is not None:
             db.close()
+    return fastapi.responses.Response(status_code=200)
 
 @router.post("/login", tags=["Login"])
 async def post_login_endpoint(login: users_models.UserLoginModel):
@@ -69,4 +70,3 @@ async def delete_logout_endpoint(request: Request):
         if db is not None:
             db.close()
     return MessageModel(message="Logged out")
-

@@ -10,6 +10,7 @@ from starlette.responses import JSONResponse
 import endpoints.login as login_endpoints
 import endpoints.users as users_endpoints
 import endpoints.sources as sources_endpoints
+import endpoints.tags as tags_endpoints
 import db_management.login as login_db
 from db_management.connection import connect_db
 from db_management.login import check_session
@@ -46,6 +47,7 @@ app.openapi = custom_openapi
 app.include_router(login_endpoints.router, prefix="/v1")
 app.include_router(users_endpoints.router, prefix="/v1/users")
 app.include_router(sources_endpoints.router, prefix="/v1/sources")
+app.include_router(tags_endpoints.router, prefix="/v1/tags")
 
 db = None
 while db is None:
