@@ -62,3 +62,16 @@ def delete_source(db, source_id: int) -> bool:
         return False
     finally:
         cursor.close()
+
+def edit_source(db, source_id: int, name: str) -> bool:
+    cursor = db.cursor()
+    try:
+        cursor.execute("UPDATE nyapixcontent_sources SET name = %s WHERE id = %s", (name, source_id))
+        db.commit()
+        return True
+    except Exception as e:
+        logger.error("Error updating source")
+        logger.error(e)
+        return False
+    finally:
+        cursor.close()

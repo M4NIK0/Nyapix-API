@@ -42,3 +42,56 @@ async def post_sources_endpoint(request: Request, source_name: str = fastapi.Que
     finally:
         if db is not None:
             db.close()
+
+@router.put("/{source_id}", tags=["Sources management"])
+@users_type.admin_required
+async def put_sources_endpoint(request: Request, source_id: int, source_name: str = fastapi.Query(...)):
+    db = None
+    try:
+        db = connect_db()
+        success = sources_db.edit_source(db, source_id, source_name)
+        if not success:
+            return fastapi.responses.Response(status_code=409)
+        return fastapi.responses.Response(status_code=200)
+    except Exception as e:
+        logger.error("Error updating source")
+        logger.error(e)
+        return fastapi.responses.Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
+@router.get("/{source_name}", tags=["Sources management"])
+async def get_source_endpoint(request: Request, source_name: str):
+    db = None
+    try:
+        db = connect_db()
+        source = sources_db.get_source(db, source_name)
+        if source is None:
+            return fastapi.responses.Response(status_code=404)
+        return source
+    except Exception as e:
+        logger.error("Error getting source")
+        logger.error(e)
+        return fastapi.responses.Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
+@router.delete("/{source_id}", tags=["Sources management"])
+@users_type.admin_required
+async def put_sources_endpoint(request: Request, source_id: int):
+    db = None
+    try:
+        db = connect_db()
+        success = sources_db.delete_source(db, source_id)
+        if not success:
+            return fastapi.responses.Response(status_code=409)
+        return fastapi.responses.Response(status_code=200)
+    except Exception as e:
+        logger.error("Error updating source")
+        logger.error(e)
+        return fastapi.responses.Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
