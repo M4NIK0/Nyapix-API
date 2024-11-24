@@ -40,15 +40,25 @@ CREATE TABLE IF NOT EXISTS nyapixdata_miniature ( -- miniature data table
 
 -- content & albums related tables
 
+CREATE TABLE IF NOT EXISTS nyapixcontent_sources ( -- content sources table
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (name)
+);
+
 CREATE TABLE IF NOT EXISTS nyapixcontent (
     id SERIAL PRIMARY KEY,
     title TEXT NOT NULL,
     description TEXT NOT NULL,
     user_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    is_private BOOLEAN NOT NULL,
+    source_id INT,
     data_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE,
-    FOREIGN KEY (data_id) REFERENCES nyapixdata(id)
+    FOREIGN KEY (data_id) REFERENCES nyapixdata(id),
+    FOREIGN KEY (source_id) REFERENCES nyapixcontent_sources(id)
 );
 
 CREATE TABLE IF NOT EXISTS nyapixalbum (
@@ -98,7 +108,7 @@ CREATE TABLE IF NOT EXISTS nyapixauthor ( -- author table
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS nyapixcharacters ( -- character table
+CREATE TABLE IF NOT EXISTS nyapixcharacter ( -- character table
     id SERIAL PRIMARY KEY,
     character_name TEXT NOT NULL,
     user_id INT NOT NULL,
@@ -128,7 +138,7 @@ CREATE TABLE IF NOT EXISTS nyapixcontent_characters ( -- content characters tabl
     character_id INT NOT NULL,
     PRIMARY KEY (content_id, character_id),
     FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE,
-    FOREIGN KEY (character_id) REFERENCES nyapixcharacters(id) ON DELETE CASCADE
+    FOREIGN KEY (character_id) REFERENCES nyapixcharacter(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS nyapixalbum_tag ( -- album tag table
@@ -172,6 +182,22 @@ CREATE TABLE IF NOT EXISTS nyapixuser_album_history ( -- user album history tabl
     album_id INT NOT NULL,
     accessed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     access_type INT NOT NULL CHECK (access_type IN (1, 2, 3)), -- 1:view, 2:download, 3:edit
+    PRIMARY KEY (user_id, album_id),
+    FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE,
+    FOREIGN KEY (album_id) REFERENCES nyapixalbum(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS nyapixuser_content_favorites ( -- user favorites table
+    user_id INT NOT NULL,
+    content_id INT NOT NULL,
+    PRIMARY KEY (user_id, content_id),
+    FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE,
+    FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS nyapixuser_album_favorites ( -- user favorites table
+    user_id INT NOT NULL,
+    album_id INT NOT NULL,
     PRIMARY KEY (user_id, album_id),
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE,
     FOREIGN KEY (album_id) REFERENCES nyapixalbum(id) ON DELETE CASCADE

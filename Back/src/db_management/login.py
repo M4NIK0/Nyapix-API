@@ -82,3 +82,17 @@ def check_user_login(db, username: str, password: str) -> bool:
         return False
     finally:
         cursor.close()
+
+def clear_user_sessions(db, user_id: int) -> bool:
+    """Clears all sessions for the given user"""
+    cursor = db.cursor()
+    try:
+        cursor.execute("DELETE FROM nyapixuser_session WHERE user_id = %s", (user_id,))
+        db.commit()
+    except Exception as e:
+        logger.error("Error clearing user sessions")
+        logger.error(e)
+        return False
+    finally:
+        cursor.close()
+    return True

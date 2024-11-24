@@ -13,7 +13,7 @@ from fastapi import Request
 
 router = fastapi.APIRouter()
 
-@router.post("/register")
+@router.post("/register", tags=["Login"])
 async def post_register_endpoint(new_user: users_models.UserRegisterModel):
     db = None
     try:
@@ -32,7 +32,7 @@ async def post_register_endpoint(new_user: users_models.UserRegisterModel):
         if db is not None:
             db.close()
 
-@router.post("/login")
+@router.post("/login", tags=["Login"])
 async def post_login_endpoint(login: users_models.UserLoginModel):
     db = None
     try:
@@ -53,7 +53,7 @@ async def post_login_endpoint(login: users_models.UserLoginModel):
         if db is not None:
             db.close()
 
-@router.delete("/logout")
+@router.delete("/logout", tags=["Login"])
 async def delete_logout_endpoint(request: Request):
     db = None
     try:
@@ -69,3 +69,4 @@ async def delete_logout_endpoint(request: Request):
         if db is not None:
             db.close()
     return MessageModel(message="Logged out")
+
