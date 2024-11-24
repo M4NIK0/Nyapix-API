@@ -2,6 +2,7 @@ import fastapi
 import utility.token as token_utility
 from db_management.users import check_user_exists
 from models.basic import MessageModel
+from models.login import TokenModel
 from utility.logging import logger
 from db_management.connection import connect_db
 import db_management.users as users_db
@@ -43,7 +44,7 @@ async def post_login_endpoint(login: users_models.UserLoginModel):
         if user is None:
             return fastapi.responses.Response(status_code=401)
         token = login_db.create_session(db, user.id)
-        return {"token": token}
+        return TokenModel(access_token=token)
     except Exception as e:
         logger.error("Error logging in")
         logger.error(e)
