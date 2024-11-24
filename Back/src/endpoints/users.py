@@ -49,4 +49,17 @@ async def put_me_endpoint(user: UserUpdateModel, request: Request):
 
 @router.delete("/me")
 async def delete_me_endpoint(request: Request):
-    return fastapi.responses.Response(status_code=501)
+    db = None
+    try:
+        db = connect_db()
+        success = users_db.delete_user(db, request.state.user.id)
+        if not success:
+            return fastapi.responses.Response(status_code=409)
+        return fastapi.responses.Response(status_code=200)
+    except Exception as e:
+        logger.error("Error deleting user")
+        logger.error(e)
+        return fastapi.responses.Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()

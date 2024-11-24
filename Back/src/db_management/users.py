@@ -124,3 +124,16 @@ def update_user(db, user: UserUpdateModel, user_id: int) -> bool:
     finally:
         cursor.close()
     return True
+
+def delete_user(db, user_id: int) -> bool:
+    cursor = db.cursor()
+    try:
+        cursor.execute("DELETE FROM nyapixuser WHERE id = %s", (user_id,))
+        db.commit()
+    except Exception as e:
+        logger.error("Error deleting user")
+        logger.error(e)
+        return False
+    finally:
+        cursor.close()
+    return True
