@@ -9,7 +9,7 @@ from utility.logging import logger
 
 router = fastapi.APIRouter()
 
-@router.get("/me")
+@router.get("/me", tags=["Account management"])
 async def get_me_endpoint(request: Request):
     db = None
     try:
@@ -30,7 +30,7 @@ async def get_me_endpoint(request: Request):
         if db is not None:
             db.close()
 
-@router.put("/me")
+@router.put("/me", tags=["Account management"])
 async def put_me_endpoint(user: UserUpdateModel, request: Request):
     db = None
     try:
@@ -47,7 +47,7 @@ async def put_me_endpoint(user: UserUpdateModel, request: Request):
         if db is not None:
             db.close()
 
-@router.delete("/me")
+@router.delete("/me", tags=["Account management"])
 async def delete_me_endpoint(request: Request):
     db = None
     try:
