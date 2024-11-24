@@ -25,9 +25,9 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     openapi_schema = fastapi.openapi.utils.get_openapi(
-        title="Your API",
-        version="1.0.0",
-        description="API description",
+        title="Nyapix API",
+        version="1.0",
+        description="Tag, list and search your favorite content.",
         routes=app.routes,
     )
     openapi_schema["components"]["securitySchemes"] = {
