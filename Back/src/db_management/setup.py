@@ -17,7 +17,7 @@ def setup_admin_user(db):
     password_hash = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
     try:
         # Count users in db
-        cursor.execute("SELECT COUNT(*) FROM nyapixuser")
+        cursor.execute("SELECT COUNT(*) FROM nyapixuser WHERE user_type = %s", (users_utility.USER_TYPE.ADMIN,))
         result = cursor.fetchone()
         if result[0] > 0:
             return
