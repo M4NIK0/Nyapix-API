@@ -1,12 +1,14 @@
 import fastapi
 import utility.token as token_utility
 from db_management.users import check_user_exists
+from models.basic import MessageModel
 from utility.logging import logger
 from db_management.connection import connect_db
 import db_management.users as users_db
 import models.users as users_models
 import models.login as login_models
 import db_management.login as login_db
+from fastapi import Request
 
 router = fastapi.APIRouter()
 
@@ -51,5 +53,18 @@ async def post_login_endpoint(login: users_models.UserLoginModel):
             db.close()
 
 @router.delete("/logout")
-async def delete_logout_endpoint():
-    return {}
+async def delete_logout_endpoint(request: Request):
+    db = None
+    try:
+        token = request.state.token
+        db = connect_db()
+        if not login_db.delete_session(db, token):
+            return fastapi.responses.Response(status_code=500)
+    except Exception as e:
+        logger.error("Error logging out")
+        logger.error(e)
+        return fastapi.responses.Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+    return MessageModel(message="Logged out")

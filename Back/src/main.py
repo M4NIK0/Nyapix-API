@@ -60,6 +60,7 @@ async def login_middleware(request: fastapi.Request, call_next):
             return fastapi.responses.Response(status_code=401)
         request.state.user = user
         request.state.session = session
+        request.state.token = token
         response = await call_next(request)
         return response
     except Exception as e:
