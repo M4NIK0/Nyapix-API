@@ -1,3 +1,5 @@
+import datetime
+
 from pydantic import BaseModel
 
 class SourceModel(BaseModel):
@@ -7,3 +9,7 @@ class SourceModel(BaseModel):
 class TagModel(BaseModel):
     id: int
     name: str
+
+class CompleteTagModel(TagModel):
+    user_id: int
+    creation_date: datetime.datetime
