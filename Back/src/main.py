@@ -3,12 +3,13 @@ import logging
 from logging.handlers import RotatingFileHandler
 import fastapi
 from fastapi.security import APIKeyHeader
-
+import time
 import endpoints.login as login_endpoints
 import endpoints.users as users_endpoints
 import db_management.login as login_db
 from db_management.connection import connect_db
 from db_management.login import check_session
+from db_management.setup import setup_admin_user
 from utility.users import get_session
 
 app = fastapi.FastAPI(debug=True)
@@ -40,6 +41,19 @@ app.openapi = custom_openapi
 
 app.include_router(login_endpoints.router, prefix="/v1")
 app.include_router(users_endpoints.router, prefix="/v1/users")
+
+db = None
+while db is None:
+    try:
+        db = connect_db()
+        setup_admin_user(db)
+    except Exception as e:
+        logging.error("Error connecting to database")
+        logging.error(e)
+        time.sleep(5)
+    finally:
+        if db is not None:
+            db.close()
 
 @app.middleware("http")
 async def login_middleware(request: fastapi.Request, call_next):
