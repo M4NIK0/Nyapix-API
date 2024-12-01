@@ -69,7 +69,11 @@ async def login_middleware(request: fastapi.Request, call_next):
         return response
     db = None
     try:
-        token = request.headers.get("Authorization").replace("Bearer ", "")
+        token = request.headers.get("Authorization")
+        if (token is not None) and token.startswith("Bearer "):
+            token = token.replace("Bearer ", "")
+        else:
+            return fastapi.responses.Response(status_code=401, headers={"WWW-Authenticate": "Bearer realm=\"Login required\""})
         if token is None:
             return fastapi.responses.Response(status_code=401, headers={"WWW-Authenticate": "Bearer realm=\"Login required\""})
         db = connect_db()

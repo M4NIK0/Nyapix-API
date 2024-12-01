@@ -13,3 +13,8 @@ class TagModel(BaseModel):
 class CompleteTagModel(TagModel):
     user_id: int
     creation_date: datetime.datetime
+
+class TagPageModel(BaseModel):
+    tags: list[TagModel]
+    total_pages: int
+    total_tags: int

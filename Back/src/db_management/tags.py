@@ -1,4 +1,4 @@
-from models.content import SourceModel, TagModel
+from models.content import SourceModel, TagModel, TagPageModel
 from utility.logging import logger
 from typing import List, Union
 
@@ -15,6 +15,25 @@ def list_tags(db) -> List[TagModel]:
         logger.error("Error listing sources")
         logger.error(e)
         return []
+    finally:
+        cursor.close()
+
+def get_tags_page(db, page: int, size: int) -> TagPageModel:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT tag_name, id FROM nyapixtag ORDER BY tag_name LIMIT %s OFFSET %s", (size, (page - 1) * size))
+        result = cursor.fetchall()
+        tags = []
+        for row in result:
+            tags.append(TagModel(name=row[0], id=row[1]))
+        cursor.execute("SELECT COUNT(*) FROM nyapixtag")
+        total = cursor.fetchone()[0]
+        total_pages = (total + size - 1) // size  # Corrected page count calculation
+        return TagPageModel(tags=tags, total_pages=total_pages, total_tags=total)
+    except Exception as e:
+        logger.error("Error listing sources")
+        logger.error(e)
+        return TagPageModel(tags=[], total_pages=0, total_tags=0)
     finally:
         cursor.close()
 
