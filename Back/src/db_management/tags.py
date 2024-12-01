@@ -68,7 +68,7 @@ def add_tag(db, name: str, user_id: int) -> bool:
     finally:
         cursor.close()
 
-def delete_source(db, tag_id: int) -> bool:
+def delete_tag(db, tag_id: int) -> bool:
     cursor = db.cursor()
     try:
         cursor.execute("DELETE FROM nyapixtag WHERE id = %s", (tag_id,))
