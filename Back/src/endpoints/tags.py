@@ -81,9 +81,36 @@ async def post_tags_endpoint(request: Request, tag_name: str = fastapi.Query(...
 @router.put("/{tag_id}", tags=["Tags management"])
 @users_type.admin_required
 async def put_tags_endpoint(request: Request, tag_id: int, tag_name: str = fastapi.Query(...)):
-    return None
+    db = None
+    try:
+        db = connect_db()
+        tag_name = tag_name.strip().lower().replace(" ", "_")
+        success = tags_db.edit_tag(db, tag_id, tag_name)
+        if not success:
+            return fastapi.responses.Response(status_code=409)
+        return fastapi.responses.Response(status_code=200)
+    except Exception as e:
+        logger.error("Error updating tag")
+        logger.error(e)
+        return fastapi.responses.Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
 
 @router.delete("/{tag_id}", tags=["Tags management"])
 @users_type.admin_required
 async def delete_tags_endpoint(request: Request, tag_id: int):
-    return None
+    db = None
+    try:
+        db = connect_db()
+        success = tags_db.delete_tag(db, tag_id)
+        if not success:
+            return fastapi.responses.Response(status_code=409)
+        return fastapi.responses.Response(status_code=200)
+    except Exception as e:
+        logger.error("Error deleting tag")
+        logger.error(e)
+        return fastapi.responses.Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
