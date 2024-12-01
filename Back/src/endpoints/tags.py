@@ -11,6 +11,22 @@ import models.content as content_models
 
 router = fastapi.APIRouter()
 
+@router.get("/search", tags=["Tags management"])
+async def search_tags_endpoint(request: Request, tag_name: str = Query(...), max_results: int = Query(10)) -> content_models.TagPageModel:
+    db = None
+    try:
+        db = connect_db()
+        tag_name = tag_name.strip().lower().replace(" ", "_")
+        tags = tags_db.search_tags(db, tag_name, max_results)
+        return tags
+    except Exception as e:
+        logger.error("Error searching tags")
+        logger.error(e)
+        return fastapi.responses.Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
 @router.get("", tags=["Tags management"])
 async def get_tags_endpoint(request: Request, page: int = Query(1), size: int = Query(10)) -> content_models.TagPageModel:
     db = None
@@ -42,10 +58,6 @@ async def get_tag_endpoint(request: Request, tag_id: int) -> content_models.TagM
     finally:
         if db is not None:
             db.close()
-
-@router.get("/search", tags=["Tags management"])
-async def search_tags_endpoint(request: Request, tag_name: str = Query(...)):
-    return None
 
 @router.post("", tags=["Tags management"])
 @users_type.admin_required

@@ -122,3 +122,19 @@ def get_user_tags(db, user_id) -> List[TagModel]:
         return []
     finally:
         cursor.close()
+
+def search_tags(db, query, max_results) -> TagPageModel:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT tag_name, id FROM nyapixtag WHERE tag_name LIKE %s LIMIT %s", (f"%{query}%", max_results))
+        result = cursor.fetchall()
+        tags = []
+        for row in result:
+            tags.append(TagModel(name=row[0], id=row[1]))
+        return TagPageModel(tags=tags, total_pages=1, total_tags=len(tags))
+    except Exception as e:
+        logger.error("Error searching tags")
+        logger.error(e)
+        return TagPageModel(tags=[], total_pages=0, total_tags=0)
+    finally:
+        cursor.close()
