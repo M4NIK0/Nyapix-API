@@ -2,7 +2,6 @@ from models.content import SourceModel
 from utility.logging import logger
 from typing import List, Union
 
-
 def list_sources(db) -> List[SourceModel]:
     cursor = db.cursor()
     try:

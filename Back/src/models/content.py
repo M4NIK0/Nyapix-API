@@ -18,3 +18,12 @@ class TagPageModel(BaseModel):
     tags: list[TagModel]
     total_pages: int
     total_tags: int
+
+class CharacterModel(BaseModel):
+    id: int
+    name: str
+
+class CharacterPageModel(BaseModel):
+    characters: list[CharacterModel]
+    total_pages: int
+    total_characters: int
