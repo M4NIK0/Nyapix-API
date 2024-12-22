@@ -36,3 +36,26 @@ class AuthorPageModel(BaseModel):
     authors: list[AuthorModel]
     total_pages: int
     total_authors: int
+
+class ContentModel(BaseModel):
+    id: int
+    title: str
+    description: str
+    source: SourceModel
+    tags: list[TagModel]
+    characters: list[CharacterModel]
+    authors: list[AuthorModel]
+
+class ContentPageModel(BaseModel):
+    contents: list[ContentModel]
+    total_pages: int
+    total_contents: int
+
+class ContentPostModel(BaseModel):
+    title: str
+    description: str
+    source_id: int
+    tags: list[int]
+    characters: list[int]
+    authors: list[int]
+    is_private: bool

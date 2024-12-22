@@ -37,9 +37,11 @@ CREATE TABLE IF NOT EXISTS nyapixcontent (
     user_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_private BOOLEAN NOT NULL,
+    original_file_hash TEXT NOT NULL,
     source_id INT,
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE,
-    FOREIGN KEY (source_id) REFERENCES nyapixcontent_sources(id)
+    FOREIGN KEY (source_id) REFERENCES nyapixcontent_sources(id),
+    UNIQUE (original_file_hash)
 );
 
 CREATE TABLE IF NOT EXISTS nyapixalbum (
