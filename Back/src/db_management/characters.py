@@ -10,11 +10,11 @@ def search_characters(db, character_name: str, max_results: int) -> CharacterPag
         characters = []
         for row in result:
             characters.append(CharacterModel(name=row[0], id=row[1]))
-        return CharacterPageModel(characters=characters, total_characters=len(characters))
+        return CharacterPageModel(characters=characters, total_characters=len(characters), total_pages=1)
     except Exception as e:
         logger.error("Error searching characters")
         logger.error(e)
-        return CharacterPageModel(characters=[], total_characters=0)
+        return CharacterPageModel(characters=[], total_characters=0, total_pages=0)
     finally:
         cursor.close()
 

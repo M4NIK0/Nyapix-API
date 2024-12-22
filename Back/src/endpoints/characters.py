@@ -61,7 +61,7 @@ async def post_characters_endpoint(request: fastapi.Request, character_name: str
     try:
         db = connect_db()
         character_name = character_name.strip().lower().replace(" ", "_")
-        success = characters_db.add_character(db, character_name)
+        success = characters_db.add_character(db, character_name, request.state.user.id)
         if not success:
             return fastapi.responses.Response(status_code=409)
         return fastapi.responses.Response(status_code=200)
