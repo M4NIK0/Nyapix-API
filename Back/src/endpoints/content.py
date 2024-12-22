@@ -4,7 +4,11 @@ import string
 import fastapi
 
 from db_management.connection import connect_db
-from db_management.content import add_content
+import db_management.tags as tags_db
+import db_management.content as content_db
+import db_management.characters as characters_db
+import db_management.authors as authors_db
+import db_management.sources as sources_db
 from utility.logging import logger
 from fastapi import APIRouter, UploadFile, File, Depends
 from fastapi.responses import Response
@@ -42,14 +46,29 @@ async def post_content_endpoint(
     db = None
     try:
         # Parse the content JSON
-        db = connect_db()
-
         try:
             content_data = json.loads(content)
             content_obj = models.ContentPostModel(**content_data)
             pass
         except json.JSONDecodeError as e:
             return Response(content="Invalid JSON in content field", status_code=400)
+
+        db = connect_db()
+
+        for tag in content_obj.tags:
+            if tags_db.get_tag(db, tag) is None:
+                return Response(content=f"Tag with id {tag} does not exist", status_code=400)
+
+        for character in content_obj.characters:
+            if characters_db.get_character(db, character) is None:
+                return Response(content=f"Character with id {character} does not exist", status_code=400)
+
+        for author in content_obj.authors:
+            if authors_db.get_author(db, author) is None:
+                return Response(content=f"Author with id {author} does not exist", status_code=400)
+
+        if sources_db.get_source(db, content_obj.source_id) is None:
+            return Response(content=f"Source with id {content_obj.source} does not exist", status_code=400)
 
         # Write file to disk
         random_name = "".join(random.choices(string.ascii_letters + string.digits, k=16))
@@ -74,7 +93,7 @@ async def post_content_endpoint(
         # Compute file hash
         file_hash = compute_file_hash(file_path)
 
-        if add_content(db, content_obj, file_hash, request.state.user.id) == -1:
+        if content_db.add_content(db, content_obj, file_hash, request.state.user.id) == -1:
             return Response(status_code=409)
 
         # Process further logic here
