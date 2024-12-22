@@ -103,4 +103,4 @@ async def login_middleware(request: fastapi.Request, call_next):
             db.close()
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+    uvicorn.run(app, host="0.0.0.0", port=5000, limit_max_requests=1000000000)

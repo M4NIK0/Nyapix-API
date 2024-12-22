@@ -8,6 +8,7 @@ import db_management.tags as tags_db
 import db_management.content as content_db
 import db_management.characters as characters_db
 import db_management.authors as authors_db
+import db_management.video as video_db
 import db_management.sources as sources_db
 from utility.logging import logger
 from fastapi import APIRouter, UploadFile, File, Depends
@@ -18,10 +19,12 @@ import os
 import utility.video as video_utility
 import hashlib
 
+from utility.video import convert_image_to_png
+
 router = APIRouter()
 
 def is_video(file_type: str) -> bool:
-    return file_type in ["video/mp4", "video/ogg", "video/webm", "video/mkv", "video/avi"]
+    return file_type in ["video/mp4", "video/ogg", "video/mkv", "video/avi"]
 
 def is_image(file_type: str) -> bool:
     return file_type in ["image/png", "image/jpeg", "image/bmp", "image/webp"]
@@ -87,14 +90,32 @@ async def post_content_endpoint(
 
         if is_video(file_type):
             video_utility.split_video(file_path, f"/tmp/{random_name}.chunks")
-            #display dir content
-            print(os.listdir(f"/tmp/{random_name}.chunks"))
+
+        if is_image(file_type):
+            convert_image_to_png(file_path)
 
         # Compute file hash
         file_hash = compute_file_hash(file_path)
+        content_id = content_db.add_content(db, content_obj, file_hash, request.state.user.id)
 
-        if content_db.add_content(db, content_obj, file_hash, request.state.user.id) == -1:
+        if content_id == -1:
             return Response(status_code=409)
+
+        if is_video(file_type):
+            # Insert video inside DB
+            video_db.add_video(db, content_id, file_path)
+            # Clean up file
+            os.remove(file_path)
+            for chunk in os.listdir(f"/tmp/{random_name}.chunks"):
+                os.remove(f"/tmp/{random_name}.chunks/{chunk}")
+            os.removedirs(f"/tmp/{random_name}.chunks")
+
+        if is_image(file_type):
+            # Insert image inside DB
+            video_db.add_image(db, content_id, file_path + ".png")
+            # Clean up file
+            os.remove(file_path)
+            os.remove(file_path + ".png")
 
         # Process further logic here
     except Exception as e:
