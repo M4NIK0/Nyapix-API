@@ -21,23 +21,6 @@ CREATE TABLE IF NOT EXISTS nyapixuser_session ( -- user session table
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE
 );
 
--- DATA related tables
-
-CREATE TABLE IF NOT EXISTS nyapixdata ( -- data table
-    id SERIAL PRIMARY KEY,
-    bytes BYTEA NOT NULL,
-    file_hash TEXT NOT NULL, -- hashed using SHA256
-    file_format TEXT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS nyapixdata_miniature ( -- miniature data table
-    id SERIAL PRIMARY KEY,
-    data_id INT NOT NULL,
-    bytes BYTEA NOT NULL,
-    hash TEXT NOT NULL,
-    FOREIGN KEY (data_id) REFERENCES nyapixdata(id) ON DELETE CASCADE
-);
-
 -- content & albums related tables
 
 CREATE TABLE IF NOT EXISTS nyapixcontent_sources ( -- content sources table
@@ -55,9 +38,7 @@ CREATE TABLE IF NOT EXISTS nyapixcontent (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_private BOOLEAN NOT NULL,
     source_id INT,
-    data_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE,
-    FOREIGN KEY (data_id) REFERENCES nyapixdata(id),
     FOREIGN KEY (source_id) REFERENCES nyapixcontent_sources(id)
 );
 
@@ -68,8 +49,7 @@ CREATE TABLE IF NOT EXISTS nyapixalbum (
     user_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     miniature_id INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE,
-    FOREIGN KEY (miniature_id) REFERENCES nyapixdata_miniature(id)
+    FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS nyapixguest_content_authorizations ( -- guest authorizations table
@@ -115,7 +95,7 @@ CREATE TABLE IF NOT EXISTS nyapixcharacter ( -- character table
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (character_name),
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE
-    );
+);
 
 CREATE TABLE IF NOT EXISTS nyapixcontent_tag ( -- content tag table
     content_id INT NOT NULL,
@@ -159,10 +139,10 @@ CREATE TABLE IF NOT EXISTS nyapixalbum_author ( -- album author table
 
 CREATE TABLE IF NOT EXISTS nyapixalbum_pages ( -- album pages table
     album_id SERIAL PRIMARY KEY,
-    data_id INT NOT NULL,
     page_number INT NOT NULL,
+    content_id INT NOT NULL,
     FOREIGN KEY (album_id) REFERENCES nyapixalbum(id) ON DELETE CASCADE,
-    FOREIGN KEY (data_id) REFERENCES nyapixdata(id) ON DELETE CASCADE
+    FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
 );
 
 -- User history related tables
@@ -203,36 +183,75 @@ CREATE TABLE IF NOT EXISTS nyapixuser_album_favorites ( -- user favorites table
     FOREIGN KEY (album_id) REFERENCES nyapixalbum(id) ON DELETE CASCADE
 );
 
+-- DATA related tables
+
+CREATE TABLE IF NOT EXISTS nyapixvideo_metadata ( -- video metadata table
+    id SERIAL PRIMARY KEY,
+    total_chunks INT NOT NULL,
+    content_id INT NOT NULL,
+    FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS nyapixvideo_chunks (
+    id SERIAL PRIMARY KEY,
+    chunk_number INT NOT NULL,
+    video_id INT NOT NULL,
+    data BYTEA NOT NULL,
+    FOREIGN KEY (video_id) REFERENCES nyapixvideo_metadata(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS nyapixaudio_metadata ( -- audio metadata table
+    id SERIAL PRIMARY KEY,
+    total_chunks INT NOT NULL,
+    content_id INT NOT NULL,
+    FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS nyapixaudio_chunks (
+    id SERIAL PRIMARY KEY,
+    chunk_number INT NOT NULL,
+    audio_id INT NOT NULL,
+    data BYTEA NOT NULL,
+    FOREIGN KEY (audio_id) REFERENCES nyapixaudio_metadata(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS nyapiximage (
+    id SERIAL PRIMARY KEY,
+    data BYTEA NOT NULL,
+    content_id INT NOT NULL,
+    FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
+);
+
 -- Check if there are any references of a data in the nyapixcontent and nyapixalbum tables
-CREATE OR REPLACE FUNCTION check_references()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM nyapixcontent WHERE data_id = OLD.id) OR EXISTS (SELECT 1 FROM nyapixalbum WHERE miniature_id = OLD.id) THEN
-        RAISE EXCEPTION 'Cannot delete nyapixdata with id % because it is still referenced in nyapixcontent or nyapixalbum', OLD.id;
-END IF;
-RETURN OLD;
-END;
-$$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION check_references()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     IF EXISTS (SELECT 1 FROM nyapixcontent WHERE data_id = OLD.id) OR EXISTS (SELECT 1 FROM nyapixalbum WHERE miniature_id = OLD.id) THEN
+--         RAISE EXCEPTION 'Cannot delete nyapixdata with id % because it is still referenced in nyapixcontent or nyapixalbum', OLD.id;
+-- END IF;
+-- RETURN OLD;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
 -- Trigger nyapixdata references check before deletion
-CREATE TRIGGER before_delete_nyapixdata
-BEFORE DELETE ON nyapixdata
-FOR EACH ROW
-EXECUTE FUNCTION check_references();
+-- CREATE TRIGGER before_delete_nyapixdata
+-- BEFORE DELETE ON nyapixdata
+-- FOR EACH ROW
+-- EXECUTE FUNCTION check_references();
 
 -- Check if there are any references of a miniature data in the nyapixalbum table
-CREATE OR REPLACE FUNCTION check_references_miniature()
-RETURNS TRIGGER AS $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM nyapixalbum WHERE miniature_id = OLD.id) THEN
-        RAISE EXCEPTION 'Cannot delete nyapixdata_miniature with id % because it is still referenced in nyapixalbum', OLD.id;
-END IF;
-RETURN OLD;
-END;
-$$ LANGUAGE plpgsql;
+-- CREATE OR REPLACE FUNCTION check_references_miniature()
+-- RETURNS TRIGGER AS $$
+-- BEGIN
+--     IF EXISTS (SELECT 1 FROM nyapixalbum WHERE miniature_id = OLD.id) THEN
+--         RAISE EXCEPTION 'Cannot delete nyapixdata_miniature with id % because it is still referenced in nyapixalbum', OLD.id;
+-- END IF;
+-- RETURN OLD;
+-- END;
+-- $$ LANGUAGE plpgsql;
 
 -- Trigger nyapixdata_miniature references check before deletion
-CREATE TRIGGER before_delete_nyapixdata_miniature
-BEFORE DELETE ON nyapixdata_miniature
-FOR EACH ROW
-EXECUTE FUNCTION check_references_miniature();
+-- CREATE TRIGGER before_delete_nyapixdata_miniature
+-- BEFORE DELETE ON nyapixdata_miniature
+-- FOR EACH ROW
+-- EXECUTE FUNCTION check_references_miniature();
