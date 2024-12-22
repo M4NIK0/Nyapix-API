@@ -27,3 +27,12 @@ class CharacterPageModel(BaseModel):
     characters: list[CharacterModel]
     total_pages: int
     total_characters: int
+
+class AuthorModel(BaseModel):
+    id: int
+    name: str
+
+class AuthorPageModel(BaseModel):
+    authors: list[AuthorModel]
+    total_pages: int
+    total_authors: int
