@@ -187,9 +187,18 @@ CREATE TABLE IF NOT EXISTS nyapixuser_album_favorites ( -- user favorites table
 
 -- DATA related tables
 
+CREATE TABLE IF NOT EXISTS nyapixvideo ( -- video table
+    id SERIAL PRIMARY KEY,
+    data BYTEA NOT NULL,
+    content_id INT NOT NULL,
+    FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS nyapixvideo_metadata ( -- video metadata table
     id SERIAL PRIMARY KEY,
     total_chunks INT NOT NULL,
+    total_length INT NOT NULL,
+    manifest TEXT NOT NULL,
     content_id INT NOT NULL,
     FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
 );

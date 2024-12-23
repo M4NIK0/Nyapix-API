@@ -41,10 +41,12 @@ class ContentModel(BaseModel):
     id: int
     title: str
     description: str
-    source: SourceModel
+    source: int
     tags: list[TagModel]
     characters: list[CharacterModel]
     authors: list[AuthorModel]
+    is_private: bool
+    url: str
 
 class ContentPageModel(BaseModel):
     contents: list[ContentModel]
