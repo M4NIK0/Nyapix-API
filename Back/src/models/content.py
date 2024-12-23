@@ -1,4 +1,5 @@
 import datetime
+from typing import Union, Optional
 
 from pydantic import BaseModel
 
@@ -61,3 +62,12 @@ class ContentPostModel(BaseModel):
     characters: list[int]
     authors: list[int]
     is_private: bool
+
+class ContentUpdateModel(BaseModel):
+    title: Optional[str]
+    description: Optional[str]
+    source_id: Optional[int]
+    tags: Optional[list[int]]
+    characters: Optional[list[int]]
+    authors: Optional[list[int]]
+    is_private: Optional[bool]

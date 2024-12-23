@@ -11,10 +11,10 @@ import db_management.characters as characters_db
 import db_management.authors as authors_db
 import db_management.stream as video_db
 import db_management.sources as sources_db
-from db_management.content import has_user_access, get_image_content_id, get_video_content_id
+from db_management.content import has_user_access, get_image_content_id, get_video_content_id, is_user_content
 from models.content import ContentModel
 from utility.logging import logger
-from fastapi import APIRouter, UploadFile, File, Depends
+from fastapi import APIRouter, UploadFile, File, Depends, Query
 from fastapi.responses import Response
 import models.content as models
 import decorators.users_type as users_type
@@ -42,6 +42,25 @@ def compute_file_hash(file_path: str) -> str:
     with open(file_path, "rb") as f:
         return hashlib.sha256(f.read()).hexdigest()
 
+@router.get("/my", tags=["Content management"])
+async def get_my_content_endpoint(request: fastapi.Request, page: int = Query(...), max_results: int = Query(10)) -> models.ContentPageModel:
+    db = None
+    try:
+        db = connect_db()
+        content = content_db.get_user_content(db, request.state.user.id, max_results, page)
+
+        for item in content.contents:
+            item.url = f"{request.base_url}{item.url}"
+
+        return content
+    except Exception as e:
+        logger.error("Error getting user content")
+        logger.error(e)
+        return Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
 @router.get("/{content_id}", tags=["Content management"])
 async def get_content_endpoint(request: fastapi.Request, content_id: int) -> ContentModel:
     db = None
@@ -66,6 +85,65 @@ async def get_content_endpoint(request: fastapi.Request, content_id: int) -> Con
     finally:
         if db is not None:
             db.close()
+
+@router.put("/{content_id}", tags=["Content management"])
+@users_type.admin_or_user_required
+async def put_content_endpoint(request: fastapi.Request, content_id: int, content: models.ContentUpdateModel):
+    db = None
+    try:
+        db = connect_db()
+
+        if not is_user_content(db, request.state.user.id, content_id):
+            return Response(status_code=403)
+
+        if content.tags is not None:
+            for tag in content.tags:
+                if tags_db.get_tag(db, tag) is None:
+                    return Response(content=f"Tag with id {tag} does not exist", status_code=400)
+
+        if content.characters is not None:
+            for character in content.characters:
+                if characters_db.get_character(db, character) is None:
+                    return Response(content=f"Character with id {character} does not exist", status_code=400)
+
+        if content.authors is not None:
+            for author in content.authors:
+                if authors_db.get_author(db, author) is None:
+                    return Response(content=f"Author with id {author} does not exist", status_code=400)
+
+        if content.source_id is not None:
+            if sources_db.get_source(db, content.source_id) is None:
+                return Response(content=f"Source with id {content.source} does not exist", status_code=400)
+
+        success = content_db.update_content(db, content_id, content)
+        if not success:
+            return Response(status_code=409)
+    except Exception as e:
+        logger.error("Error updating content")
+        logger.error(e)
+        return Response(status_code=500)
+
+    return Response(status_code=200)
+
+@router.delete("/{content_id}", tags=["Content management"])
+@users_type.admin_or_user_required
+async def delete_content_endpoint(request: fastapi.Request, content_id: int):
+    db = None
+    try:
+        db = connect_db()
+
+        if not is_user_content(db, request.state.user.id, content_id):
+            return Response(status_code=403)
+
+        success = content_db.delete_content(db, content_id)
+        if not success:
+            return Response(status_code=409)
+    except Exception as e:
+        logger.error("Error deleting content")
+        logger.error(e)
+        return Response(status_code=500)
+
+    return Response(status_code=200)
 
 @router.post("", tags=["Content management"])
 @users_type.admin_or_user_required
