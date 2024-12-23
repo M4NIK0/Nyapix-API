@@ -219,3 +219,207 @@ def get_user_content(db, user_id: int, max_results: int, page: int) -> Union[Con
         return None
     finally:
         cursor.close()
+
+def has_tag(db, content_id: int, tag_id: int) -> bool:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT COUNT(*) FROM nyapixcontent_tag WHERE content_id = %s AND tag_id = %s", (content_id, tag_id))
+        result = cursor.fetchone()
+        return result[0] > 0
+    except Exception as e:
+        logger.error("Error checking if content has tag")
+        logger.error(e)
+        return False
+    finally:
+        cursor.close()
+
+def has_character(db, content_id: int, character_id: int) -> bool:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT COUNT(*) FROM nyapixcontent_characters WHERE content_id = %s AND character_id = %s", (content_id, character_id))
+        result = cursor.fetchone()
+        return result[0] > 0
+    except Exception as e:
+        logger.error("Error checking if content has character")
+        logger.error(e)
+        return False
+    finally:
+        cursor.close()
+
+def has_author(db, content_id: int, author_id: int) -> bool:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT COUNT(*) FROM nyapixcontent_author WHERE content_id = %s AND author_id = %s", (content_id, author_id))
+        result = cursor.fetchone()
+        return result[0] > 0
+    except Exception as e:
+        logger.error("Error checking if content has author")
+        logger.error(e)
+        return False
+    finally:
+        cursor.close()
+
+# content = content_db.search_content(db, title_regex, description_regex, needed_tags, needed_characters, needed_authors,
+#                                             tags_to_exclude, characters_to_exclude, authors_to_exclude, allowed_sources, max_results, page)
+def search_content(db, needed_tags: list[int], needed_characters: list[int], needed_authors: list[int],
+                   tags_to_exclude: list[int], characters_to_exclude: list[int], authors_to_exclude: list[int], max_results: int, page: int) -> Union[ContentPageModel, None]:
+    cursor = db.cursor()
+    try:
+        logger.info("Searching using: tags: " + str(needed_tags) + " characters: " + str(needed_characters) + " authors: " + str(needed_authors) + " tags to avoid:" + str(tags_to_exclude) + " characters to exclude: " + str(characters_to_exclude) + " authors to exclude: " + str(authors_to_exclude))
+
+        first_search = "need_tags"
+        if len(needed_tags) == 0:
+            first_search = "need_characters"
+            if len(needed_characters) == 0:
+                first_search = "need_authors"
+                if len(needed_authors) == 0:
+                    return ContentPageModel(contents=[], total_pages=0, total_contents=0)
+
+        content_ids = []
+        if first_search == "need_tags":
+            # Get all content that have ALL needed tags
+            cursor.execute("SELECT content_id FROM nyapixcontent_tag WHERE tag_id = %s", (needed_tags[0],))
+            result = cursor.fetchall()
+            for row in result:
+                add_to_list = True
+                for tag_id in needed_tags[1:]:
+                    if not has_tag(db, row[0], tag_id):
+                        add_to_list = False
+                        break
+                if add_to_list:
+                    content_ids.append(row[0])
+        elif first_search == "need_characters":
+            # Get all content that have ALL needed characters
+            cursor.execute("SELECT content_id FROM nyapixcontent_characters WHERE character_id = %s", (needed_characters[0],))
+            result = cursor.fetchall()
+            for row in result:
+                add_to_list = True
+                for character_id in needed_characters[1:]:
+                    if not has_character(db, row[0], character_id):
+                        add_to_list = False
+                        break
+                if add_to_list:
+                    content_ids.append(row[0])
+        elif first_search == "need_authors":
+            # Get all content that have ALL needed authors
+            cursor.execute("SELECT content_id FROM nyapixcontent_author WHERE author_id = %s", (needed_authors[0],))
+            result = cursor.fetchall()
+            for row in result:
+                add_to_list = True
+                for author_id in needed_authors[1:]:
+                    if not has_author(db, row[0], author_id):
+                        add_to_list = False
+                        break
+                if add_to_list:
+                    content_ids.append(row[0])
+
+        after_forcing_tags = []
+        if len(needed_tags) > 0:
+            # Remove content that do not have all needed tags
+            for item in content_ids:
+                add_to_list = True
+                for tag_id in needed_tags:
+                    if not has_tag(db, item, tag_id):
+                        add_to_list = False
+                        break
+                if add_to_list:
+                    after_forcing_tags.append(item)
+        else:
+            after_forcing_tags = content_ids
+
+        logger.info("After forcing tags: " + str(after_forcing_tags))
+        after_forcing_characters = []
+        if len(needed_characters) > 0:
+            # Remove content that do not have all needed characters
+            for item in after_forcing_tags:
+                add_to_list = True
+                for character_id in needed_characters:
+                    if not has_character(db, item, character_id):
+                        add_to_list = False
+                        break
+                if add_to_list:
+                    after_forcing_characters.append(item)
+        else:
+            after_forcing_characters = after_forcing_tags
+
+        logger.info("After forcing characters: " + str(after_forcing_characters))
+        after_forcing_authors = []
+        if len(needed_authors) > 0:
+            # Remove content that do not have all needed authors
+            for item in after_forcing_characters:
+                add_to_list = True
+                for author_id in needed_authors:
+                    if not has_author(db, item, author_id):
+                        add_to_list = False
+                        break
+                if add_to_list:
+                    after_forcing_authors.append(item)
+        else:
+            after_forcing_authors = after_forcing_characters
+        logger.info("After forcing authors: " + str(after_forcing_authors))
+
+        logger.info("Got content ids: " + str(content_ids))
+        after_exclude_tags = []
+        if len(tags_to_exclude) > 0:
+            # Remove content that have any excluded tags
+            for item in after_forcing_authors:
+                add_to_list = True
+                for tag_id in tags_to_exclude:
+                    if has_tag(db, item, tag_id):
+                    if has_tag(db, item, tag_id):
+                        add_to_list = False
+                        break
+                if add_to_list:
+                    after_exclude_tags.append(item)
+        else:
+            after_exclude_tags = content_ids
+
+        logger.info("After excluding tags: " + str(after_exclude_tags))
+        after_exclude_characters = []
+        if len(characters_to_exclude) > 0:
+            # Remove content that have any excluded characters
+            for item in after_exclude_tags:
+                add_to_list = True
+                for character_id in characters_to_exclude:
+                    if has_character(db, item, character_id):
+                        add_to_list = False
+                        break
+                if add_to_list:
+                    after_exclude_characters.append(item)
+        else:
+            after_exclude_characters = after_exclude_tags
+
+        logger.info("After excluding characters: " + str(after_exclude_characters))
+        after_exclude_authors = after_exclude_characters
+        if len(authors_to_exclude) > 0:
+            # Remove content that have any excluded authors
+            for item in after_exclude_characters:
+                add_to_list = True
+                for author_id in authors_to_exclude:
+                    if has_author(db, item, author_id):
+                        add_to_list = False
+                        break
+                if add_to_list:
+                    after_exclude_authors.append(item)
+        else:
+            after_exclude_authors = after_exclude_characters
+        logger.info("After excluding authors: " + str(after_exclude_authors))
+
+        # Remove content that user does not have access to
+        after_exclude_authors = [item for item in after_exclude_authors if has_user_access(db, item, 1)]
+        logger.info("After excluding access: " + str(after_exclude_authors))
+
+        final_list = [get_content(db, item) for item in after_exclude_authors]
+
+        total = len(final_list)
+        total_pages = (total + max_results - 1) // max_results
+
+        logger.info("Final list: " + str(final_list))
+
+        return ContentPageModel(contents=final_list[max_results * (page - 1):max_results * page], total_pages=total_pages, total_contents=total)
+    except Exception as e:
+        logger.error("Error searching content in db")
+        logger.error(e)
+        return None
+    finally:
+        cursor.close()

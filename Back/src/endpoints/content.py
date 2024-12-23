@@ -61,6 +61,46 @@ async def get_my_content_endpoint(request: fastapi.Request, page: int = Query(..
         if db is not None:
             db.close()
 
+@router.get("/search", tags=["Content management"])
+async def search_content_endpoint(request: fastapi.Request,
+                                  needed_tags: list[int] = Query(None), needed_characters: list[int] = Query(None), needed_authors: list[int] = Query(None),
+                                  tags_to_exclude: list[int] = Query(None), characters_to_exclude: list[int] = Query(None), authors_to_exclude: list[int] = Query(None),
+                                  page: int = Query(1), max_results: int = Query(10)) -> models.ContentPageModel:
+    db = None
+    try:
+        db = connect_db()
+
+        if needed_tags is None:
+            needed_tags = []
+        if needed_characters is None:
+            needed_characters = []
+        if needed_authors is None:
+            needed_authors = []
+        if tags_to_exclude is None:
+            tags_to_exclude = []
+        if characters_to_exclude is None:
+            characters_to_exclude = []
+        if authors_to_exclude is None:
+            authors_to_exclude = []
+
+        content = content_db.search_content(db, needed_tags, needed_characters, needed_authors,
+                                            tags_to_exclude, characters_to_exclude, authors_to_exclude, max_results, page)
+
+        if content is None:
+            return Response(status_code=500)
+
+        for item in content.contents:
+            item.url = f"{request.base_url}{item.url}"
+
+        return content
+    except Exception as e:
+        logger.error("Error searching content")
+        logger.error(e)
+        return Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
 @router.get("/{content_id}", tags=["Content management"])
 async def get_content_endpoint(request: fastapi.Request, content_id: int) -> ContentModel:
     db = None
