@@ -68,13 +68,25 @@ def get_video_definition(video_path: str) -> dict:
     data = json.loads(result.stdout)
     return data["streams"][0]
 
+def get_image_definition(image_path: str) -> dict:
+    if not os.path.exists(image_path):
+        raise FileNotFoundError(f"Image file {image_path} not found")
+    result = subprocess.run(
+        [
+            "ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "json", image_path
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+    # Parse the JSON output
+    data = json.loads(result.stdout)
+    return data["streams"][0]
+
 def generate_video_miniature(video_path: str, time: int = 15, max_size: int = 480) -> str:
     if not os.path.exists(video_path):
         raise FileNotFoundError(f"Video file {video_path} not found")
 
     size = get_video_definition(video_path)
-
-    video_ratio = size["width"] / size["height"]
 
     if size["width"] > size["height"]:
         width_ratio = max_size / size["width"]
@@ -91,3 +103,25 @@ def generate_video_miniature(video_path: str, time: int = 15, max_size: int = 48
     )
 
     return f"{video_path}.png"
+
+def generate_image_miniature(image_path: str, max_size: int = 480) -> str:
+    if not os.path.exists(image_path):
+        raise FileNotFoundError(f"Image file {image_path} not found")
+
+    size = get_image_definition(image_path)
+
+    if size["width"] > size["height"]:
+        width_ratio = max_size / size["width"]
+        height_ratio = width_ratio
+    else:
+        height_ratio = max_size / size["height"]
+        width_ratio = height_ratio
+
+    subprocess.run(
+        [
+            "ffmpeg", "-i", image_path, "-vf", f"scale={int(size['width'] * width_ratio)}:{int(size['height'] * height_ratio)}", f"{image_path}.png"
+        ],
+        check=True
+    )
+
+    return f"{image_path}.png"
