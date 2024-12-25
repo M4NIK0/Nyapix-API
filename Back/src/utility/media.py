@@ -1,5 +1,6 @@
 import os
 import subprocess
+import json
 
 def split_video(video_path: str, output_path: str, duration: int = 10, bitrate: str = "1000k"):
     if not os.path.exists(output_path):
@@ -53,18 +54,40 @@ def convert_image_to_png(image_path: str) -> str:
 
     return f"{image_path}.png"
 
-def generate_video_miniature(video_path: str, time: int = 15, size: str = "320x240") -> str:
+def get_video_definition(video_path: str) -> dict:
+    if not os.path.exists(video_path):
+        raise FileNotFoundError(f"Video file {video_path} not found")
+    result = subprocess.run(
+        [
+            "ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries", "stream=width,height", "-of", "json", video_path
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT
+    )
+    # Parse the JSON output
+    data = json.loads(result.stdout)
+    return data["streams"][0]
+
+def generate_video_miniature(video_path: str, time: int = 15, max_size: int = 480) -> str:
     if not os.path.exists(video_path):
         raise FileNotFoundError(f"Video file {video_path} not found")
 
-    # Ensure the output path ends with a slash
-    output_path = os.path.join(video_path, ".miniature")
+    size = get_video_definition(video_path)
 
-    # Run ffmpeg command
+    video_ratio = size["width"] / size["height"]
+
+    if size["width"] > size["height"]:
+        width_ratio = max_size / size["width"]
+        height_ratio = width_ratio
+    else:
+        height_ratio = max_size / size["height"]
+        width_ratio = height_ratio
+
     subprocess.run(
         [
-            "ffmpeg", "-i", video_path, "-ss", str(time), "-vframes", "1", "-s", size, os.path.join(output_path, ".png")
+            "ffmpeg", "-i", video_path, "-ss", str(time), "-vframes", "1", "-vf", f"scale={int(size['width'] * width_ratio)}:{int(size['height'] * height_ratio)}", f"{video_path}.png"
         ],
         check=True
     )
-    return os.path.join(output_path, ".png")
+
+    return f"{video_path}.png"
