@@ -22,7 +22,7 @@ import os
 import utility.media as video_utility
 import hashlib
 
-from utility.media import convert_image_to_png
+from utility.media import convert_image_to_png, convert_audio_to_wav
 
 router = APIRouter()
 
@@ -268,6 +268,10 @@ async def post_content_endpoint(
             converted_path = convert_image_to_png(file_path)
             miniature_path = video_utility.generate_image_miniature(converted_path, 480)
 
+        if is_audio(file_type):
+            converted_path = convert_audio_to_wav(file_path)
+            miniature_path = None
+
         # Compute file hash
         file_hash = compute_file_hash(file_path)
         content_id = content_db.add_content(db, content_obj, file_hash, request.state.user.id)
@@ -283,7 +287,14 @@ async def post_content_endpoint(
             video_db.add_image(db, content_id, converted_path)
             os.remove(file_path)
 
-        content_db.add_miniature(db, content_id, miniature_path)
+        if is_audio(file_type):
+            video_db.add_audio(db, content_id, converted_path)
+            os.remove(file_path)
+
+        if miniature_path is not None:
+            content_db.add_miniature(db, content_id, miniature_path)
+            os.remove(miniature_path)
+
         os.remove(converted_path)
     except Exception as e:
         logger.error("Error adding content")

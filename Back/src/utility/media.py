@@ -54,6 +54,17 @@ def convert_image_to_png(image_path: str) -> str:
 
     return f"{image_path}.png"
 
+def convert_audio_to_wav(file_path: str) -> str:
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"Audio file {file_path} not found")
+    subprocess.run(
+        [
+            "ffmpeg", "-i", file_path, "-acodec", "pcm_s16le", "-ar", "48000", file_path + ".wav"
+        ],
+        check=True
+    )
+    return file_path + ".wav"
+
 def get_video_definition(video_path: str) -> dict:
     if not os.path.exists(video_path):
         raise FileNotFoundError(f"Video file {video_path} not found")

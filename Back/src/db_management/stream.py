@@ -132,3 +132,18 @@ def add_image(db, content_id: int, file_path: str) -> bool:
         return False
     finally:
         cursor.close()
+
+def add_audio(db, content_id: int, file_path: str) -> bool:
+    cursor = db.cursor()
+    try:
+        with open(file_path, "rb") as file:
+            data = file.read()
+            cursor.execute("INSERT INTO nyapixaudio (content_id, data) VALUES (%s, %s)", (content_id, data))
+        db.commit()
+        return True
+    except Exception as e:
+        logger.error("Error adding audio")
+        logger.error(e)
+        return False
+    finally:
+        cursor.close()

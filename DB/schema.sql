@@ -194,6 +194,13 @@ CREATE TABLE IF NOT EXISTS nyapixvideo ( -- video table
     FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS nyapixaudio ( -- video table
+    id SERIAL PRIMARY KEY,
+    data BYTEA NOT NULL,
+    content_id INT NOT NULL,
+    FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS nyapixminiature ( -- miniature table
     id SERIAL PRIMARY KEY,
     data BYTEA NOT NULL,
