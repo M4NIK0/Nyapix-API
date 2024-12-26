@@ -235,11 +235,15 @@ async def post_content_endpoint(
             return Response(content="Invalid file format", status_code=400)
 
         converted_path = None
+        miniature_path = None
+
         if is_video(file_type):
             converted_path = video_utility.convert_video_to_mp4(f"/tmp/{random_name}")
+            miniature_path = video_utility.generate_video_miniature(converted_path, int(video_utility.get_video_length(converted_path) / 4), 480)
 
         if is_image(file_type):
             converted_path = convert_image_to_png(file_path)
+            miniature_path = video_utility.generate_image_miniature(converted_path, 480)
 
         # Compute file hash
         file_hash = compute_file_hash(file_path)
@@ -256,6 +260,7 @@ async def post_content_endpoint(
             video_db.add_image(db, content_id, converted_path)
             os.remove(file_path)
 
+        content_db.add_miniature(db, content_id, miniature_path)
         os.remove(converted_path)
     except Exception as e:
         logger.error("Error adding content")

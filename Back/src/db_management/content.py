@@ -366,7 +366,6 @@ def search_content(db, needed_tags: list[int], needed_characters: list[int], nee
                 add_to_list = True
                 for tag_id in tags_to_exclude:
                     if has_tag(db, item, tag_id):
-                    if has_tag(db, item, tag_id):
                         add_to_list = False
                         break
                 if add_to_list:
@@ -421,5 +420,19 @@ def search_content(db, needed_tags: list[int], needed_characters: list[int], nee
         logger.error("Error searching content in db")
         logger.error(e)
         return None
+    finally:
+        cursor.close()
+
+def add_miniature(db, content_id: int, miniature_path: str) -> bool:
+    cursor = db.cursor()
+    try:
+        with open(miniature_path, "rb") as file:
+            cursor.execute("INSERT INTO nyapixminiature (content_id, data) VALUES (%s, %s)", (content_id, file.read()))
+        db.commit()
+        return True
+    except Exception as e:
+        logger.error("Error adding miniature")
+        logger.error(e)
+        return False
     finally:
         cursor.close()
