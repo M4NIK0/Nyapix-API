@@ -101,6 +101,29 @@ async def search_content_endpoint(request: fastapi.Request,
         if db is not None:
             db.close()
 
+@router.get("/{content_id}/thumb")
+async def get_content_thumb_endpoint(request: fastapi.Request, content_id: int):
+    db = None
+    try:
+        db = connect_db()
+
+        if not has_user_access(db, request.state.user.id, content_id):
+            return Response(status_code=403)
+
+        miniature = content_db.get_miniature(db, content_id)
+
+        if miniature is None:
+            return Response(status_code=404)
+
+        return StreamingResponse(async_bytes_it(miniature), media_type="image/png")
+    except Exception as e:
+        logger.error("Error getting content thumbnail")
+        logger.error(e)
+        return Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
 @router.get("/{content_id}", tags=["Content management"])
 async def get_content_endpoint(request: fastapi.Request, content_id: int) -> ContentModel:
     db = None
