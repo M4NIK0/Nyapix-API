@@ -101,7 +101,7 @@ async def search_content_endpoint(request: fastapi.Request,
         if db is not None:
             db.close()
 
-@router.get("/{content_id}/thumb")
+@router.get("/{content_id}/thumb", tags=["Content management"])
 async def get_content_thumb_endpoint(request: fastapi.Request, content_id: int):
     db = None
     try:
