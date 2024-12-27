@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import LoginForm from '@/components/login/LoginForm.vue'
+import LogoutComponent from "@/components/logout/LogoutComponent.vue";
 import HomeView from '@/views/HomeView.vue'
 
 const router = createRouter({
@@ -14,6 +15,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: LoginForm
+    },
+    {
+      path: '/logout',
+      name: 'logout',
+      component: LogoutComponent
     },
   ]
 })
