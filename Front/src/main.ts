@@ -9,7 +9,11 @@ const app = createApp(App)
 
 app.config.globalProperties.$setTheme = (theme: string) => {
   const themeLink = document.getElementById('theme-link') as HTMLLinkElement;
-  themeLink.href = `./assets/styles/theme-${theme}.css`;
+  if (themeLink) {
+    themeLink.href = `./assets/styles/theme-${theme}.css`;
+  } else {
+    console.error('Theme link element not found');
+  }
 };
 
 app.use(router)
