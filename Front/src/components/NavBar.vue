@@ -13,12 +13,13 @@
           <router-link to="/logout" class="navbar-link">Logout</router-link>
         </li>
       </ul>
+      <ThemeDropdown />
     </div>
   </nav>
 </template>
 
 <script setup lang="ts">
-
+import ThemeDropdown from './theme/ThemeDropdown.vue';
 </script>
 
 <style scoped>
