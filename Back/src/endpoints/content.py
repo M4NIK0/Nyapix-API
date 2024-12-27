@@ -295,6 +295,8 @@ async def post_content_endpoint(
             os.remove(miniature_path)
 
         os.remove(converted_path)
+
+        return Response(status_code=200)
     except Exception as e:
         logger.error("Error adding content")
         logger.error(e)
