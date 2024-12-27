@@ -5,6 +5,7 @@ RUN apt-get update && apt-get install libgl1 ffmpeg -y
 ADD  pyproject.toml .
 RUN pdm install
 COPY  ./src /app/src
+COPY  ./assets /app/assets
 CMD pdm run python src/main.py
 
 LABEL maintainer="Maniko"

@@ -124,6 +124,12 @@ def get_content(db, content_id: int) -> Union[ContentModel, None]:
         if result is not None:
             to_return.url = f"v1/image/{result[0]}"
 
+        cursor.execute("SELECT id FROM nyapixaudio WHERE content_id = %s", (content_id,))
+        result = cursor.fetchone()
+
+        if result is not None:
+            to_return.url = f"v1/audio/{result[0]}"
+
         return to_return
     except Exception as e:
         logger.error("Error getting content")
@@ -440,11 +446,13 @@ def add_miniature(db, content_id: int, miniature_path: str) -> bool:
 def get_miniature(db, content_id: int) -> Union[bytes, None]:
     cursor = db.cursor()
     try:
-        cursor.execute("SELECT data FROM nyapixminiature WHERE content_id = %s", (content_id,))
+        cursor.execute("SELECT COUNT(*) FROM nyapixaudio WHERE content_id = %s", (content_id,))
         result = cursor.fetchone()
-        if result is None:
-            return None
-        return result[0]
+        if result[0] == 0:
+            with open("./assets/music.png", "rb") as file:
+                return file.read()
+        cursor.execute("SELECT data FROM nyapixaudio WHERE content_id = %s", (content_id,))
+        return cursor.fetchone()[0]
     except Exception as e:
         logger.error("Error getting miniature")
         logger.error(e)

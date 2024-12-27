@@ -33,7 +33,7 @@ def is_image(file_type: str) -> bool:
     return file_type in ["image/png", "image/jpeg", "image/bmp", "image/webp"]
 
 def is_audio(file_type: str) -> bool:
-    return file_type in ["audio/mp3", "audio/ogg", "audio/wav"]
+    return file_type in ["audio/mp3", "audio/ogg", "audio/wav", "audio/mpeg"]
 
 def is_file_valid(file_type: str) -> bool:
     return is_video(file_type) or is_image(file_type) or is_audio(file_type)
@@ -270,7 +270,6 @@ async def post_content_endpoint(
 
         if is_audio(file_type):
             converted_path = convert_audio_to_wav(file_path)
-            miniature_path = None
 
         # Compute file hash
         file_hash = compute_file_hash(file_path)
@@ -343,6 +342,27 @@ async def get_image_endpoint(request: fastapi.Request, image_id: int):
         return StreamingResponse(async_bytes_it(image), media_type="image/png")
     except Exception as e:
         logger.error("Error getting image")
+        logger.error(e)
+        return Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
+@router.get("/audio/{audio_id}", tags=["Content management"])
+async def get_audio_endpoint(request: fastapi.Request, audio_id: int):
+    db = None
+    try:
+        db = connect_db()
+
+        if not has_user_access(db, request.state.user.id, audio_id):
+            return Response(status_code=403)
+
+        audio = video_db.get_audio(db, audio_id)
+        if audio is None:
+            return Response(status_code=404)
+        return StreamingResponse(async_bytes_it(audio), media_type="audio/wav")
+    except Exception as e:
+        logger.error("Error getting audio")
         logger.error(e)
         return Response(status_code=500)
     finally:

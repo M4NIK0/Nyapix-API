@@ -48,6 +48,19 @@ def get_image(db, content_id: int) -> Union[bytes, None]:
     finally:
         cursor.close()
 
+def get_audio(db, content_id: int) -> Union[bytes, None]:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT data FROM nyapixaudio WHERE id = %s", (content_id,))
+        result = cursor.fetchone()
+        return result[0]
+    except Exception as e:
+        logger.error("Error getting audio")
+        logger.error(e)
+        return None
+    finally:
+        cursor.close()
+
 # def add_video(db, content_id: int, file_path: str) -> bool:
 #     cursor = db.cursor()
 #     try:
