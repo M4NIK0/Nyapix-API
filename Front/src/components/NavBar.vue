@@ -7,9 +7,6 @@
           <router-link to="/" class="navbar-link">Home</router-link>
         </li>
         <li class="navbar-item">
-          <router-link to="/about" class="navbar-link">About</router-link>
-        </li>
-        <li class="navbar-item">
           <router-link to="/logout" class="navbar-link">Logout</router-link>
         </li>
       </ul>
