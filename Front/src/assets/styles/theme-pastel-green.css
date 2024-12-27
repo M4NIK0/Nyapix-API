@@ -1,7 +1,7 @@
 :root {
-    --primary-color: #ffb6c1; /* Pastel pink */
+    --primary-color: #77dd77; /* Pastel green */
     --text-color: #333;
-    --background-color: #ffcccb; /* Darker pink */
+    --background-color: #c1e1c1; /* Lighter green */
     --border-color: #000000;
 }
 
@@ -28,7 +28,7 @@ button {
 }
 
 button:hover {
-    background-color: #ffb6c1;
+    background-color: #77dd77;
 }
 
 input {

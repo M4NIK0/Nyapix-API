@@ -1,6 +1,18 @@
 :root {
-    --primary-color: #ff69b4;
+    --primary-color: #000000;
     --text-color: #fff;
-    --background-color: #8b0000;
+    --background-color: #3c3c3c;
     --border-color: #ffffff;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+button {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
 }
