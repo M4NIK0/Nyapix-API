@@ -21,4 +21,3 @@ const closePopup = () => {
   <router-view />
   <ErrorPopup v-if="errorMessage" :message="errorMessage" @close="closePopup" />
 </template>
-

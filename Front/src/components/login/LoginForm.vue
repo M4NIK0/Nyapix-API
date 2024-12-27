@@ -39,7 +39,7 @@ const login = async () => {
     console.log('Login successful:', data);
 
     // Set JWT token as a local storage item
-    localStorage.setItem('token', data.token);
+    localStorage.setItem('token', data.access_token);
 
     // Redirect to home page
     await router.push('/');
