@@ -5,6 +5,7 @@ import NyapixLogo from "@/components/NyapixLogo.vue";
 
 <template>
   <div>
+    <h1>Home</h1>
     <NavBar />
     <NyapixLogo size="100px" />
   </div>
