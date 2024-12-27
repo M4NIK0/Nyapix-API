@@ -1,16 +1,66 @@
+<template>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <router-link to="/" class="navbar-logo">Nyapix</router-link>
+      <ul class="navbar-menu">
+        <li class="navbar-item">
+          <router-link to="/" class="navbar-link">Home</router-link>
+        </li>
+        <li class="navbar-item">
+          <router-link to="/about" class="navbar-link">About</router-link>
+        </li>
+        <li class="navbar-item">
+          <router-link to="/logout" class="navbar-link">Logout</router-link>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</template>
+
 <script setup lang="ts">
-import LogoutComponent from '@/components/logout/LogoutComponent.vue'
+
 </script>
 
-<template>
-  <nav class="fixed top-0 left-0 w-full bg-gray-800 p-4 flex items-center justify-between text-white z-50">
+<style scoped>
+.navbar {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  border-bottom: 2px solid var(--border-color);
+}
 
-    <div class="flex-1 ml-14 flex justify-center">
-      <h1 class="text-xl font-bold">Dashboard</h1>
-    </div>
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+}
 
-    <LogoutComponent />
-  </nav>
-  <br>
-  <br>
-</template>
+.navbar-logo {
+  text-decoration: none;
+  font-size: 1.5rem;
+  color: var(--text-color);
+}
+
+.navbar-menu {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-item {
+  margin-left: 1rem;
+}
+
+.navbar-link {
+  text-decoration: none;
+  font-size: 1rem;
+}
+
+.navbar-link:hover {
+  text-decoration: underline;
+}
+</style>

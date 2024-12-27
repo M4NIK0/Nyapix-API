@@ -4,28 +4,18 @@ import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-const email = ref('');
+const username = ref('');
 const password = ref('');
-const emailError = ref('');
 const passwordError = ref('');
 const formError = ref('');
 const apiLoginUrl = import.meta.env.VITE_BACKEND_URL + '/v1/login';
 
-const validateEmail = (valueMail: string) =>
-    valueMail.match(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i);
-
 const login = async () => {
-  emailError.value = '';
   passwordError.value = '';
   formError.value = '';
 
-  if (!validateEmail(email.value)) {
-    emailError.value = 'Incorrect Email';
-    return;
-  }
-
   const requestBody = {
-    email: email.value,
+    username: username.value,
     password: password.value,
   };
 
@@ -33,6 +23,7 @@ const login = async () => {
     const response = await fetch(apiLoginUrl, {
       method: 'POST',
       headers: {
+        'accept': 'application/json',
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(requestBody),
@@ -56,6 +47,7 @@ const login = async () => {
     console.error('Login failed:', error);
   }
 };
+
 onMounted(async () => {
   document.title = "Login"
 });
@@ -68,8 +60,7 @@ onMounted(async () => {
       <form @submit.prevent="login" class="mt-8 mb-8">
         <p v-if="formError" class="text-red-500 text-sm">{{ formError }}</p>
         <div class="mb-4">
-          <input type="text" id="email_login" v-model="email" placeholder="example@email.com" required class="w-full p-2 box-border text-black placeholder-neutral-950" />
-          <p v-if="emailError" class="text-red-500 text-sm">{{ emailError }}</p>
+          <input type="text" id="email_login" v-model="username" placeholder="username" required class="w-full p-2 box-border text-black placeholder-neutral-950" />
         </div>
         <div class="mb-4">
           <input type="password" id="password_login" v-model="password" placeholder="password" required class="w-full p-2 box-border text-black placeholder-neutral-950" />
