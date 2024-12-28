@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { defineProps, ref, onMounted, watch } from "vue";
+import {defineProps, ref, watch} from "vue";
 import axios from "axios";
 
 // Define the type of the search results prop
@@ -20,31 +20,35 @@ const props = defineProps<{
 // Store the images for each result
 const images = ref<{ [key: number]: string }>({});
 
-// Function to retrieve the bearer token from localStorage
+const API_BASE = import.meta.env.VITE_BACKEND_URL + '/v1';
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// Fetch the image for a specific result using its `url` field
-const fetchImage = async (url: string, id: number) => {
+// Fetch the image for a specific result using its `id`
+const fetchImage = async (id: number) => {
   try {
-    // Replace `/v1/image` with `/v1/content/image` in the URL
-    const imageUrl = url.replace('/v1/image', '/v1/content/image');
+    // Construct the URL based on the result's id
+    const imageUrl = `${API_BASE}/content/${id}/thumb`; // Use the new endpoint format
     const response = await axios.get(imageUrl, {
       headers: getAuthHeader(),
+      responseType: 'blob' // Expect the image as a binary Blob
     });
-    images.value[id] = response.data.imageUrl || '';
+
+    // Convert the Blob to a URL and store it
+    const imageBlob = response.data;
+    images.value[id] = URL.createObjectURL(imageBlob);
   } catch (error) {
     console.error("Error fetching image for:", id, error);
-    images.value[id] = '';
+    images.value[id] = ''; // Set a fallback value if an error occurs
   }
 };
 
 // Function to fetch images for all results
 const fetchImagesForAllResults = () => {
   props.searchResults.forEach((result) => {
-    fetchImage(result.url, result.id);
+    fetchImage(result.id); // Fetch image based on the result's id
   });
 };
 
@@ -95,7 +99,7 @@ const handleClick = (result: { id: number, title: string }) => {
 }
 
 .result-item {
-  width: calc(20% - 20px);
+  width: calc(20% - 20px); /* Adjust for 5 items per row */
   cursor: pointer;
   background-color: #f4f4f4;
   border-radius: 8px;
