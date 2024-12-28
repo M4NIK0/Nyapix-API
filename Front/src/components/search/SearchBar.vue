@@ -165,30 +165,51 @@ const validateSearchResults = async () => {
     const characters = structuredQuery.value.characters.filter(character => character.id).map(character => character.id);
     const authors = structuredQuery.value.authors.filter(author => author.id).map(author => author.id);
 
-    // Prepare the query parameters, including only non-empty values
-    const params: Record<string, string> = {
+    // Prepare the query parameters
+    const params: Record<string, string | string[]> = {
       page: '1',
       max_results: '25',
     };
 
-    // Add tags to the query if not empty
+    // Add multiple `needed_tags` if there are tags
     if (tags.length > 0) {
-      params.needed_tags = tags.join(',');
+      tags.forEach(tagId => {
+        params['needed_tags'] = params['needed_tags'] ? [...(params['needed_tags'] as string[]), tagId.toString()] : [tagId.toString()];
+      });
     }
 
-    // Add characters to the query if not empty
+    // Add multiple `needed_characters` if there are characters
     if (characters.length > 0) {
-      params.needed_characters = characters.join(',');
+      characters.forEach(characterId => {
+        params['needed_characters'] = params['needed_characters'] ? [...(params['needed_characters'] as string[]), characterId.toString()] : [characterId.toString()];
+      });
     }
 
-    // Add authors to the query if not empty
+    // Add multiple `needed_authors` if there are authors
     if (authors.length > 0) {
-      params.needed_authors = authors.join(',');
+      authors.forEach(authorId => {
+        params['needed_authors'] = params['needed_authors'] ? [...(params['needed_authors'] as string[]), authorId.toString()] : [authorId.toString()];
+      });
     }
+
+    // Custom query string serializer to avoid the [] in the query parameters
+    const customParamsSerializer = (params: Record<string, string | string[]>) => {
+      const queryString = Object.keys(params)
+        .map(key => {
+          const value = params[key];
+          if (Array.isArray(value)) {
+            return value.map(val => `${key}=${val}`).join('&');
+          }
+          return `${key}=${value}`;
+        })
+        .join('&');
+      return queryString;
+    };
 
     // Send the request to the API
     const response = await axios.get(`${API_BASE}/content/search`, {
       params,
+      paramsSerializer: customParamsSerializer, // Using custom serializer
       headers: getAuthHeader(),
     });
 
@@ -199,7 +220,7 @@ const validateSearchResults = async () => {
       emit('update:searchResults', searchResults.value);
     } else {
       console.log('No search results found');
-      searchResults.value = response.data.contents;
+      searchResults.value = [];
       emit('update:searchResults', searchResults.value);
     }
   } catch (error) {
@@ -251,7 +272,6 @@ const validateSearchResults = async () => {
         <span :class="result.type">{{ result.name }} ({{ result.type }})</span>
       </li>
     </ul>
-    <!-- Add the specific class to differentiate the buttons -->
     <button @click="validateSearchResults" class="validate_button">Validate Search</button>
   </div>
 </template>
