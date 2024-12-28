@@ -1,35 +1,38 @@
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 
-const searchQuery = ref('');
-const dropdownResults = ref<Array<{ name: string, type: string }>>([]); // Store both name and type
+const dropdownResults = ref<Array<{ name: string, type: string }>>([]);
 const isDropdownVisible = ref(false);
 
-// API Base URL
-const API_BASE = import.meta.env.VITE_BACKEND_URL + '/v1';
+// Data structure to store the search results and query
+const structuredQuery = ref({
+  tags: [] as string[],
+  characters: [] as string[],
+  authors: [] as string[],
+});
 
-// Retrieve the token dynamically from localStorage
+const API_BASE = import.meta.env.VITE_BACKEND_URL + '/v1';
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// Extract the current word being typed
+const searchQuery = ref(''); // Add a ref for the search query
+
+// Extract the current word
 const currentWord = computed(() => {
   const words = searchQuery.value.split(' ');
   return words[words.length - 1];
 });
 
-// Fetch data from endpoints
+// Fetch dropdown suggestions
 const fetchResults = async (word: string) => {
   if (!word) {
     dropdownResults.value = [];
     return;
   }
-
   try {
-    // Parallel API calls
     const [tags, characters, authors] = await Promise.all([
       axios.get(`${API_BASE}/tags/search`, {
         params: { tag_name: word, max_results: 15 },
@@ -45,19 +48,15 @@ const fetchResults = async (word: string) => {
       }),
     ]);
 
-    // Extract results from the correct property
     const tagsResults = tags.data.tags || [];
     const charactersResults = characters.data.characters || [];
     const authorsResults = authors.data.authors || [];
 
-    // Combine and limit results
-    const combined = [
-      ...tagsResults.slice(0, 7).map((item: { name: string }) => ({ name: item.name, type: 'tag' })),
-      ...charactersResults.slice(0, 7).map((item: { name: string }) => ({ name: item.name, type: 'character' })),
-      ...authorsResults.slice(0, 6).map((item: { name: string }) => ({ name: item.name, type: 'author' })),
-    ].slice(0, 20);
-
-    dropdownResults.value = combined;
+    dropdownResults.value = [
+      ...tagsResults.map((item: { name: string }) => ({ name: item.name, type: 'tag' })),
+      ...charactersResults.map((item: { name: string }) => ({ name: item.name, type: 'character' })),
+      ...authorsResults.map((item: { name: string }) => ({ name: item.name, type: 'author' })),
+    ];
     isDropdownVisible.value = dropdownResults.value.length > 0;
   } catch (error) {
     console.error('Error fetching search results:', error);
@@ -65,8 +64,64 @@ const fetchResults = async (word: string) => {
   }
 };
 
-const getResultClass = (result: { type: string }) => {
-  return result.type;
+// Add selected item to structured query
+const addToStructuredQuery = (result: { name: string, type: string }) => {
+  const typeMap: Record<string, keyof typeof structuredQuery.value> = {
+    tag: 'tags',
+    character: 'characters',
+    author: 'authors',
+  };
+
+  const queryKey = typeMap[result.type];
+  if (!queryKey) {
+    console.error(`Unexpected result type: ${result.type}`);
+    return;
+  }
+
+  // Prepend the correct prefix before pushing to the structuredQuery
+  let prefixedName = result.name;
+  if (result.type === 'tag') {
+    prefixedName = 'tag:' + result.name;
+  } else if (result.type === 'character') {
+    prefixedName = 'character:' + result.name;
+  } else if (result.type === 'author') {
+    prefixedName = 'author:' + result.name;
+  }
+
+  // Only add the result if it's not already included
+  if (!structuredQuery.value[queryKey].includes(prefixedName)) {
+    structuredQuery.value[queryKey].push(prefixedName);
+  }
+};
+
+// Remove an item from structured query
+const removeFromStructuredQuery = (type: string, name: string) => {
+  console.log('Removing:', name);
+  const typeMap: Record<string, keyof typeof structuredQuery.value> = {
+    tag: 'tags',
+    character: 'characters',
+    author: 'authors',
+  };
+
+  const queryKey = typeMap[type];
+  if (!queryKey) {
+    console.error(`Unexpected type: ${type}`);
+    return;
+  }
+
+  // Prepend the correct prefix only if the name does not already contain it
+  let prefixedName = name;
+  if (type === 'tag' && !name.startsWith('tag:')) {
+    prefixedName = 'tag:' + name;
+  } else if (type === 'character' && !name.startsWith('character:')) {
+    prefixedName = 'character:' + name;
+  } else if (type === 'author' && !name.startsWith('author:')) {
+    prefixedName = 'author:' + name;
+  }
+
+  // Remove the item from the array and create a new array to trigger reactivity
+  structuredQuery.value[queryKey] = structuredQuery.value[queryKey].filter((item) => item !== prefixedName);
+  console.log('Structured query:', structuredQuery.value);
 };
 
 // Watch for changes to the current word
@@ -78,14 +133,6 @@ watch(currentWord, (word) => {
   }
 });
 
-// Autocomplete word
-const autocompleteWord = (result: { name: string, type: string }) => {
-  const words = searchQuery.value.split(' ');
-  words[words.length - 1] = result.name; // Set the name
-  searchQuery.value = words.join(' ');
-  isDropdownVisible.value = false; // Hide dropdown
-};
-
 // Close dropdown if user clicks outside
 const closeDropdown = (event: MouseEvent) => {
   const searchBar = document.querySelector('.search-bar-container');
@@ -94,12 +141,10 @@ const closeDropdown = (event: MouseEvent) => {
   }
 };
 
-// Add event listener to close dropdown on outside click
 onMounted(() => {
   document.addEventListener('mousedown', closeDropdown);
 });
 
-// Remove event listener on component unmount
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', closeDropdown);
 });
@@ -107,20 +152,45 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="search-bar-container">
+    <div class="selected-items">
+      <span
+        v-for="(item, index) in structuredQuery.tags"
+        :key="'tag-' + index"
+        class="tag-item"
+      >
+        {{ item }}
+        <button @click="removeFromStructuredQuery('tag', item)">x</button>
+      </span>
+      <span
+        v-for="(item, index) in structuredQuery.characters"
+        :key="'character-' + index"
+        class="character-item"
+      >
+        {{ item }}
+        <button @click="removeFromStructuredQuery('character', item)">x</button>
+      </span>
+      <span
+        v-for="(item, index) in structuredQuery.authors"
+        :key="'author-' + index"
+        class="author-item"
+      >
+        {{ item }}
+        <button @click="removeFromStructuredQuery('author', item)">x</button>
+      </span>
+    </div>
     <input
       type="text"
       v-model="searchQuery"
       placeholder="Search..."
-      @input="fetchResults(currentWord)"
       @focus="isDropdownVisible = dropdownResults.length > 0"
     />
     <ul v-if="isDropdownVisible" class="dropdown">
-      <li v-for="(result, index) in dropdownResults" :key="index" @click="autocompleteWord(result)">
-        <span :class="getResultClass(result)">
-          {{ result.name }}
-          <span v-if="result.type === 'character'">(character)</span>
-          <span v-if="result.type === 'author'">(author)</span>
-        </span>
+      <li
+        v-for="(result, index) in dropdownResults"
+        :key="index"
+        @click="addToStructuredQuery(result)"
+      >
+        <span :class="result.type">{{ result.name }} ({{ result.type }})</span>
       </li>
     </ul>
   </div>
@@ -181,5 +251,32 @@ input {
 
 .tag {
   color: black; /* Regular tags will be black */
+}
+
+.selected-items {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.tag-item,
+.character-item,
+.author-item {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 0.5rem 0.5rem 0;
+  padding: 0.2rem 0.5rem;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+button {
+  margin-left: 0.5rem;
+  background: none;
+  border: none;
+  color: red;
+  cursor: pointer;
 }
 </style>
