@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import NavBar from "@/components/NavBar.vue";
 import SearchBar from "@/components/search/SearchBar.vue";
+import {ref} from "vue";
+
+const searchResults = ref<Array<{ id: number, title: string, description: string, source: number, tags: number[], characters: number[], authors: number[], is_private: boolean, url: string }>>([]);
+const updateSearchResults = (results: any[]) => {
+  searchResults.value = results;
+};
 </script>
 
 <template>
@@ -14,11 +20,23 @@ import SearchBar from "@/components/search/SearchBar.vue";
     <main class="main-content">
       <aside class="sidebar">
         <div class="searchbar">
-          <SearchBar />
+          <SearchBar @update:searchResults="updateSearchResults" />
         </div>
       </aside>
       <section class="content">
-        <h1>A</h1>
+        <h1>Search Results</h1>
+        <ul>
+          <li v-for="result in searchResults" :key="result.id" class="result-item">
+            <h2>{{ result.title }}</h2>
+            <p><strong>Description:</strong> {{ result.description }}</p>
+            <p><strong>Source:</strong> {{ result.source }}</p>
+            <p><strong>Tags:</strong> {{ result.tags.join(', ') }}</p>
+            <p><strong>Characters:</strong> {{ result.characters.join(', ') }}</p>
+            <p><strong>Authors:</strong> {{ result.authors.join(', ') }}</p>
+            <p><strong>Private:</strong> {{ result.is_private ? 'Yes' : 'No' }}</p>
+            <a :href="result.url" target="_blank">View Content</a>
+          </li>
+        </ul>
       </section>
     </main>
   </div>
