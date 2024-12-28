@@ -123,25 +123,8 @@ CREATE TABLE IF NOT EXISTS nyapixcontent_characters ( -- content characters tabl
     FOREIGN KEY (character_id) REFERENCES nyapixcharacter(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS nyapixalbum_tag ( -- album tag table
-    album_id INT NOT NULL,
-    tag_id INT NOT NULL,
-    PRIMARY KEY (album_id, tag_id),
-    FOREIGN KEY (album_id) REFERENCES nyapixalbum(id) ON DELETE CASCADE,
-    FOREIGN KEY (tag_id) REFERENCES nyapixtag(id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS nyapixalbum_author ( -- album author table
-    album_id INT NOT NULL,
-    author_id INT NOT NULL,
-    PRIMARY KEY (album_id, author_id),
-    FOREIGN KEY (album_id) REFERENCES nyapixalbum(id) ON DELETE CASCADE,
-    FOREIGN KEY (author_id) REFERENCES nyapixauthor(id) ON DELETE CASCADE
-);
-
 CREATE TABLE IF NOT EXISTS nyapixalbum_pages ( -- album pages table
     album_id SERIAL PRIMARY KEY,
-    page_number INT NOT NULL,
     content_id INT NOT NULL,
     FOREIGN KEY (album_id) REFERENCES nyapixalbum(id) ON DELETE CASCADE,
     FOREIGN KEY (content_id) REFERENCES nyapixcontent(id) ON DELETE CASCADE
