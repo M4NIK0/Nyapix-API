@@ -24,7 +24,7 @@ import SearchBar from "@/components/search/SearchBar.vue";
   </div>
 </template>
 
-<style scoped>
+<style>
 /* Ensure the container spans the full viewport */
 .home-view {
   display: flex;
