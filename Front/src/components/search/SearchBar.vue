@@ -2,6 +2,10 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 
+const emit = defineEmits<{
+  (event: 'update:searchResults', searchResults: any): void;
+}>();
+
 const dropdownResults = ref<Array<{ name: string, type: string, id: number }>>([]);
 const isDropdownVisible = ref(false);
 
@@ -20,7 +24,7 @@ const getAuthHeader = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-const searchQuery = ref(''); // Add a ref for the search query
+const searchQuery = ref('');
 
 // Extract the current word
 const currentWord = computed(() => {
@@ -191,15 +195,15 @@ const validateSearchResults = async () => {
     // Handle the response
     if (response.data && response.data.contents) {
       console.log('Search results:', response.data.contents);
-
-      // Store the results in the searchResults ref
       searchResults.value = response.data.contents;
+      emit('update:searchResults', searchResults.value);
     } else {
-      alert('No content found.');
+      console.log('No search results found');
+      searchResults.value = response.data.contents;
+      emit('update:searchResults', searchResults.value);
     }
   } catch (error) {
     console.error('Error validating search results:', error);
-    alert('An error occurred while validating the search results.');
   }
 };
 </script>
