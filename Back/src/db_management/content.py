@@ -124,6 +124,12 @@ def get_content(db, content_id: int) -> Union[ContentModel, None]:
         if result is not None:
             to_return.url = f"v1/image/{result[0]}"
 
+        cursor.execute("SELECT id FROM nyapixaudio WHERE content_id = %s", (content_id,))
+        result = cursor.fetchone()
+
+        if result is not None:
+            to_return.url = f"v1/audio/{result[0]}"
+
         return to_return
     except Exception as e:
         logger.error("Error getting content")
@@ -148,6 +154,21 @@ def has_user_access(db, content_id: int, user_id: int) -> bool:
         logger.error("Error checking user access")
         logger.error(e)
         return False
+    finally:
+        cursor.close()
+
+def get_content_user_id(db, content_id: int) -> Union[int, None]:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT user_id FROM nyapixcontent WHERE id = %s", (content_id,))
+        result = cursor.fetchone()
+        if result is None:
+            return None
+        return result[0]
+    except Exception as e:
+        logger.error("Error getting user id from content")
+        logger.error(e)
+        return None
     finally:
         cursor.close()
 
@@ -196,6 +217,20 @@ def get_image_content_id(db, image_id: int) -> Union[int, None]:
     finally:
         cursor.close()
 
+def get_audio_content_id(db, audio_id: int) -> Union[int, None]:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT content_id FROM nyapixaudio WHERE id = %s", (audio_id,))
+        result = cursor.fetchone()
+        if result is None:
+            return None
+        return result[0]
+    except Exception as e:
+        logger.error("Error getting content id from audio")
+        logger.error(e)
+        return None
+    finally:
+        cursor.close()
 
 def get_user_content(db, user_id: int, max_results: int, page: int) -> Union[ContentPageModel, None]:
     cursor = db.cursor()
@@ -440,11 +475,13 @@ def add_miniature(db, content_id: int, miniature_path: str) -> bool:
 def get_miniature(db, content_id: int) -> Union[bytes, None]:
     cursor = db.cursor()
     try:
-        cursor.execute("SELECT data FROM nyapixminiature WHERE content_id = %s", (content_id,))
+        cursor.execute("SELECT COUNT(*) FROM nyapixaudio WHERE content_id = %s", (content_id,))
         result = cursor.fetchone()
-        if result is None:
-            return None
-        return result[0]
+        if result[0] == 0:
+            with open("./assets/music.png", "rb") as file:
+                return file.read()
+        cursor.execute("SELECT data FROM nyapixaudio WHERE content_id = %s", (content_id,))
+        return cursor.fetchone()[0]
     except Exception as e:
         logger.error("Error getting miniature")
         logger.error(e)

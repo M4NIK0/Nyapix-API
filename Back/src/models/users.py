@@ -31,3 +31,8 @@ class FullUserModel(UserModel):
     content: int
     albums: int
     creation_date: datetime.datetime
+
+class UserPageModel(BaseModel):
+    users: list[UserModel]
+    total: int
+    pages: int
