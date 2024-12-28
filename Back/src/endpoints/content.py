@@ -11,8 +11,9 @@ import db_management.characters as characters_db
 import db_management.authors as authors_db
 import db_management.stream as video_db
 import db_management.sources as sources_db
-from db_management.content import has_user_access, get_image_content_id, get_video_content_id, is_user_content
+from db_management.content import has_user_access, get_image_content_id, get_video_content_id, is_user_content, get_audio_content_id
 from models.content import ContentModel
+from models.users import UserModel
 from utility.logging import logger
 from fastapi import APIRouter, UploadFile, File, Depends, Query
 from fastapi.responses import Response
@@ -21,6 +22,7 @@ import decorators.users_type as users_type
 import os
 import utility.media as video_utility
 import hashlib
+import db_management.users as users_db
 
 from utility.media import convert_image_to_png, convert_audio_to_wav
 
@@ -118,6 +120,30 @@ async def get_content_thumb_endpoint(request: fastapi.Request, content_id: int):
         return StreamingResponse(async_bytes_it(miniature), media_type="image/png")
     except Exception as e:
         logger.error("Error getting content thumbnail")
+        logger.error(e)
+        return Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
+@router.get("/{content_id}/who", tags=["Administration"])
+@users_type.admin_required
+async def get_content_full_endpoint(request: fastapi.Request, content_id: int) -> UserModel:
+    db = None
+    try:
+        db = connect_db()
+
+        user_id = content_db.get_content_user_id(db, content_id)
+        if user_id is None:
+            return Response(status_code=404)
+
+        user = users_db.get_user(db, user_id)
+        if user is None:
+            return Response(status_code=404)
+
+        return user
+    except Exception as e:
+        logger.error("Error getting content owner")
         logger.error(e)
         return Response(status_code=500)
     finally:
@@ -365,6 +391,63 @@ async def get_audio_endpoint(request: fastapi.Request, audio_id: int):
         return StreamingResponse(async_bytes_it(audio), media_type="audio/wav")
     except Exception as e:
         logger.error("Error getting audio")
+        logger.error(e)
+        return Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
+@router.get("/video/{video_id}/content-id", tags=["Content management"])
+async def get_video_content_id_endpoint(request: fastapi.Request, video_id: int):
+    db = None
+    try:
+        db = connect_db()
+        content_id = get_video_content_id(db, video_id)
+        if content_id is None:
+            return Response(status_code=404)
+        if not has_user_access(db, request.state.user.id, content_id):
+            return Response(status_code=403)
+        return Response(content=str(content_id))
+    except Exception as e:
+        logger.error("Error getting video content id")
+        logger.error(e)
+        return Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
+@router.get("/image/{image_id}/content-id", tags=["Content management"])
+async def get_image_content_id_endpoint(request: fastapi.Request, image_id: int):
+    db = None
+    try:
+        db = connect_db()
+        content_id = get_image_content_id(db, image_id)
+        if content_id is None:
+            return Response(status_code=404)
+        if not has_user_access(db, request.state.user.id, content_id):
+            return Response(status_code=403)
+        return Response(content=str(content_id))
+    except Exception as e:
+        logger.error("Error getting image content id")
+        logger.error(e)
+        return Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
+@router.get("/audio/{audio_id}/content-id", tags=["Content management"])
+async def get_audio_content_id_endpoint(request: fastapi.Request, audio_id: int):
+    db = None
+    try:
+        db = connect_db()
+        content_id = get_audio_content_id(db, audio_id)
+        if content_id is None:
+            return Response(status_code=404)
+        if not has_user_access(db, request.state.user.id, content_id):
+            return Response(status_code=403)
+        return Response(content=str(audio_id))
+    except Exception as e:
+        logger.error("Error getting audio content id")
         logger.error(e)
         return Response(status_code=500)
     finally:

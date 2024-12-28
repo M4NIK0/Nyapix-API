@@ -157,6 +157,21 @@ def has_user_access(db, content_id: int, user_id: int) -> bool:
     finally:
         cursor.close()
 
+def get_content_user_id(db, content_id: int) -> Union[int, None]:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT user_id FROM nyapixcontent WHERE id = %s", (content_id,))
+        result = cursor.fetchone()
+        if result is None:
+            return None
+        return result[0]
+    except Exception as e:
+        logger.error("Error getting user id from content")
+        logger.error(e)
+        return None
+    finally:
+        cursor.close()
+
 def is_user_content(db, content_id: int, user_id: int) -> bool:
     cursor = db.cursor()
     try:
@@ -202,6 +217,20 @@ def get_image_content_id(db, image_id: int) -> Union[int, None]:
     finally:
         cursor.close()
 
+def get_audio_content_id(db, audio_id: int) -> Union[int, None]:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT content_id FROM nyapixaudio WHERE id = %s", (audio_id,))
+        result = cursor.fetchone()
+        if result is None:
+            return None
+        return result[0]
+    except Exception as e:
+        logger.error("Error getting content id from audio")
+        logger.error(e)
+        return None
+    finally:
+        cursor.close()
 
 def get_user_content(db, user_id: int, max_results: int, page: int) -> Union[ContentPageModel, None]:
     cursor = db.cursor()
