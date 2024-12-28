@@ -272,7 +272,7 @@ const validateSearchResults = async () => {
         <span :class="result.type">{{ result.name }} ({{ result.type }})</span>
       </li>
     </ul>
-    <button @click="validateSearchResults" class="validate_button">Validate Search</button>
+    <button @click="validateSearchResults" class="validate_button">Search</button>
   </div>
 </template>
 
@@ -348,9 +348,20 @@ input {
   padding: 0.2rem 0.5rem;
   background-color: #f0f0f0;
   border: 1px solid #ccc;
-  color: black;
   border-radius: 4px;
   font-size: 0.9rem;
+}
+
+.tag-item {
+  color: black;
+}
+
+.character-item {
+  color: green;
+}
+
+.author-item {
+  color: blue;
 }
 
 button {
