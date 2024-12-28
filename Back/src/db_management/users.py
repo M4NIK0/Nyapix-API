@@ -2,7 +2,7 @@ import utility.users as users_utility
 from typing import Union
 
 from db_management.login import clear_user_sessions
-from models.users import FullUserModel, UserUpdateModel
+from models.users import FullUserModel, UserUpdateModel, UserPageModel
 from utility.logging import logger
 import bcrypt
 import models.users as users_models
@@ -97,7 +97,11 @@ def get_full_user(db, user_id: int) -> Union[FullUserModel, None]:
         cursor.execute("SELECT created_at FROM nyapixuser WHERE id = %s", (user_id,))
         creation_date = cursor.fetchone()[0]
 
-        return FullUserModel(username="Wait", nickname="It is invalid", type=0, id=0, tags=tags, creators=authors, characters=characters, favorites=favorites, content=content, albums=albums, creation_date=creation_date)
+        user = get_user(db, user_id)
+        if user is None:
+            return None
+
+        return FullUserModel(username=user.username, nickname=user.nickname, type=0, id=0, tags=tags, creators=authors, characters=characters, favorites=favorites, content=content, albums=albums, creation_date=creation_date)
     except Exception as e:
         logger.error("Error getting full user")
         logger.error(e)
@@ -132,6 +136,41 @@ def delete_user(db, user_id: int) -> bool:
         db.commit()
     except Exception as e:
         logger.error("Error deleting user")
+        logger.error(e)
+        return False
+    finally:
+        cursor.close()
+    return True
+
+def search_user(db, username: str, max_results: int, page: int) -> Union[UserPageModel, None]:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT id, nickname, username, user_type FROM nyapixuser WHERE username LIKE %s LIMIT %s OFFSET %s", (f"%{username}%", max_results, page * max_results))
+        result = cursor.fetchall()
+        users = []
+        for user in result:
+            users.append(users_models.UserModel(username=user[2], nickname=user[1], type=user[3], id=user[0]))
+        total = len(users)
+        final = users_models.UserPageModel(users=users[:max_results], total=total, pages=total // max_results + 1)
+
+        if final is None:
+            return UserPageModel(users=[], total=0, pages=0)
+
+        return final
+    except Exception as e:
+        logger.error("Error searching users")
+        logger.error(e)
+        return None
+    finally:
+        cursor.close()
+
+def update_user_type(db, user_id: int, user_type: int) -> bool:
+    cursor = db.cursor()
+    try:
+        cursor.execute("UPDATE nyapixuser SET user_type = %s WHERE id = %s", (user_type, user_id))
+        db.commit()
+    except Exception as e:
+        logger.error("Error updating user type")
         logger.error(e)
         return False
     finally:
