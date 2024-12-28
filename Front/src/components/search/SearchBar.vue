@@ -14,6 +14,9 @@ const structuredQuery = ref({
   tags: [] as Array<{ id: number, name: string }>,
   characters: [] as Array<{ id: number, name: string }>,
   authors: [] as Array<{ id: number, name: string }>,
+  tagsToExclude: [] as Array<{ id: number, name: string }>,
+  charactersToExclude: [] as Array<{ id: number, name: string }>,
+  authorsToExclude: [] as Array<{ id: number, name: string }>,
 });
 
 const searchResults = ref<Array<{ id: number, title: string, description: string, source: number, tags: number[], characters: number[], authors: number[], is_private: boolean, url: string }>>([]);
@@ -39,17 +42,20 @@ const fetchResults = async (word: string) => {
     return;
   }
   try {
+    // Remove the negative sign for autocomplete
+    const searchWord = word.startsWith('-') ? word.slice(1) : word;
+
     const [tags, characters, authors] = await Promise.all([
       axios.get(`${API_BASE}/tags/search`, {
-        params: { tag_name: word, max_results: 15 },
+        params: { tag_name: searchWord, max_results: 15 },
         headers: getAuthHeader(),
       }),
       axios.get(`${API_BASE}/characters/search`, {
-        params: { character_name: word, max_results: 15 },
+        params: { character_name: searchWord, max_results: 15 },
         headers: getAuthHeader(),
       }),
       axios.get(`${API_BASE}/authors/search`, {
-        params: { author_name: word, max_results: 15 },
+        params: { author_name: searchWord, max_results: 15 },
         headers: getAuthHeader(),
       }),
     ]);
@@ -91,26 +97,38 @@ const addToStructuredQuery = (result: { name: string, type: string, id: number }
     author: 'authors',
   };
 
+  const negativeTypeMap: Record<string, keyof typeof structuredQuery.value> = {
+    tag: 'tagsToExclude',
+    character: 'charactersToExclude',
+    author: 'authorsToExclude',
+  };
+
   const queryKey = typeMap[result.type];
-  if (!queryKey) {
+  const excludeQueryKey = negativeTypeMap[result.type];
+
+  if (!queryKey || !excludeQueryKey) {
     console.error(`Unexpected result type: ${result.type}`);
     return;
   }
 
-  // Store both name and id in the structured query
-  let prefixedName = result.name;
-  if (result.type === 'tag') {
-    prefixedName = 'tag:' + result.name;
-  } else if (result.type === 'character') {
-    prefixedName = 'character:' + result.name;
-  } else if (result.type === 'author') {
-    prefixedName = 'author:' + result.name;
+  const isNegative = result.name.startsWith('-');
+  const normalizedName = isNegative ? result.name.slice(1) : result.name;
+
+  // Check for duplicates between normal and negative inputs
+  const existingNormal = structuredQuery.value[queryKey].some(item => item.name === result.name);
+  const existingNegative = structuredQuery.value[excludeQueryKey].some(item => item.name === normalizedName);
+
+  // Prevent adding the same input as both normal and negative
+  if (isNegative) {
+    if (!existingNegative && !existingNormal) {
+      structuredQuery.value[excludeQueryKey].push({ id: result.id, name: result.name });
+    }
+  } else {
+    if (!existingNormal && !existingNegative) {
+      structuredQuery.value[queryKey].push({ id: result.id, name: result.name });
+    }
   }
-
-  // Store both name and ID in the structuredQuery
-  structuredQuery.value[queryKey].push({ id: result.id, name: prefixedName });
 };
-
 
 // Remove an item from structured query
 const removeFromStructuredQuery = (type: string, name: string) => {
@@ -121,14 +139,23 @@ const removeFromStructuredQuery = (type: string, name: string) => {
     author: 'authors',
   };
 
+  const excludeTypeMap: Record<string, keyof typeof structuredQuery.value> = {
+    tag: 'tagsToExclude',
+    character: 'charactersToExclude',
+    author: 'authorsToExclude',
+  };
+
   const queryKey = typeMap[type];
-  if (!queryKey) {
+  const excludeQueryKey = excludeTypeMap[type];
+
+  if (!queryKey || !excludeQueryKey) {
     console.error(`Unexpected type: ${type}`);
     return;
   }
 
-  // Find the item by name and remove it from the corresponding category
+  // Remove from the relevant query list
   structuredQuery.value[queryKey] = structuredQuery.value[queryKey].filter((item) => item.name !== name);
+  structuredQuery.value[excludeQueryKey] = structuredQuery.value[excludeQueryKey].filter((item) => item.name !== name);
   console.log('Structured query:', structuredQuery.value);
 };
 
@@ -161,9 +188,12 @@ onBeforeUnmount(() => {
 const validateSearchResults = async () => {
   try {
     // Extract the IDs of tags, characters, and authors from the structuredQuery
-    const tags = structuredQuery.value.tags.filter(tag => tag.id).map(tag => tag.id);
-    const characters = structuredQuery.value.characters.filter(character => character.id).map(character => character.id);
-    const authors = structuredQuery.value.authors.filter(author => author.id).map(author => author.id);
+    const tags = structuredQuery.value.tags.map(tag => tag.id);
+    const characters = structuredQuery.value.characters.map(character => character.id);
+    const authors = structuredQuery.value.authors.map(author => author.id);
+    const tagsToExclude = structuredQuery.value.tagsToExclude.map(tag => tag.id);
+    const charactersToExclude = structuredQuery.value.charactersToExclude.map(character => character.id);
+    const authorsToExclude = structuredQuery.value.authorsToExclude.map(author => author.id);
 
     // Prepare the query parameters
     const params: Record<string, string | string[]> = {
@@ -173,58 +203,55 @@ const validateSearchResults = async () => {
 
     // Add multiple `needed_tags` if there are tags
     if (tags.length > 0) {
-      tags.forEach(tagId => {
-        params['needed_tags'] = params['needed_tags'] ? [...(params['needed_tags'] as string[]), tagId.toString()] : [tagId.toString()];
-      });
+      params['needed_tags'] = tags.map(tagId => tagId.toString());
     }
 
     // Add multiple `needed_characters` if there are characters
     if (characters.length > 0) {
-      characters.forEach(characterId => {
-        params['needed_characters'] = params['needed_characters'] ? [...(params['needed_characters'] as string[]), characterId.toString()] : [characterId.toString()];
-      });
+      params['needed_characters'] = characters.map(characterId => characterId.toString());
     }
 
     // Add multiple `needed_authors` if there are authors
     if (authors.length > 0) {
-      authors.forEach(authorId => {
-        params['needed_authors'] = params['needed_authors'] ? [...(params['needed_authors'] as string[]), authorId.toString()] : [authorId.toString()];
-      });
+      params['needed_authors'] = authors.map(authorId => authorId.toString());
     }
 
-    // Custom query string serializer to avoid the [] in the query parameters
-    const customParamsSerializer = (params: Record<string, string | string[]>) => {
-      const queryString = Object.keys(params)
-        .map(key => {
-          const value = params[key];
-          if (Array.isArray(value)) {
-            return value.map(val => `${key}=${val}`).join('&');
-          }
-          return `${key}=${value}`;
-        })
-        .join('&');
-      return queryString;
-    };
+    // Add exclusion parameters
+    if (tagsToExclude.length > 0) {
+      params['tags_to_exclude'] = tagsToExclude.map(tagId => tagId.toString());
+    }
+    if (charactersToExclude.length > 0) {
+      params['characters_to_exclude'] = charactersToExclude.map(characterId => characterId.toString());
+    }
+    if (authorsToExclude.length > 0) {
+      params['authors_to_exclude'] = authorsToExclude.map(authorId => authorId.toString());
+    }
 
-    // Send the request to the API
+    // Send the request to the API with custom serialization for arrays
     const response = await axios.get(`${API_BASE}/content/search`, {
       params,
-      paramsSerializer: customParamsSerializer, // Using custom serializer
       headers: getAuthHeader(),
+      paramsSerializer: (params) => {
+        const queryStrings: string[] = [];
+        Object.keys(params).forEach((key) => {
+          const value = params[key];
+          if (Array.isArray(value)) {
+            value.forEach((val) => {
+              queryStrings.push(`${key}=${val}`);
+            });
+          } else {
+            queryStrings.push(`${key}=${value}`);
+          }
+        });
+        return queryStrings.join('&');
+      },
     });
 
-    // Handle the response
-    if (response.data && response.data.contents) {
-      console.log('Search results:', response.data.contents);
-      searchResults.value = response.data.contents;
-      emit('update:searchResults', searchResults.value);
-    } else {
-      console.log('No search results found');
-      searchResults.value = [];
-      emit('update:searchResults', searchResults.value);
-    }
+    const results = response.data.contents;
+    searchResults.value = results;
+    emit('update:searchResults', results); // Emit the results to the parent component
   } catch (error) {
-    console.error('Error validating search results:', error);
+    console.error('Error fetching search results:', error);
   }
 };
 </script>
