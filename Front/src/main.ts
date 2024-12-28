@@ -1,8 +1,9 @@
-import './assets/main.css'
+import './assets/main.css';
 import './assets/styles/theme-dark.css';
 
-import { createApp } from 'vue'
-import App from './App.vue'
+import { createApp } from 'vue';
+import App from './App.vue';
+import { createPinia } from 'pinia';
 import router from './router';
 
 const app = createApp(App)
@@ -15,6 +16,8 @@ app.config.globalProperties.$setTheme = (theme: string) => {
     console.error('Theme link element not found');
   }
 };
+
+app.use(createPinia());
 
 app.use(router)
   .use(router)
