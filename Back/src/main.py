@@ -14,6 +14,7 @@ import endpoints.tags as tags_endpoints
 import endpoints.characters as characters_endpoints
 import endpoints.authors as authors_endpoints
 import endpoints.content as content_endpoints
+import endpoints.albums as albums_endpoints
 import db_management.login as login_db
 from utility.logging import logger
 from db_management.connection import connect_db
@@ -56,6 +57,7 @@ app.include_router(tags_endpoints.router, prefix="/v1/tags")
 app.include_router(characters_endpoints.router, prefix="/v1/characters")
 app.include_router(authors_endpoints.router, prefix="/v1/authors")
 app.include_router(content_endpoints.router, prefix="/v1/content")
+app.include_router(albums_endpoints.router, prefix="/v1/albums")
 
 db = None
 while db is None:

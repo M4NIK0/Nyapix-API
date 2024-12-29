@@ -50,7 +50,6 @@ CREATE TABLE IF NOT EXISTS nyapixalbum (
     description TEXT NOT NULL,
     user_id INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    miniature_id INT NOT NULL,
     FOREIGN KEY (user_id) REFERENCES nyapixuser(id) ON DELETE CASCADE
 );
 
@@ -123,7 +122,7 @@ CREATE TABLE IF NOT EXISTS nyapixcontent_characters ( -- content characters tabl
     FOREIGN KEY (character_id) REFERENCES nyapixcharacter(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS nyapixalbum_pages ( -- album pages table
+CREATE TABLE IF NOT EXISTS nyapixalbumcontent ( -- album pages table
     album_id SERIAL PRIMARY KEY,
     content_id INT NOT NULL,
     FOREIGN KEY (album_id) REFERENCES nyapixalbum(id) ON DELETE CASCADE,

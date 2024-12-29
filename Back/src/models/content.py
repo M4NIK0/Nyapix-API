@@ -71,3 +71,32 @@ class ContentUpdateModel(BaseModel):
     characters: Optional[list[int]]
     authors: Optional[list[int]]
     is_private: Optional[bool]
+
+class AlbumModel(BaseModel):
+    id: int
+    name: str
+    description: str
+
+class AlbumContentModel(BaseModel):
+    info: AlbumModel
+    contents: list[ContentModel]
+
+class AlbumPageModel(BaseModel):
+    albums: list[AlbumModel]
+    total_pages: int
+    total_albums: int
+
+class AlbumPostModel(BaseModel):
+    name: str
+    description: str
+    contents: list[int]
+
+class AlbumAddContentModel(BaseModel):
+    content_id: list[int]
+
+class AlbumRemoveContentModel(BaseModel):
+    content_id: list[int]
+
+class AlbumUpdateModel(BaseModel):
+    name: Optional[str]
+    description: Optional[str]
