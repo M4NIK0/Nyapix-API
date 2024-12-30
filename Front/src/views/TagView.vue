@@ -39,7 +39,7 @@ const fetchTags = async () => {
       params: { page: currentPage.value, size: pageSize.value }
     });
     tags.value = response.data.tags;
-    totalPages.value = response.data.total_pages;
+    totalPages.value = Math.max(totalPages.value, response.data.total_pages);
   } catch (error) {
     console.error('Error fetching tags:', error);
   }
@@ -52,7 +52,7 @@ const fetchCharacters = async () => {
       params: { page: currentPage.value, size: pageSize.value }
     });
     characters.value = response.data.characters;
-    totalPages.value = response.data.total_pages;
+    totalPages.value = Math.max(totalPages.value, response.data.total_pages);
   } catch (error) {
     console.error('Error fetching characters:', error);
   }
@@ -65,7 +65,7 @@ const fetchAuthors = async () => {
       params: { page: currentPage.value, size: pageSize.value }
     });
     authors.value = response.data.authors;
-    totalPages.value = response.data.total_pages;
+    totalPages.value = Math.max(totalPages.value, response.data.total_pages);
   } catch (error) {
     console.error('Error fetching authors:', error);
   }
@@ -128,21 +128,66 @@ const deleteAuthor = async (id: number) => {
   }
 };
 
-const nextPage = () => {
-  if (currentPage.value < totalPages.value) {
-    currentPage.value++;
-    fetchTags();
-    fetchCharacters();
-    fetchAuthors();
+const addTag = async () => {
+  const tagName = prompt('Enter the tag name:');
+  if (tagName) {
+    try {
+      await axios.post(`${API_BASE}/tags`, null, {
+        headers: getAuthHeader(),
+        params: { tag_name: tagName }
+      });
+      fetchTags();
+    } catch (error) {
+      console.error('Error adding tag:', error);
+    }
   }
 };
 
-const prevPage = () => {
+const addCharacter = async () => {
+  const charName = prompt('Enter the character name:');
+  if (charName) {
+    try {
+      await axios.post(`${API_BASE}/characters`, null, {
+        headers: getAuthHeader(),
+        params: { character_name: charName }
+      });
+      fetchCharacters();
+    } catch (error) {
+      console.error('Error adding character:', error);
+    }
+  }
+};
+
+const addAuthor = async () => {
+  const authName = prompt('Enter the author name:');
+  if (authName) {
+    try {
+      await axios.post(`${API_BASE}/authors`, null, {
+        headers: getAuthHeader(),
+        params: { author_name: authName }
+      });
+      fetchAuthors();
+    } catch (error) {
+      console.error('Error adding author:', error);
+    }
+  }
+};
+
+const nextPage = async () => {
+  if (currentPage.value < totalPages.value) {
+    currentPage.value++;
+    await fetchTags();
+    await fetchCharacters();
+    await fetchAuthors();
+  }
+};
+
+const prevPage = async () => {
   if (currentPage.value > 1) {
     currentPage.value--;
-    fetchTags();
-    fetchCharacters();
-    fetchAuthors();
+    await fetchTags();
+    await fetchCharacters();
+    await fetchAuthors();
   }
 };
 
@@ -158,6 +203,11 @@ onMounted(() => {
     <NavBar />
   </header>
   <div>
+    <div class="button-container">
+      <button @click="addTag">Add Tag</button>
+      <button @click="addCharacter">Add Character</button>
+      <button @click="addAuthor">Add Author</button>
+    </div>
     <input v-model="searchQuery" @input="search" placeholder="Search..." />
     <div>
       <h2>Tags</h2>
@@ -198,7 +248,6 @@ onMounted(() => {
 
 .author {
   color: blue;
-  margin-bottom: 20px;
 }
 
 .delete-button {
@@ -209,7 +258,7 @@ onMounted(() => {
 }
 
 .page-button {
-  margin-bottom: 20px;
+  margin-top: 20px;
   background-color: #4CAF50;
   color: white;
   border: none;
@@ -218,6 +267,25 @@ onMounted(() => {
 }
 
 .page-button:hover {
+  background-color: #45a049;
+}
+
+.button-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.button-container button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 10px;
+}
+
+.button-container button:hover {
   background-color: #45a049;
 }
 </style>
