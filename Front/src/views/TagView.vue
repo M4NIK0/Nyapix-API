@@ -26,6 +26,15 @@ const pageSize = ref(10);
 const searchQuery = ref('');
 const totalPages = ref(1);
 const API_BASE = import.meta.env.VITE_BACKEND_URL + '/v1';
+const isEditTagPopupVisible = ref(false);
+const isEditCharacterPopupVisible = ref(false);
+const isEditAuthorPopupVisible = ref(false);
+const tagToEdit = ref<Tag | null>(null);
+const characterToEdit = ref<Character | null>(null);
+const authorToEdit = ref<Author | null>(null);
+const newTagName = ref('');
+const newCharacterName = ref('');
+const newAuthorName = ref('');
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
@@ -173,6 +182,69 @@ const addAuthor = async () => {
   }
 };
 
+const editTag = (tag: Tag) => {
+  tagToEdit.value = tag;
+  newTagName.value = tag.name;
+  isEditTagPopupVisible.value = true;
+};
+
+const updateTag = async () => {
+  if (tagToEdit.value && newTagName.value) {
+    try {
+      await axios.put(`${API_BASE}/tags/${tagToEdit.value.id}`, null, {
+        headers: getAuthHeader(),
+        params: { tag_name: newTagName.value }
+      });
+      fetchTags();
+      isEditTagPopupVisible.value = false;
+    } catch (error) {
+      console.error('Error updating tag:', error);
+    }
+  }
+};
+
+const editCharacter = (character: Character) => {
+  characterToEdit.value = character;
+  newCharacterName.value = character.name;
+  isEditCharacterPopupVisible.value = true;
+};
+
+const updateCharacter = async () => {
+  if (characterToEdit.value && newCharacterName.value) {
+    try {
+      await axios.put(`${API_BASE}/characters/${characterToEdit.value.id}`, null, {
+        headers: getAuthHeader(),
+        params: { character_name: newCharacterName.value }
+      });
+      fetchCharacters();
+      isEditCharacterPopupVisible.value = false;
+    } catch (error) {
+      console.error('Error updating character:', error);
+    }
+  }
+};
+
+const editAuthor = (author: Author) => {
+  authorToEdit.value = author;
+  newAuthorName.value = author.name;
+  isEditAuthorPopupVisible.value = true;
+};
+
+const updateAuthor = async () => {
+  if (authorToEdit.value && newAuthorName.value) {
+    try {
+      await axios.put(`${API_BASE}/authors/${authorToEdit.value.id}`, null, {
+        headers: getAuthHeader(),
+        params: { author_name: newAuthorName.value }
+      });
+      fetchAuthors();
+      isEditAuthorPopupVisible.value = false;
+    } catch (error) {
+      console.error('Error updating author:', error);
+    }
+  }
+};
+
 const nextPage = async () => {
   if (currentPage.value < totalPages.value) {
     currentPage.value++;
@@ -212,32 +284,68 @@ onMounted(() => {
     <div>
       <h2>Tags</h2>
       <ul>
-        <li v-for="tag in tags" :key="tag.id">
+        <li v-for="tag in tags" :key="tag.id" class="list-item">
           {{ tag.name }}
-          <button class="delete-button" @click="deleteTag(tag.id)">X</button>
+          <div class="button-group">
+            <button class="edit-button" @click="editTag(tag)">Edit</button>
+            <button class="delete-button" @click="deleteTag(tag.id)">X</button>
+          </div>
         </li>
       </ul>
     </div>
     <div>
       <h2>Characters</h2>
       <ul>
-        <li v-for="character in characters" :key="character.id" class="character">
+        <li v-for="character in characters" :key="character.id" class="list-item character">
           {{ character.name }}
-          <button class="delete-button" @click="deleteCharacter(character.id)">X</button>
+          <div class="button-group">
+            <button class="edit-button" @click="editCharacter(character)">Edit</button>
+            <button class="delete-button" @click="deleteCharacter(character.id)">X</button>
+          </div>
         </li>
       </ul>
     </div>
     <div>
       <h2>Authors</h2>
       <ul>
-        <li v-for="author in authors" :key="author.id" class="author">
+        <li v-for="author in authors" :key="author.id" class="list-item author">
           {{ author.name }}
-          <button class="delete-button" @click="deleteAuthor(author.id)">X</button>
+          <div class="button-group">
+            <button class="edit-button" @click="editAuthor(author)">Edit</button>
+            <button class="delete-button" @click="deleteAuthor(author.id)">X</button>
+          </div>
         </li>
       </ul>
     </div>
     <button class="page-button" @click="prevPage" :disabled="currentPage === 1">Previous</button>
     <button class="page-button" @click="nextPage" :disabled="currentPage === totalPages">Next</button>
+  </div>
+
+  <div v-if="isEditTagPopupVisible" class="edit-popup">
+    <div class="edit-popup-content">
+      <h3>Edit Tag</h3>
+      <input v-model="newTagName" placeholder="New tag name" />
+      <button @click="updateTag">Save</button>
+      <button @click="isEditTagPopupVisible = false">Cancel</button>
+    </div>
+  </div>
+
+  <div v-if="isEditCharacterPopupVisible" class="edit-popup">
+    <div class="edit-popup-content">
+      <h3>Edit Character</h3>
+      <input v-model="newCharacterName" placeholder="New character name" />
+      <button @click="updateCharacter">Save</button>
+      <button @click="isEditCharacterPopupVisible = false">Cancel</button>
+    </div>
+  </div>
+
+  <div v-if="isEditAuthorPopupVisible" class="edit-popup">
+    <div class="edit-popup-content">
+      <h3>Edit Author</h3>
+      <input v-model="newAuthorName" placeholder="New author name" />
+      <button @click="updateAuthor">Save</button>
+      <button @click="isEditAuthorPopupVisible = false">Cancel</button>
+    </div>
   </div>
 </template>
 
@@ -252,6 +360,13 @@ onMounted(() => {
 
 .delete-button {
   color: red;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.edit-button {
+  color: #9900ff;
   background: none;
   border: none;
   cursor: pointer;
@@ -287,5 +402,42 @@ onMounted(() => {
 
 .button-container button:hover {
   background-color: #45a049;
+}
+
+.edit-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.edit-popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.edit-popup-content input {
+  margin-bottom: 10px;
+  padding: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.button-group {
+  display: flex;
+  gap: 5px;
 }
 </style>
