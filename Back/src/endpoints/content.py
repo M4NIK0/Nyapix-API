@@ -182,7 +182,7 @@ async def put_content_endpoint(request: fastapi.Request, content_id: int, conten
     try:
         db = connect_db()
 
-        if not is_user_content(db, request.state.user.id, content_id):
+        if not is_user_content(db, content_id, request.state.user.id):
             return Response(status_code=403)
 
         if content.tags is not None:
@@ -221,7 +221,7 @@ async def delete_content_endpoint(request: fastapi.Request, content_id: int):
     try:
         db = connect_db()
 
-        if not is_user_content(db, request.state.user.id, content_id):
+        if not is_user_content(db, content_id, request.state.user.id):
             return Response(status_code=403)
 
         success = content_db.delete_content(db, content_id)
