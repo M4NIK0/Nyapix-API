@@ -3,6 +3,7 @@ import LoginForm from '@/components/login/LoginForm.vue';
 import LogoutComponent from "@/components/logout/LogoutComponent.vue";
 import HomeView from '@/views/HomeView.vue';
 import ContentView from '@/views/ContentView.vue';
+import TagView from '@/views/TagView.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -17,6 +18,11 @@ const router = createRouter({
       name: 'ContentView',
       component: ContentView,
       props: route => ({ id: Number(route.params.id) }),
+    },
+    {
+      path: '/tags',
+      name: 'tags',
+      component: TagView,
     },
     {
       path: '/login',
