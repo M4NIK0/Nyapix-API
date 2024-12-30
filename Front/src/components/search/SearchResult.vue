@@ -2,7 +2,6 @@
 import {defineProps, ref, watch} from "vue";
 import axios from "axios";
 
-// Define the type of the search results prop
 const props = defineProps<{
   searchResults: Array<{
     id: number,
@@ -17,7 +16,6 @@ const props = defineProps<{
   }>
 }>();
 
-// Store the images for each result
 const images = ref<{ [key: number]: string }>({});
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL + '/v1';
@@ -26,14 +24,12 @@ const getAuthHeader = () => {
   return token ? { Authorization: `Bearer ${token}` } : {};
 };
 
-// Fetch the image for a specific result using its `id`
 const fetchImage = async (id: number) => {
   try {
-    // Construct the URL based on the result's id
-    const imageUrl = `${API_BASE}/content/${id}/thumb`; // Use the new endpoint format
+    const imageUrl = `${API_BASE}/content/${id}/thumb`;
     const response = await axios.get(imageUrl, {
       headers: getAuthHeader(),
-      responseType: 'blob' // Expect the image as a binary Blob
+      responseType: 'blob'
     });
 
     // Convert the Blob to a URL and store it
@@ -41,28 +37,28 @@ const fetchImage = async (id: number) => {
     images.value[id] = URL.createObjectURL(imageBlob);
   } catch (error) {
     console.error("Error fetching image for:", id, error);
-    images.value[id] = ''; // Set a fallback value if an error occurs
+    images.value[id] = '';
   }
 };
 
 // Function to fetch images for all results
 const fetchImagesForAllResults = () => {
   props.searchResults.forEach((result) => {
-    fetchImage(result.id); // Fetch image based on the result's id
+    fetchImage(result.id);
   });
 };
 
-// Watch for changes in the `searchResults` prop and trigger image fetching
 watch(() => props.searchResults, () => {
-  // Clear images to avoid stale data
   images.value = {};
-  // Fetch images for the updated results
   fetchImagesForAllResults();
 }, { immediate: true });
 
-// Handle click event for each result
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
+
 const handleClick = (result: { id: number, title: string }) => {
-  console.log(`Clicked on result with ID: ${result.id}, Title: ${result.title}`);
+  router.push({ name: 'ContentView', params: { id: result.id } });
 };
 </script>
 
