@@ -1,0 +1,42 @@
+:root {
+    --primary-color: #77dd77; /* Pastel green */
+    --text-color: #333;
+    --background-color: #c1e1c1; /* Lighter green */
+    --border-color: #000000;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    color: var(--text-color);
+    background-color: var(--background-color);
+}
+
+.navbar {
+    background-color: var(--primary-color);
+}
+
+.navbar-link {
+    color: var(--text-color);
+}
+
+button {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #77dd77;
+}
+
+input {
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+}
+
+input:focus {
+    border-color: var(--primary-color);
+    outline: none;
+}
