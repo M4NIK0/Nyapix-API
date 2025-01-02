@@ -6,10 +6,9 @@ import NavBar from "@/components/NavBar.vue";
 const API_BASE = import.meta.env.VITE_BACKEND_URL + '/v1';
 const sources = ref([]);
 const newSourceName = ref('');
+const isAddSourcePopupVisible = ref(false);
 const sourceToEdit = ref(null);
 const isEditSourcePopupVisible = ref(false);
-const currentPage = ref(1);
-const totalPages = ref(1);
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
@@ -30,13 +29,15 @@ const fetchSources = async () => {
 const addSource = async () => {
   if (newSourceName.value) {
     try {
-      await axios.post(`${API_BASE}/sources`, {
-        source_name: newSourceName.value
-      }, {
+      await axios.post(`${API_BASE}/sources`, '', {
         headers: getAuthHeader(),
+        params: {
+          source_name: newSourceName.value,
+        },
       });
       fetchSources();
       newSourceName.value = '';
+      isAddSourcePopupVisible.value = false;
     } catch (error) {
       console.error('Error adding source:', error);
     }
@@ -47,8 +48,10 @@ const updateSource = async () => {
   if (sourceToEdit.value && newSourceName.value) {
     try {
       await axios.put(`${API_BASE}/sources/${sourceToEdit.value.id}`, null, {
-        headers: getAuthHeader(),
-        params: { source_name: newSourceName.value }
+        headers: {
+          ...getAuthHeader(),
+          'source_name': newSourceName.value,
+        },
       });
       fetchSources();
       isEditSourcePopupVisible.value = false;
@@ -86,9 +89,8 @@ onMounted(() => {
   </header>
   <div>
     <div class="button-container">
-      <button @click="addSource">Add Source</button>
+      <button @click="isAddSourcePopupVisible = true">Add Source</button>
     </div>
-    <input v-model="newSourceName" placeholder="New source name" />
     <div>
       <h2>Sources</h2>
       <ul>
@@ -100,6 +102,15 @@ onMounted(() => {
           </div>
         </li>
       </ul>
+    </div>
+  </div>
+
+  <div v-if="isAddSourcePopupVisible" class="edit-popup">
+    <div class="edit-popup-content">
+      <h3>Add Source</h3>
+      <input v-model="newSourceName" placeholder="New source name" />
+      <button @click="addSource">Save</button>
+      <button @click="isAddSourcePopupVisible = false">Cancel</button>
     </div>
   </div>
 
@@ -126,19 +137,6 @@ onMounted(() => {
   background: none;
   border: none;
   cursor: pointer;
-}
-
-.page-button {
-  margin-top: 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.page-button:hover {
-  background-color: #45a049;
 }
 
 .button-container {
