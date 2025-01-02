@@ -155,7 +155,7 @@ onMounted(() => {
 
 <template>
   <div class="content-view">
-    <header class="navbar">
+    <header>
       <NavBar />
     </header>
     <div v-if="content">

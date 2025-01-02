@@ -7,6 +7,15 @@
           <router-link to="/" class="navbar-link">Home</router-link>
         </li>
         <li class="navbar-item">
+          <router-link to="/tags" class="navbar-link">Tags</router-link>
+        </li>
+        <li class="navbar-item">
+          <router-link to="/sources" class="navbar-link">Sources</router-link>
+        </li>
+        <li class="navbar-item">
+          <router-link to="/profile" class="navbar-link">My Profile</router-link>
+        </li>
+        <li class="navbar-item">
           <router-link to="/logout" class="navbar-link">Logout</router-link>
         </li>
       </ul>
