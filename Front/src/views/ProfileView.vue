@@ -73,6 +73,22 @@ const openEditProfilePopup = () => {
   }
 };
 
+const deleteUserAccount = async () => {
+  if (confirm('Are you sure you want to delete your account?') &&
+    confirm('This action is irreversible. Do you really want to delete your account?') &&
+    confirm('Please confirm one last time: Do you want to delete your account?')) {
+    try {
+      await axios.delete(`${API_BASE}/users/me`, {
+        headers: getAuthHeader(),
+      });
+      alert('Your account has been deleted.');
+      router.push('/logout');
+    } catch (error) {
+      alert(`Error deleting account: ${error.response?.data?.message || error.message}`);
+    }
+  }
+};
+
 onMounted(() => {
   fetchUserData();
 });
@@ -94,6 +110,7 @@ onMounted(() => {
     <p>Albums: {{ user.albums }}</p>
     <p>Creation Date: {{ new Date(user.creation_date).toLocaleString() }}</p>
     <button @click="openEditProfilePopup">Edit Profile</button>
+    <button @click="deleteUserAccount">Delete Account</button>
   </div>
   <div v-else>
     <p>Loading...</p>
@@ -112,7 +129,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Add your styles here */
 .edit-popup {
   position: fixed;
   top: 0;
