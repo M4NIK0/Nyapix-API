@@ -1,0 +1,199 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import NavBar from "@/components/NavBar.vue";
+
+const API_BASE = import.meta.env.VITE_BACKEND_URL + '/v1';
+const sources = ref([]);
+const newSourceName = ref('');
+const sourceToEdit = ref(null);
+const isEditSourcePopupVisible = ref(false);
+const currentPage = ref(1);
+const totalPages = ref(1);
+
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+const fetchSources = async () => {
+  try {
+    const response = await axios.get(`${API_BASE}/sources`, {
+      headers: getAuthHeader(),
+    });
+    sources.value = response.data;
+  } catch (error) {
+    console.error('Error fetching sources:', error);
+  }
+};
+
+const addSource = async () => {
+  if (newSourceName.value) {
+    try {
+      await axios.post(`${API_BASE}/sources`, {
+        source_name: newSourceName.value
+      }, {
+        headers: getAuthHeader(),
+      });
+      fetchSources();
+      newSourceName.value = '';
+    } catch (error) {
+      console.error('Error adding source:', error);
+    }
+  }
+};
+
+const updateSource = async () => {
+  if (sourceToEdit.value && newSourceName.value) {
+    try {
+      await axios.put(`${API_BASE}/sources/${sourceToEdit.value.id}`, null, {
+        headers: getAuthHeader(),
+        params: { source_name: newSourceName.value }
+      });
+      fetchSources();
+      isEditSourcePopupVisible.value = false;
+    } catch (error) {
+      console.error('Error updating source:', error);
+    }
+  }
+};
+
+const deleteSource = async (sourceId: number) => {
+  try {
+    await axios.delete(`${API_BASE}/sources/${sourceId}`, {
+      headers: getAuthHeader(),
+    });
+    fetchSources();
+  } catch (error) {
+    console.error('Error deleting source:', error);
+  }
+};
+
+const editSource = (source) => {
+  sourceToEdit.value = source;
+  newSourceName.value = source.name;
+  isEditSourcePopupVisible.value = true;
+};
+
+onMounted(() => {
+  fetchSources();
+});
+</script>
+
+<template>
+  <header>
+    <NavBar />
+  </header>
+  <div>
+    <div class="button-container">
+      <button @click="addSource">Add Source</button>
+    </div>
+    <input v-model="newSourceName" placeholder="New source name" />
+    <div>
+      <h2>Sources</h2>
+      <ul>
+        <li v-for="source in sources" :key="source.id" class="list-item">
+          {{ source.name }}
+          <div class="button-group">
+            <button class="edit-button" @click="editSource(source)">Edit</button>
+            <button class="delete-button" @click="deleteSource(source.id)">X</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <div v-if="isEditSourcePopupVisible" class="edit-popup">
+    <div class="edit-popup-content">
+      <h3>Edit Source</h3>
+      <input v-model="newSourceName" placeholder="New source name" />
+      <button @click="updateSource">Save</button>
+      <button @click="isEditSourcePopupVisible = false">Cancel</button>
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.delete-button {
+  color: red;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.edit-button {
+  color: #9900ff;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.page-button {
+  margin-top: 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.page-button:hover {
+  background-color: #45a049;
+}
+
+.button-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.button-container button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  padding: 10px;
+}
+
+.button-container button:hover {
+  background-color: #45a049;
+}
+
+.edit-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.edit-popup-content {
+  background: white;
+  padding: 20px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.edit-popup-content input {
+  margin-bottom: 10px;
+  padding: 5px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.button-group {
+  display: flex;
+  gap: 5px;
+}
+</style>
