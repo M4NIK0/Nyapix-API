@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 
-const themes = ref(['dark', 'pastel-pink', 'pastel-green']);
+const themes = ref(['dark', 'pastel-pink', 'pastel-green', 'pastel-blue']);
 const selectedTheme = ref('dark');
 
 const createThemeLinkElement = () => {
