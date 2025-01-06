@@ -390,33 +390,4 @@ input {
 .author-item {
   color: blue;
 }
-
-button {
-  margin-left: 0.5rem;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-/* Style for the "x" buttons */
-button {
-  color: red;
-}
-
-.validate_button {
-  margin-top: 1rem;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.validate_button:hover {
-  background-color: #45a049;
-}
-
-button:hover {
-  background-color: #45a049;
-}
 </style>
