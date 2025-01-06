@@ -7,6 +7,7 @@ import TagView from '@/views/TagView.vue';
 import RegisterForm from "@/components/register/RegisterForm.vue";
 import SourceView from "@/views/SourceView.vue";
 import ProfileView from "@/views/ProfileView.vue";
+import AdminView from "@/views/AdminView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -36,6 +37,11 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView,
+    },
+    {
+      path: '/admin',
+      name: 'admin',
+      component: AdminView,
     },
     {
       path: '/login',

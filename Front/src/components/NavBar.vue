@@ -16,6 +16,9 @@
           <router-link to="/profile" class="navbar-link">My Profile</router-link>
         </li>
         <li class="navbar-item">
+          <router-link to="/admin" class="navbar-link">Admin</router-link>
+        </li>
+        <li class="navbar-item">
           <router-link to="/logout" class="navbar-link">Logout</router-link>
         </li>
       </ul>
