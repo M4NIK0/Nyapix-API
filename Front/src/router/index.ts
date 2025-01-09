@@ -2,7 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginForm from '@/components/login/LoginForm.vue';
 import LogoutComponent from "@/components/logout/LogoutComponent.vue";
 import HomeView from '@/views/HomeView.vue';
+import AlbumView from '@/views/AlbumView.vue';
 import ContentView from '@/views/ContentView.vue';
+import SearchAlbumView from '@/views/SearchAlbumView.vue';
 import TagView from '@/views/TagView.vue';
 import RegisterForm from "@/components/register/RegisterForm.vue";
 import SourceView from "@/views/SourceView.vue";
@@ -22,6 +24,17 @@ const router = createRouter({
       name: 'ContentView',
       component: ContentView,
       props: route => ({ id: Number(route.params.id) }),
+    },
+    {
+      path: '/album/:id',
+      name: 'AlbumView',
+      component: AlbumView,
+      props: route => ({ id: Number(route.params.id) }),
+    },
+    {
+      path: '/albums',
+      name: 'albums',
+      component: SearchAlbumView,
     },
     {
       path: '/tags',
