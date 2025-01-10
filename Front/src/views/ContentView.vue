@@ -401,8 +401,10 @@ onBeforeUnmount(() => {
 }
 
 .content-container {
-  display: flex;
-  flex-direction: column; /* Ensure the container is a column layout */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 100%;
   max-width: 1200px;
   background-color: #2c2c2c;
