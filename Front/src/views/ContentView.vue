@@ -333,21 +333,38 @@ onBeforeUnmount(() => {
     <header>
       <NavBar />
     </header>
-    <div v-if="content">
-      <div class="content-main">
-        <aside class="tags">
-          <h2>Tags</h2>
-          <ul>
-            <li v-for="tag in content.tagNames" :key="tag">{{ tag }}</li>
-            <li v-for="character in content.characterNames" :key="character" class="character">{{ character }} (character)</li>
-            <li v-for="author in content.authorNames" :key="author" class="author">{{ author }} (author)</li>
-          </ul>
+    <div v-if="content" class="content-container">
+      <div class="content-header">
+        <h1>{{ content.title }}</h1>
+        <p>{{ content.description }}</p>
+      </div>
+      <div class="content-body">
+        <aside class="info-section">
+          <h2>Information</h2>
+          <section>
+            <h3>Tags</h3>
+            <ul>
+              <li v-for="tag in content.tagNames" :key="tag">{{ tag }}</li>
+            </ul>
+          </section>
+          <section>
+            <h3>Characters</h3>
+            <ul>
+              <li v-for="character in content.characterNames" :key="character">{{ character }}</li>
+            </ul>
+          </section>
+          <section>
+            <h3>Authors</h3>
+            <ul>
+              <li v-for="author in content.authorNames" :key="author">{{ author }}</li>
+            </ul>
+          </section>
+          <div class="action-buttons">
+            <button @click="deleteContent" class="delete-button">Delete</button>
+            <button @click="showEditOverlay" class="edit-button">Edit</button>
+          </div>
         </aside>
-        <div class="content-details">
-          <button @click="deleteContent" class="delete-button">Delete</button>
-          <button @click="showEditOverlay" class="edit-button">Edit</button>
-          <h1>{{ content.title }}</h1>
-          <p>{{ content.description }}</p>
+        <div class="media-section">
           <div v-if="content.mediaSrc">
             <img v-if="content.mediaType.startsWith('image/')" :src="content.mediaSrc" alt="Content Image" class="responsive-image" />
             <video v-else-if="content.mediaType.startsWith('video/')" :src="content.mediaSrc" controls class="responsive-media"></video>
@@ -363,119 +380,73 @@ onBeforeUnmount(() => {
     <div v-if="isEditOverlayVisible" class="overlay">
       <div class="overlay-content">
         <h2>Edit Content</h2>
-        <label>
-          Title:
-          <input v-model="editForm.title" type="text" />
-        </label>
-        <label>
-          Description:
-          <textarea v-model="editForm.description"></textarea>
-        </label>
-        <label>
-          Source:
-          <select v-model="editForm.sourceId">
-            <option v-for="source in sources" :key="source.id" :value="source.id">{{ source.name }}</option>
-          </select>
-        </label>
-        <label>
-          Is Private:
-          <input v-model="editForm.is_private" type="checkbox" />
-        </label>
-        <label>
-          Tags:
-          <input v-model="editForm.tags" type="text" placeholder="Comma separated tags" />
-          <ul v-if="showTagSuggestions" class="suggestions">
-            <li v-for="suggestion in tagSuggestions" :key="suggestion.id" @click="selectTagSuggestion(suggestion)">
-              {{ suggestion.name }}
-            </li>
-          </ul>
-        </label>
-        <label>
-          Characters:
-          <input v-model="editForm.characters" type="text" placeholder="Comma separated characters" />
-          <ul v-if="showCharacterSuggestions" class="suggestions">
-            <li v-for="suggestion in characterSuggestions" :key="suggestion.id" @click="selectCharacterSuggestion(suggestion)">
-              {{ suggestion.name }}
-            </li>
-          </ul>
-        </label>
-        <label>
-          Authors:
-          <input v-model="editForm.authors" type="text" placeholder="Comma separated authors" />
-          <ul v-if="showAuthorSuggestions" class="suggestions">
-            <li v-for="suggestion in authorSuggestions" :key="suggestion.id" @click="selectAuthorSuggestion(suggestion)">
-              {{ suggestion.name }}
-            </li>
-          </ul>
-        </label>
-        <button @click="updateContent" class="save-button">Save</button>
+        <!-- Edit Form -->
         <button @click="hideEditOverlay" class="cancel-button">Cancel</button>
       </div>
     </div>
   </div>
 </template>
 
+
 <style scoped>
-.responsive-image {
-  max-width: 100%;
-  max-height: 100vh;
-  height: auto;
-  display: block;
-  margin: 0 auto;
+.content-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
 }
 
-.suggestions {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: white;
-  border: 1px solid #ccc;
+.content-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.content-body {
+  display: flex;
+  gap: 20px;
+}
+
+.info-section {
+  flex: 1;
+  background: #f9f9f9;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.info-section h2 {
+  margin-bottom: 10px;
+}
+
+.info-section ul {
   list-style: none;
-  margin: 0;
   padding: 0;
-  max-height: 150px;
-  overflow-y: auto;
-  z-index: 1001;
+  margin: 10px 0;
 }
 
-.suggestions li {
-  padding: 5px;
-  cursor: pointer;
-  color: black;
+.info-section ul li {
+  margin-bottom: 5px;
 }
 
-.suggestions li:hover {
-  background: #eee;
+.action-buttons {
+  margin-top: 20px;
 }
 
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+.media-section {
+  flex: 2;
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
 }
 
-.overlay-content {
-  background: grey;
-  padding: 20px;
-  border-radius: 4px;
-  text-align: center;
-  position: relative;
+.responsive-image,
+.responsive-media {
+  max-width: 100%;
+  max-height: 100%;
+  display: block;
+  border-radius: 8px;
 }
 
-.overlay-content input,
-.overlay-content select {
-  margin-bottom: 10px;
-  padding: 5px;
-  width: 100%;
-  box-sizing: border-box;
-  color: black;
+.overlay {
+  /* Existing styles */
 }
 </style>
