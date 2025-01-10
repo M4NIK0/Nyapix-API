@@ -393,23 +393,31 @@ onBeforeUnmount(() => {
 <style scoped>
 .content-view {
   display: flex;
-  justify-content: flex-end; /* Align the content to the right */
-  align-items: center;
+  justify-content: center;
+  align-items: flex-start;
   min-height: 100vh;
   padding: 20px;
   box-sizing: border-box;
 }
 
-.content-main {
+.content-container {
   display: flex;
-  flex-direction: row-reverse; /* This aligns content to the right side */
-  gap: 20px;
-  width: 80%;
+  flex-direction: column; /* Ensure the container is a column layout */
+  width: 100%;
   max-width: 1200px;
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.content-header {
+  margin-bottom: 20px;
+}
+
+.content-body {
+  display: flex;
+  gap: 20px;
 }
 
 .info-section {
@@ -419,10 +427,6 @@ onBeforeUnmount(() => {
 
 .media-section {
   flex: 2;
-}
-
-.content-details h1 {
-  margin-top: 0;
 }
 
 .responsive-image,
