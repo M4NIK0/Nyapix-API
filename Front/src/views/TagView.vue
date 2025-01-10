@@ -288,7 +288,7 @@ onMounted(() => {
           <li v-for="tag in tags" :key="tag.id" class="list-item tag">
             {{ tag.name }}
             <div class="button-group">
-              <button class="edit-button" @click="editTag(tag)">Edit</butto
+              <button class="edit-button" @click="editTag(tag)">Edit</button>
               <button class="delete-button" @click="deleteTag(tag.id)">X</button>
             </div>
           </li>
