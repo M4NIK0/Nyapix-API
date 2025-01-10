@@ -117,7 +117,7 @@ const handleClick = (result: { id: number, title: string }) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #002152;
+  background: black;
 }
 
 .result-image {
