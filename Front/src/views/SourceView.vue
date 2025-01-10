@@ -142,6 +142,7 @@ onMounted(() => {
 
 .button-container {
   display: flex;
+  justify-content: center;
   gap: 10px;
   margin-bottom: 20px;
 }
@@ -186,5 +187,13 @@ onMounted(() => {
 .button-group {
   display: flex;
   gap: 5px;
+}
+
+div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 </style>
