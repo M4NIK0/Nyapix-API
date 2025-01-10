@@ -284,7 +284,7 @@ onMounted(() => {
     <div>
       <h2>Tags</h2>
       <ul>
-        <li v-for="tag in tags" :key="tag.id" class="list-item">
+        <li v-for="tag in tags" :key="tag.id" class="list-item tag">
           {{ tag.name }}
           <div class="button-group">
             <button class="edit-button" @click="editTag(tag)">Edit</button>
@@ -355,7 +355,11 @@ onMounted(() => {
 }
 
 .author {
-  color: blue;
+  color: #00a6ff;
+}
+
+.tag {
+  color: #ff9100;
 }
 
 .delete-button {
