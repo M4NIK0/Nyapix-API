@@ -139,62 +139,85 @@ const fetchAlbumUserData = async () => {
   <header>
     <NavBar />
   </header>
-  <div class="search-container">
-    <div class="search-section">
-      <input v-model="searchQuery" placeholder="Search users..." />
-      <button @click="searchUsers">Search</button>
+  <div class="container">
+    <div class="search-container">
+      <div class="search-section">
+        <input v-model="searchQuery" placeholder="Search users..." />
+        <button @click="searchUsers">Search</button>
+      </div>
+      <ul>
+        <li v-for="user in searchResults" :key="user.id" class="user-item">
+          <span>{{ user.username }}</span>
+          <div class="user-actions">
+            <button @click="openEditPopup(user)">Edit</button>
+            <button @click="deleteUser(user.id)" style="color: red;">X</button>
+          </div>
+        </li>
+      </ul>
+      <div class="pagination">
+        <button @click="previousPage" :disabled="currentPage === 0">Previous</button>
+        <button @click="nextPage">Next</button>
+      </div>
     </div>
-    <ul>
-      <li v-for="user in searchResults" :key="user.id" class="user-item">
-        <span>{{ user.username }}</span>
-        <div class="user-actions">
-          <button @click="openEditPopup(user)">Edit</button>
-          <button @click="deleteUser(user.id)" style="color: red;">X</button>
-        </div>
-      </li>
-    </ul>
-    <div class="pagination">
-      <button @click="previousPage" :disabled="currentPage === 0">Previous</button>
-      <button @click="nextPage">Next</button>
-    </div>
-  </div>
 
-  <div class="search-container">
-    <div class="search-section">
-      <input v-model="contentId" placeholder="Enter content ID" />
-      <button @click="fetchUserData">Fetch User Data</button>
+    <div class="search-container">
+      <div class="search-section">
+        <input v-model="contentId" placeholder="Enter content ID" />
+        <button @click="fetchUserData">Fetch User Data</button>
+      </div>
+      <div v-if="userData">
+        <p>Username: {{ userData.username }}</p>
+        <p>User ID: {{ userData.id }}</p>
+      </div>
     </div>
-    <div v-if="userData">
-      <p>Username: {{ userData.username }}</p>
-      <p>User ID: {{ userData.id }}</p>
-    </div>
-  </div>
 
-  <div class="search-container">
-    <div class="search-section">
-      <input v-model="albumId" placeholder="Enter album ID" />
-      <button @click="fetchAlbumUserData">Fetch Album User Data</button>
+    <div class="search-container">
+      <div class="search-section">
+        <input v-model="albumId" placeholder="Enter album ID" />
+        <button @click="fetchAlbumUserData">Fetch Album User Data</button>
+      </div>
+      <div v-if="albumUserData">
+        <p>Username: {{ albumUserData.username }}</p>
+        <p>User ID: {{ albumUserData.id }}</p>
+      </div>
     </div>
-    <div v-if="albumUserData">
-      <p>Username: {{ albumUserData.username }}</p>
-      <p>User ID: {{ albumUserData.id }}</p>
-    </div>
-  </div>
 
-  <div v-if="isEditPopupVisible" class="edit-popup">
-    <div class="edit-popup-content">
-      <h3>Edit User</h3>
-      <input v-model="editedUsername" placeholder="Username" />
-      <input v-model="editedNickname" placeholder="Nickname" />
-      <input v-model="editedPassword" type="password" placeholder="Password" />
-      <button @click="updateUser">Save</button>
-      <button @click="isEditPopupVisible = false">Cancel</button>
+    <div v-if="isEditPopupVisible" class="edit-popup">
+      <div class="edit-popup-content">
+        <h3>Edit User</h3>
+        <input v-model="editedUsername" placeholder="Username" />
+        <input v-model="editedNickname" placeholder="Nickname" />
+        <input v-model="editedPassword" type="password" placeholder="Password" />
+        <button @click="updateUser">Save</button>
+        <button @click="isEditPopupVisible = false">Cancel</button>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%; /* Ensure the body takes up the full height of the screen */
+  display: flex; /* Enable Flexbox on the body */
+  justify-content: center; /* Horizontally center the content */
+  align-items: center; /* Vertically center the content */
+  background-color: #f4f4f4; /* Optional background color */
+}
+
+.container {
+  flex-direction: column;
+  align-items: center; /* Horizontally center the items */
+  width: 100%;
+  max-width: 900px; /* Set a maximum width for the container */
+  padding: 20px; /* Optional padding to avoid content touching edges */
+  box-sizing: border-box; /* Include padding/borders in size calculations */
+  vertical-align: middle;
+}
+
 .search-container {
+  width: 100%;
   margin-bottom: 20px;
 }
 
