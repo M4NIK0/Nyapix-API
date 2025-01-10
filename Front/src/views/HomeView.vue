@@ -3,7 +3,6 @@ import NavBar from "@/components/NavBar.vue";
 import SearchBar from "@/components/search/SearchBar.vue";
 import {ref} from "vue";
 import SearchResult from "@/components/search/SearchResult.vue";
-import AddButton from "@/components/search/AddButton.vue";
 
 const searchResults = ref<Array<{ id: number, title: string, description: string, source: number, tags: number[], characters: number[], authors: number[], is_private: boolean, url: string }>>([]);
 const updateSearchResults = (results: any[]) => {
@@ -75,7 +74,7 @@ html, body {
 /* Search Bar */
 .searchbar {
   padding: 20px;
-  background: #f9f9f9;w
+  background: #f9f9f9;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
