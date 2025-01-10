@@ -52,7 +52,14 @@ async def get_my_content_endpoint(request: fastapi.Request, page: int = Query(..
         content = content_db.get_user_content(db, request.state.user.id, max_results, page)
 
         for item in content.contents:
+            is_https = os.getenv("IS_HTTPS")
+            if is_https  == "yes":
+                is_https = True
+            else:
+                is_https = False
             item.url = f"{request.base_url}{item.url}"
+            if is_https:
+                item.url = item.url.replace("http://", "https://")
 
         return content
     except Exception as e:
@@ -92,7 +99,14 @@ async def search_content_endpoint(request: fastapi.Request,
             return Response(status_code=500)
 
         for item in content.contents:
+            is_https = os.getenv("IS_HTTPS")
+            if is_https  == "yes":
+                is_https = True
+            else:
+                is_https = False
             item.url = f"{request.base_url}{item.url}"
+            if is_https:
+                item.url = item.url.replace("http://", "https://")
 
         return content
     except Exception as e:
