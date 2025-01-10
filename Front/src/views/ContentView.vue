@@ -364,14 +364,16 @@ onBeforeUnmount(() => {
             <button @click="showEditOverlay" class="edit-button">Edit</button>
           </div>
         </aside>
-        <div class="media-section">
-          <div v-if="content.mediaSrc">
-            <img v-if="content.mediaType.startsWith('image/')" :src="content.mediaSrc" alt="Content Image" class="responsive-image" />
-            <video v-else-if="content.mediaType.startsWith('video/')" :src="content.mediaSrc" controls class="responsive-media"></video>
-            <audio v-else-if="content.mediaType.startsWith('audio/')" :src="content.mediaSrc" controls class="responsive-media"></audio>
-            <span v-else>No media available</span>
+        <aside>
+          <div class="media-section">
+            <div v-if="content.mediaSrc">
+              <img v-if="content.mediaType.startsWith('image/')" :src="content.mediaSrc" alt="Content Image" class="responsive-image" />
+              <video v-else-if="content.mediaType.startsWith('video/')" :src="content.mediaSrc" controls class="responsive-media"></video>
+              <audio v-else-if="content.mediaType.startsWith('audio/')" :src="content.mediaSrc" controls class="responsive-media"></audio>
+              <span v-else>No media available</span>
+            </div>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
     <div v-else>
