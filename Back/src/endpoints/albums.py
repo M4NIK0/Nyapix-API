@@ -110,7 +110,7 @@ async def get_album_endpoint(request: fastapi.Request, album_id: int) -> models.
     db = None
     try:
         db = connect_db()
-        album = albums_db.get_album(db, album_id)
+        album = albums_db.get_album(db, request.state.user.id, album_id)
         if album is None:
             return fastapi.responses.Response(status_code=404)
         return album
