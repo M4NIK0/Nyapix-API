@@ -11,7 +11,7 @@ router = fastapi.APIRouter()
 
 @router.post("", tags=["Albums management"])
 @users_type.admin_or_user_required
-async def post_albums_endpoint(request: fastapi.Request, info: models.AlbumPostModel = fastapi.Form(...)):
+async def post_albums_endpoint(request: fastapi.Request, info: models.AlbumPostModel = fastapi.Body(...)):
     db = None
     try:
         db = connect_db()
@@ -64,6 +64,47 @@ async def delete_albums_remove_content_endpoint(request: fastapi.Request, album_
     finally:
         if db is not None:
             db.close()
+
+@router.get("/search", tags=["Albums management"])
+async def search_content_endpoint(request: fastapi.Request,
+                                  needed_tags: list[int] = Query(None), needed_characters: list[int] = Query(None), needed_authors: list[int] = Query(None),
+                                  tags_to_exclude: list[int] = Query(None), characters_to_exclude: list[int] = Query(None), authors_to_exclude: list[int] = Query(None),
+                                  page: int = Query(1), max_results: int = Query(10)) -> models.AlbumPageModel:
+    db = None
+    try:
+        db = connect_db()
+
+        if needed_tags is None:
+            needed_tags = []
+        if needed_characters is None:
+            needed_characters = []
+        if needed_authors is None:
+            needed_authors = []
+        if tags_to_exclude is None:
+            tags_to_exclude = []
+        if characters_to_exclude is None:
+            characters_to_exclude = []
+        if authors_to_exclude is None:
+            authors_to_exclude = []
+
+        content = albums_db.search_album(db, needed_tags, needed_characters, needed_authors,
+                                         tags_to_exclude, characters_to_exclude, authors_to_exclude, max_results, page)
+
+        if content is None:
+            return Response(status_code=500)
+
+        for item in content.contents:
+            item.url = f"{request.base_url}{item.url}"
+
+        return content
+    except Exception as e:
+        logger.error("Error searching content")
+        logger.error(e)
+        return Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
+
 
 @router.put("/{album_id}", tags=["Albums management"])
 @users_type.admin_or_user_required
@@ -136,46 +177,6 @@ async def get_album_who_endpoint(request: fastapi.Request, album_id: int) -> use
         logger.error("Error getting album")
         logger.error(e)
         return fastapi.responses.Response(status_code=500)
-    finally:
-        if db is not None:
-            db.close()
-
-@router.get("/search", tags=["Albums management"])
-async def search_content_endpoint(request: fastapi.Request,
-                                  needed_tags: list[int] = Query(None), needed_characters: list[int] = Query(None), needed_authors: list[int] = Query(None),
-                                  tags_to_exclude: list[int] = Query(None), characters_to_exclude: list[int] = Query(None), authors_to_exclude: list[int] = Query(None),
-                                  page: int = Query(1), max_results: int = Query(10)) -> models.AlbumPageModel:
-    db = None
-    try:
-        db = connect_db()
-
-        if needed_tags is None:
-            needed_tags = []
-        if needed_characters is None:
-            needed_characters = []
-        if needed_authors is None:
-            needed_authors = []
-        if tags_to_exclude is None:
-            tags_to_exclude = []
-        if characters_to_exclude is None:
-            characters_to_exclude = []
-        if authors_to_exclude is None:
-            authors_to_exclude = []
-
-        content = albums_db.search_album(db, needed_tags, needed_characters, needed_authors,
-                                            tags_to_exclude, characters_to_exclude, authors_to_exclude, max_results, page)
-
-        if content is None:
-            return Response(status_code=500)
-
-        for item in content.contents:
-            item.url = f"{request.base_url}{item.url}"
-
-        return content
-    except Exception as e:
-        logger.error("Error searching content")
-        logger.error(e)
-        return Response(status_code=500)
     finally:
         if db is not None:
             db.close()
