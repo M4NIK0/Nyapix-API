@@ -11,7 +11,7 @@ const isEditOverlayVisible = ref(false);
 const editForm = ref({
   title: '',
   description: '',
-  source: '',
+  sourceId: null as number | null,
   is_private: false,
   tags: '',
   characters: '',
@@ -242,7 +242,7 @@ const updateContent = async () => {
     const updatedContent = {
       title: editForm.value.title,
       description: editForm.value.description,
-      source_id: sources.value.find(source => source.name === editForm.value.source)?.id,
+      source_id: editForm.value.sourceId,
       is_private: editForm.value.is_private,
       tags: tagIds,
       characters: characterIds,
@@ -268,7 +268,7 @@ const showEditOverlay = () => {
   editForm.value = {
     title: content.value.title,
     description: content.value.description,
-    source: sources.value.find(source => source.id === content.value.source_id)?.name || '',
+    sourceId: content.value.source_id,
     is_private: content.value.is_private,
     tags: content.value.tagNames.join(', '),
     characters: content.value.characterNames.join(', '),
@@ -373,7 +373,9 @@ onBeforeUnmount(() => {
         </label>
         <label>
           Source:
-          <input v-model="editForm.source" type="text" placeholder="Source name" />
+          <select v-model="editForm.sourceId">
+            <option v-for="source in sources" :key="source.id" :value="source.id">{{ source.name }}</option>
+          </select>
         </label>
         <label>
           Is Private:
@@ -414,8 +416,9 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.responsive-media {
+.responsive-image {
   max-width: 100%;
+  max-height: 100vh;
   height: auto;
   display: block;
   margin: 0 auto;
@@ -433,7 +436,7 @@ onBeforeUnmount(() => {
   padding: 0;
   max-height: 150px;
   overflow-y: auto;
-  z-index: 1001; /* Ensure the dropdown is in front */
+  z-index: 1001;
 }
 
 .suggestions li {
@@ -456,7 +459,7 @@ onBeforeUnmount(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* Ensure the overlay is behind the suggestions */
+  z-index: 1000;
 }
 
 .overlay-content {
