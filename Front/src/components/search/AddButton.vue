@@ -19,6 +19,7 @@ const showTagSuggestions = ref(false);
 const showCharacterSuggestions = ref(false);
 const showAuthorSuggestions = ref(false);
 
+const API_BASE = import.meta.env.VITE_BACKEND_URL + '/v1';
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
   return token ? { Authorization: `Bearer ${token}` } : {};
@@ -41,7 +42,7 @@ const handleFileChange = (event: Event) => {
 
 const fetchSources = async () => {
   try {
-    const response = await axios.get('http://localhost:5000/v1/sources', {
+    const response = await axios.get(`${API_BASE}/sources`, {
       headers: getAuthHeader(),
     });
     sources.value = response.data;
@@ -52,7 +53,7 @@ const fetchSources = async () => {
 
 const fetchTagSuggestions = async (query: string) => {
   try {
-    const response = await axios.get('http://localhost:5000/v1/tags/search', {
+    const response = await axios.get(`${API_BASE}/tags/search`, {
       headers: getAuthHeader(),
       params: {
         tag_name: query,
@@ -68,7 +69,7 @@ const fetchTagSuggestions = async (query: string) => {
 
 const fetchCharacterSuggestions = async (query: string) => {
   try {
-    const response = await axios.get('http://localhost:5000/v1/characters/search', {
+    const response = await axios.get(`${API_BASE}/characters/search`, {
       headers: getAuthHeader(),
       params: {
         character_name: query,
@@ -84,7 +85,7 @@ const fetchCharacterSuggestions = async (query: string) => {
 
 const fetchAuthorSuggestions = async (query: string) => {
   try {
-    const response = await axios.get('http://localhost:5000/v1/authors/search', {
+    const response = await axios.get(`${API_BASE}/authors/search`, {
       headers: getAuthHeader(),
       params: {
         author_name: query,
@@ -121,7 +122,7 @@ const selectAuthorSuggestion = (author: { id: number; name: string }) => {
 
 const getOrCreateId = async (name: string, type: 'tags' | 'characters' | 'authors') => {
   try {
-    const searchResponse = await axios.get(`http://localhost:5000/v1/${type}/search`, {
+    const searchResponse = await axios.get(`${API_BASE}/${type}/search`, {
       headers: getAuthHeader(),
       params: {
         [`${type.slice(0, -1)}_name`]: name,
@@ -133,7 +134,7 @@ const getOrCreateId = async (name: string, type: 'tags' | 'characters' | 'author
       return searchResponse.data[type][0].id;
     } else {
       try {
-        const createResponse = await axios.post(`http://localhost:5000/v1/${type}`, null, {
+        const createResponse = await axios.post(`${API_BASE}/${type}`, null, {
           headers: getAuthHeader(),
           params: {
             [`${type.slice(0, -1)}_name`]: name,
@@ -142,7 +143,7 @@ const getOrCreateId = async (name: string, type: 'tags' | 'characters' | 'author
         return createResponse.data.id;
       } catch (createError: any) {
         if (createError.response && createError.response.status === 409) {
-          const retrySearchResponse = await axios.get(`http://localhost:5000/v1/${type}/search`, {
+          const retrySearchResponse = await axios.get(`${API_BASE}/${type}/search`, {
             headers: getAuthHeader(),
             params: {
               [`${type.slice(0, -1)}_name`]: name,
@@ -185,7 +186,7 @@ const submitForm = async () => {
     }));
     formData.append('file', selectedFile.value);
 
-    await axios.post('http://localhost:5000/v1/content', formData, {
+    await axios.post(`${API_BASE}/content`, formData, {
       headers: {
         ...getAuthHeader(),
         'Content-Type': 'multipart/form-data',
