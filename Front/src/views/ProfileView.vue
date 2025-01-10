@@ -139,6 +139,7 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100vh; /* Make sure it takes up the full height of the viewport */
 }
 
 .edit-popup-content {
