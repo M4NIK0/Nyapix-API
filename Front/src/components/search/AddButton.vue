@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 
 const isPopupVisible = ref(false);
@@ -227,8 +227,22 @@ watch(authors, (newAuthors) => {
   }
 });
 
+const closeDropdown = (event: MouseEvent) => {
+  const popupContent = document.querySelector('.popup-content');
+  if (popupContent && !popupContent.contains(event.target as Node)) {
+    showTagSuggestions.value = false;
+    showCharacterSuggestions.value = false;
+    showAuthorSuggestions.value = false;
+  }
+};
+
 onMounted(() => {
   fetchSources();
+  document.addEventListener('mousedown', closeDropdown);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', closeDropdown);
 });
 </script>
 
@@ -331,6 +345,7 @@ onMounted(() => {
   padding: 0;
   max-height: 150px;
   overflow-y: auto;
+  z-index: 1000; /* Ensure the dropdown is in front */
 }
 
 .suggestions li {
