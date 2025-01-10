@@ -91,8 +91,7 @@ const fetchContent = async () => {
     const authorNames = await Promise.all(content.value.authors.map(fetchAuthorDetails));
     content.value.authorNames = authorNames.filter(name => name !== null);
 
-    const imageUrl = content.value.url.replace('/v1', '/v1/content');
-    const imageResponse = await axios.get(imageUrl, {
+    const imageResponse = await axios.get(content.value.url, {
       headers: getAuthHeader(),
       responseType: 'blob',
     });
