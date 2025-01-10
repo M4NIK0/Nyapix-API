@@ -74,3 +74,18 @@ onMounted(async () => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.login-link, .register-link {
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.login-link a, .register-link a {
+  color: #fff;
+}
+
+.login-link a:hover, .register-link a:hover {
+  text-decoration: underline;
+}
+</style>
