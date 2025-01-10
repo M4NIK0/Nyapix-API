@@ -407,7 +407,6 @@ onMounted(() => {
   height: 100vh; /* Full viewport height */
   padding: 20px; /* Optional: Add padding */
   box-sizing: border-box;
-  background-color: #f5f5f5; /* Optional: Light background color */
 }
 
 .center-container > div {
