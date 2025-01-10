@@ -91,13 +91,14 @@ const fetchContent = async () => {
     const authorNames = await Promise.all(content.value.authors.map(fetchAuthorDetails));
     content.value.authorNames = authorNames.filter(name => name !== null);
 
-    const imageResponse = await axios.get(content.value.url, {
+    const mediaResponse = await axios.get(content.value.url, {
       headers: getAuthHeader(),
       responseType: 'blob',
     });
 
-    const imageBlob = imageResponse.data;
-    content.value.imageSrc = URL.createObjectURL(imageBlob);
+    const mediaBlob = mediaResponse.data;
+    content.value.mediaSrc = URL.createObjectURL(mediaBlob);
+    content.value.mediaType = mediaResponse.headers['content-type'];
   } catch (error) {
     console.error('Error fetching content:', error);
   }
@@ -172,7 +173,12 @@ onMounted(() => {
           <button @click="showEditOverlay" class="edit-button">Edit</button>
           <h1>{{ content.title }}</h1>
           <p>{{ content.description }}</p>
-          <img v-if="content.imageSrc" :src="content.imageSrc" alt="Content Image" class="responsive-image" />
+          <div v-if="content.mediaSrc">
+            <img v-if="content.mediaType.startsWith('image/')" :src="content.mediaSrc" alt="Content Image" class="responsive-image" />
+            <video v-else-if="content.mediaType.startsWith('video/')" :src="content.mediaSrc" controls class="responsive-media"></video>
+            <audio v-else-if="content.mediaType.startsWith('audio/')" :src="content.mediaSrc" controls class="responsive-media"></audio>
+            <span v-else>No media available</span>
+          </div>
         </div>
       </div>
     </div>
@@ -216,6 +222,15 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.responsive-media {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+</style>
 
 <style scoped>
 .content-view {
