@@ -389,64 +389,85 @@ onBeforeUnmount(() => {
 
 
 <style scoped>
-.content-container {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 20px;
-}
-
-.content-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.content-body {
-  display: flex;
-  gap: 20px;
-}
-
-.info-section {
-  flex: 1;
-  background: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
-}
-
-.info-section h2 {
-  margin-bottom: 10px;
-}
-
-.info-section ul {
-  list-style: none;
-  padding: 0;
-  margin: 10px 0;
-}
-
-.info-section ul li {
-  margin-bottom: 5px;
-}
-
-.action-buttons {
-  margin-top: 20px;
-}
-
-.media-section {
-  flex: 2;
+.content-view {
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.content-main {
+  display: flex;
+  gap: 20px;
+  width: 80%;
+  max-width: 1200px;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.tags {
+  flex: 1;
+  max-width: 300px;
+}
+
+.content-details {
+  flex: 2;
+}
+
+.content-details h1 {
+  margin-top: 0;
 }
 
 .responsive-image,
 .responsive-media {
-  max-width: 100%;
-  max-height: 100%;
-  display: block;
-  border-radius: 8px;
+  width: 100%;
+  height: auto;
+  margin-top: 20px;
 }
 
 .overlay {
-  /* Existing styles */
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
+
+.overlay-content {
+  background: grey;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+}
+
+.overlay-content input,
+.overlay-content select,
+.overlay-content textarea {
+  margin-bottom: 10px;
+  padding: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  color: black;
+}
+
+.delete-button,
+.edit-button,
+.save-button,
+.cancel-button {
+  margin-top: 10px;
+}
+
 </style>
