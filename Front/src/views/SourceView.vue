@@ -191,8 +191,11 @@ onMounted(() => {
 }
 
 .sources-container {
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
-  vertical-align: middle;
+  min-height: 100vh; /* Ensure it takes full viewport height */
+  padding: 20px;
 }
 </style>
