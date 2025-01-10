@@ -1,16 +1,23 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import axios from 'axios';
 
 const isPopupVisible = ref(false);
 const title = ref('');
 const description = ref('');
-const sourceId = ref(0);
+const sourceId = ref<number | null>(null);
 const tags = ref('');
 const characters = ref('');
 const authors = ref('');
 const isPrivate = ref(false);
 const selectedFile = ref<File | null>(null);
+const sources = ref<{ id: number; name: string }[]>([]);
+const tagSuggestions = ref<{ id: number; name: string }[]>([]);
+const characterSuggestions = ref<{ id: number; name: string }[]>([]);
+const authorSuggestions = ref<{ id: number; name: string }[]>([]);
+const showTagSuggestions = ref(false);
+const showCharacterSuggestions = ref(false);
+const showAuthorSuggestions = ref(false);
 
 const getAuthHeader = () => {
   const token = localStorage.getItem('token');
@@ -30,6 +37,86 @@ const handleFileChange = (event: Event) => {
   if (target.files && target.files.length > 0) {
     selectedFile.value = target.files[0];
   }
+};
+
+const fetchSources = async () => {
+  try {
+    const response = await axios.get('http://localhost:5000/v1/sources', {
+      headers: getAuthHeader(),
+    });
+    sources.value = response.data;
+  } catch (error) {
+    console.error('Error fetching sources:', error);
+  }
+};
+
+const fetchTagSuggestions = async (query: string) => {
+  try {
+    const response = await axios.get('http://localhost:5000/v1/tags/search', {
+      headers: getAuthHeader(),
+      params: {
+        tag_name: query,
+        max_results: 5,
+      },
+    });
+    tagSuggestions.value = response.data.tags;
+    showTagSuggestions.value = true;
+  } catch (error) {
+    console.error('Error fetching tag suggestions:', error);
+  }
+};
+
+const fetchCharacterSuggestions = async (query: string) => {
+  try {
+    const response = await axios.get('http://localhost:5000/v1/characters/search', {
+      headers: getAuthHeader(),
+      params: {
+        character_name: query,
+        max_results: 5,
+      },
+    });
+    characterSuggestions.value = response.data.characters;
+    showCharacterSuggestions.value = true;
+  } catch (error) {
+    console.error('Error fetching character suggestions:', error);
+  }
+};
+
+const fetchAuthorSuggestions = async (query: string) => {
+  try {
+    const response = await axios.get('http://localhost:5000/v1/authors/search', {
+      headers: getAuthHeader(),
+      params: {
+        author_name: query,
+        max_results: 5,
+      },
+    });
+    authorSuggestions.value = response.data.authors;
+    showAuthorSuggestions.value = true;
+  } catch (error) {
+    console.error('Error fetching author suggestions:', error);
+  }
+};
+
+const selectTagSuggestion = (tag: { id: number; name: string }) => {
+  const tagList = tags.value.split(',').map(tag => tag.trim());
+  tagList[tagList.length - 1] = tag.name;
+  tags.value = tagList.join(', ');
+  showTagSuggestions.value = false;
+};
+
+const selectCharacterSuggestion = (character: { id: number; name: string }) => {
+  const characterList = characters.value.split(',').map(character => character.trim());
+  characterList[characterList.length - 1] = character.name;
+  characters.value = characterList.join(', ');
+  showCharacterSuggestions.value = false;
+};
+
+const selectAuthorSuggestion = (author: { id: number; name: string }) => {
+  const authorList = authors.value.split(',').map(author => author.trim());
+  authorList[authorList.length - 1] = author.name;
+  authors.value = authorList.join(', ');
+  showAuthorSuggestions.value = false;
 };
 
 const getOrCreateId = async (name: string, type: 'tags' | 'characters' | 'authors') => {
@@ -98,11 +185,6 @@ const submitForm = async () => {
     }));
     formData.append('file', selectedFile.value);
 
-    // Log FormData entries
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
-    }
-
     await axios.post('http://localhost:5000/v1/content', formData, {
       headers: {
         ...getAuthHeader(),
@@ -116,6 +198,37 @@ const submitForm = async () => {
     alert('Error adding content.');
   }
 };
+
+watch(tags, (newTags) => {
+  const lastTag = newTags.split(',').pop()?.trim();
+  if (lastTag) {
+    fetchTagSuggestions(lastTag);
+  } else {
+    showTagSuggestions.value = false;
+  }
+});
+
+watch(characters, (newCharacters) => {
+  const lastCharacter = newCharacters.split(',').pop()?.trim();
+  if (lastCharacter) {
+    fetchCharacterSuggestions(lastCharacter);
+  } else {
+    showCharacterSuggestions.value = false;
+  }
+});
+
+watch(authors, (newAuthors) => {
+  const lastAuthor = newAuthors.split(',').pop()?.trim();
+  if (lastAuthor) {
+    fetchAuthorSuggestions(lastAuthor);
+  } else {
+    showAuthorSuggestions.value = false;
+  }
+});
+
+onMounted(() => {
+  fetchSources();
+});
 </script>
 
 <template>
@@ -126,10 +239,33 @@ const submitForm = async () => {
       <h3>Add Content</h3>
       <input v-model="title" placeholder="Title" />
       <input v-model="description" placeholder="Description" />
-      <input v-model="sourceId" type="number" placeholder="Source ID" />
-      <input v-model="tags" placeholder="Tags (comma separated names)" />
-      <input v-model="characters" placeholder="Characters (comma separated names)" />
-      <input v-model="authors" placeholder="Authors (comma separated names)" />
+      <select v-model="sourceId">
+        <option v-for="source in sources" :key="source.id" :value="source.id">{{ source.name }}</option>
+      </select>
+      <div class="tag-input">
+        <input v-model="tags" placeholder="Tags (comma separated names)" />
+        <ul v-if="showTagSuggestions" class="suggestions">
+          <li v-for="suggestion in tagSuggestions" :key="suggestion.id" @click="selectTagSuggestion(suggestion)">
+            {{ suggestion.name }}
+          </li>
+        </ul>
+      </div>
+      <div class="character-input">
+        <input v-model="characters" placeholder="Characters (comma separated names)" />
+        <ul v-if="showCharacterSuggestions" class="suggestions">
+          <li v-for="suggestion in characterSuggestions" :key="suggestion.id" @click="selectCharacterSuggestion(suggestion)">
+            {{ suggestion.name }}
+          </li>
+        </ul>
+      </div>
+      <div class="author-input">
+        <input v-model="authors" placeholder="Authors (comma separated names)" />
+        <ul v-if="showAuthorSuggestions" class="suggestions">
+          <li v-for="suggestion in authorSuggestions" :key="suggestion.id" @click="selectAuthorSuggestion(suggestion)">
+            {{ suggestion.name }}
+          </li>
+        </ul>
+      </div>
       <label>
         <input type="checkbox" v-model="isPrivate" />
         Private
@@ -167,11 +303,42 @@ const submitForm = async () => {
   text-align: center;
 }
 
-.popup-content input {
+.popup-content input,
+.popup-content select {
   margin-bottom: 10px;
   padding: 5px;
   width: 100%;
   box-sizing: border-box;
   color: black;
+}
+
+.tag-input,
+.character-input,
+.author-input {
+  position: relative;
+}
+
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 150px;
+  overflow-y: auto;
+}
+
+.suggestions li {
+  padding: 5px;
+  cursor: pointer;
+  color: black;
+}
+
+.suggestions li:hover {
+  background: #eee;
 }
 </style>
