@@ -93,6 +93,7 @@ const handleClick = (result: { id: number, title: string }) => {
   flex-wrap: wrap; /* Allow items to wrap */
   gap: 20px; /* Space between items */
   justify-content: center; /* Center the items if there's extra space */
+  background: #313131;
 }
 
 .result-item {
@@ -103,10 +104,12 @@ const handleClick = (result: { id: number, title: string }) => {
   overflow: hidden;
   transition: transform 0.3s ease-in-out;
   box-sizing: border-box; /* Include padding and borders in size */
+  background: #747474;
 }
 
 .result-item:hover {
   transform: scale(1.05); /* Slight zoom effect on hover */
+  color: #ffffff;
 }
 
 .image-wrapper {
@@ -115,17 +118,19 @@ const handleClick = (result: { id: number, title: string }) => {
   display: flex;
   justify-content: center;
   align-items: center;
+  background: #002152;
 }
 
 .result-image {
   max-width: 100%;
   max-height: 100%;
   object-fit: cover;
+
 }
 
 .result-info {
   padding: 10px;
-  color: black;
+  color: #ffffff;
 }
 
 .result-info h3 {
