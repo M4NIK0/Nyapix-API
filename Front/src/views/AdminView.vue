@@ -207,13 +207,15 @@ html, body {
 }
 
 .container {
+  display: flex;
   flex-direction: column;
   align-items: center; /* Horizontally center the items */
+  justify-content: flex-start; /* Align items to the top within the container */
   width: 100%;
   max-width: 900px; /* Set a maximum width for the container */
+  min-height: 100vh; /* Ensure the container takes up at least the full height of the viewport */
   padding: 20px; /* Optional padding to avoid content touching edges */
   box-sizing: border-box; /* Include padding/borders in size calculations */
-  vertical-align: middle;
 }
 
 .search-container {
