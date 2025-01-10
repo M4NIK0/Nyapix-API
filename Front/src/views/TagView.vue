@@ -274,80 +274,56 @@ onMounted(() => {
   <header>
     <NavBar />
   </header>
-  <div>
-    <div class="button-container">
-      <button @click="addTag">Add Tag</button>
-      <button @click="addCharacter">Add Character</button>
-      <button @click="addAuthor">Add Author</button>
-    </div>
-    <input v-model="searchQuery" @input="search" placeholder="Search..." />
+  <div class="center-container">
     <div>
-      <h2>Tags</h2>
-      <ul>
-        <li v-for="tag in tags" :key="tag.id" class="list-item tag">
-          {{ tag.name }}
-          <div class="button-group">
-            <button class="edit-button" @click="editTag(tag)">Edit</button>
-            <button class="delete-button" @click="deleteTag(tag.id)">X</button>
-          </div>
-        </li>
-      </ul>
-    </div>
-    <div>
-      <h2>Characters</h2>
-      <ul>
-        <li v-for="character in characters" :key="character.id" class="list-item character">
-          {{ character.name }}
-          <div class="button-group">
-            <button class="edit-button" @click="editCharacter(character)">Edit</button>
-            <button class="delete-button" @click="deleteCharacter(character.id)">X</button>
-          </div>
-        </li>
-      </ul>
-    </div>
-    <div>
-      <h2>Authors</h2>
-      <ul>
-        <li v-for="author in authors" :key="author.id" class="list-item author">
-          {{ author.name }}
-          <div class="button-group">
-            <button class="edit-button" @click="editAuthor(author)">Edit</button>
-            <button class="delete-button" @click="deleteAuthor(author.id)">X</button>
-          </div>
-        </li>
-      </ul>
-    </div>
-    <button class="page-button" @click="prevPage" :disabled="currentPage === 1">Previous</button>
-    <button class="page-button" @click="nextPage" :disabled="currentPage === totalPages">Next</button>
-  </div>
-
-  <div v-if="isEditTagPopupVisible" class="edit-popup">
-    <div class="edit-popup-content">
-      <h3>Edit Tag</h3>
-      <input v-model="newTagName" placeholder="New tag name" />
-      <button @click="updateTag">Save</button>
-      <button @click="isEditTagPopupVisible = false">Cancel</button>
-    </div>
-  </div>
-
-  <div v-if="isEditCharacterPopupVisible" class="edit-popup">
-    <div class="edit-popup-content">
-      <h3>Edit Character</h3>
-      <input v-model="newCharacterName" placeholder="New character name" />
-      <button @click="updateCharacter">Save</button>
-      <button @click="isEditCharacterPopupVisible = false">Cancel</button>
-    </div>
-  </div>
-
-  <div v-if="isEditAuthorPopupVisible" class="edit-popup">
-    <div class="edit-popup-content">
-      <h3>Edit Author</h3>
-      <input v-model="newAuthorName" placeholder="New author name" />
-      <button @click="updateAuthor">Save</button>
-      <button @click="isEditAuthorPopupVisible = false">Cancel</button>
+      <div class="button-container">
+        <button @click="addTag">Add Tag</button>
+        <button @click="addCharacter">Add Character</button>
+        <button @click="addAuthor">Add Author</button>
+      </div>
+      <input v-model="searchQuery" @input="search" placeholder="Search..." />
+      <div>
+        <h2>Tags</h2>
+        <ul>
+          <li v-for="tag in tags" :key="tag.id" class="list-item tag">
+            {{ tag.name }}
+            <div class="button-group">
+              <button class="edit-button" @click="editTag(tag)">Edit</button>
+              <button class="delete-button" @click="deleteTag(tag.id)">X</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h2>Characters</h2>
+        <ul>
+          <li v-for="character in characters" :key="character.id" class="list-item character">
+            {{ character.name }}
+            <div class="button-group">
+              <button class="edit-button" @click="editCharacter(character)">Edit</button>
+              <button class="delete-button" @click="deleteCharacter(character.id)">X</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <h2>Authors</h2>
+        <ul>
+          <li v-for="author in authors" :key="author.id" class="list-item author">
+            {{ author.name }}
+            <div class="button-group">
+              <button class="edit-button" @click="editAuthor(author)">Edit</button>
+              <button class="delete-button" @click="deleteAuthor(author.id)">X</button>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <button class="page-button" @click="prevPage" :disabled="currentPage === 1">Previous</button>
+      <button class="page-button" @click="nextPage" :disabled="currentPage === totalPages">Next</button>
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .character {
@@ -423,4 +399,24 @@ onMounted(() => {
   display: flex;
   gap: 5px;
 }
+
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  padding: 20px; /* Optional: Add padding */
+  box-sizing: border-box;
+  background-color: #f5f5f5; /* Optional: Light background color */
+}
+
+.center-container > div {
+  max-width: 800px; /* Set a maximum width for content */
+  width: 100%; /* Allow it to shrink for smaller screens */
+  background: white; /* Optional: White background for contrast */
+  border-radius: 8px; /* Optional: Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow */
+  padding: 20px;
+}
+
 </style>
