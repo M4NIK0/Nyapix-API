@@ -20,10 +20,13 @@ const updateSearchResults = (results: any[]) => {
 
     <!-- Main Content -->
     <main class="main-content">
+      <!-- Search Bar Section -->
       <div class="searchbar">
         <SearchBar @update:searchResults="updateSearchResults" />
         <AddButton />
       </div>
+
+      <!-- Search Results Section -->
       <section class="content">
         <h1>Search Results</h1>
         <SearchResult :searchResults="searchResults" />
@@ -32,45 +35,50 @@ const updateSearchResults = (results: any[]) => {
   </div>
 </template>
 
+
 <style>
-/* Ensure the container spans the full viewport */
+/* General Layout */
 .home-view {
   display: flex;
   flex-direction: column;
-  height: 100vh; /* Full viewport height */
-  width: 100%;  /* Full viewport width */
-  margin: 0;    /* Ensure no spacing issues */
+  height: 100vh;
+  width: 100%;
+  margin: 0;
   padding: 0;
 }
 
-/* Navbar at the top */
+/* Navbar */
 .navbar {
-  height: 60px; /* Set fixed height for the navbar */
-  flex-shrink: 0; /* Prevents shrinking */
+  height: 60px;
+  flex-shrink: 0;
   display: flex;
-  padding: 0 20px; /* Optional padding for content inside the navbar */
+  padding: 0 20px;
 }
 
-/* Main content area */
+/* Main Content */
 .main-content {
+  flex: 1;
   display: flex;
-  flex: 1; /* Takes up remaining space below the navbar */
+  flex-direction: column; /* Stack items vertically */
   width: 100%;
-  height: 100%;
-  overflow: hidden; /* Prevents overflow issues */
 }
 
-/* Sidebar styling */
-.sidebar {
-  flex: 0 0 20%;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Optional shadow */
-  overflow-y: auto; /* Enable vertical scroll if needed */
+/* Search Bar */
+.searchbar {
+  padding: 20px; /* Add padding around the search bar */
+  background: #f9f9f9; /* Optional background color */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow for separation */
+  z-index: 1; /* Ensure it’s above other elements */
+  position: sticky; /* Make it sticky if scrolling is required */
+  top: 0;
+  width: 100%; /* Full width */
 }
 
-/* Content styling */
+/* Search Results */
 .content {
   flex: 1;
-  padding: 10px;
-  overflow-y: auto;
+  padding: 20px; /* Padding for results */
+  overflow-y: auto; /* Scroll results if content exceeds viewport */
+  background: #fff; /* Background color for results */
 }
 </style>
