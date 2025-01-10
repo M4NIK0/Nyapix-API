@@ -93,7 +93,6 @@ const handleClick = (result: { id: number, title: string }) => {
   flex-wrap: wrap; /* Allow items to wrap */
   gap: 20px; /* Space between items */
   justify-content: center; /* Center the items if there's extra space */
-  background: #313131;
 }
 
 .result-item {
@@ -104,7 +103,7 @@ const handleClick = (result: { id: number, title: string }) => {
   overflow: hidden;
   transition: transform 0.3s ease-in-out;
   box-sizing: border-box; /* Include padding and borders in size */
-  background: #747474;
+  background: #444444;
 }
 
 .result-item:hover {
