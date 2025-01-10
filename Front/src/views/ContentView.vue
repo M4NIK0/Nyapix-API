@@ -391,7 +391,7 @@ onBeforeUnmount(() => {
 <style scoped>
 .content-view {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end; /* Align the content to the right */
   align-items: center;
   min-height: 100vh;
   padding: 20px;
@@ -400,7 +400,7 @@ onBeforeUnmount(() => {
 
 .content-main {
   display: flex;
-  flex-direction: row-reverse;
+  flex-direction: row-reverse; /* This aligns content to the right side */
   gap: 20px;
   width: 80%;
   max-width: 1200px;
@@ -470,4 +470,5 @@ onBeforeUnmount(() => {
 .cancel-button {
   margin-top: 10px;
 }
+
 </style>
