@@ -353,11 +353,11 @@ input {
 }
 
 .author {
-  color: blue;
+  color: #00a6ff;
 }
 
 .tag {
-  color: black;
+  color: #ff9100;
 }
 
 .selected-items {
@@ -379,7 +379,7 @@ input {
 }
 
 .tag-item {
-  color: black;
+  color: #ff9100;
 }
 
 .character-item {
@@ -387,7 +387,7 @@ input {
 }
 
 .author-item {
-  color: blue;
+  color: #00a6ff;
 }
 
 .validate_button {
