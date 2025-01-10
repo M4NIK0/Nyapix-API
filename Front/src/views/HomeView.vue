@@ -92,4 +92,12 @@ html, body {
   width: 100%; /* Ensure full width */
 }
 
+#app {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+}
+
 </style>
