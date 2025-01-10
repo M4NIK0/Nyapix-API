@@ -199,23 +199,23 @@ const fetchAlbumUserData = async () => {
 html, body {
   margin: 0;
   padding: 0;
-  height: 100%; /* Ensure the body takes up the full height of the screen */
-  display: flex; /* Enable Flexbox on the body */
-  justify-content: center; /* Horizontally center the content */
-  align-items: center; /* Vertically center the content */
+  height: 100%; /* Full viewport height */
+  display: flex; /* Flexbox for centering content */
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
   background-color: #f4f4f4; /* Optional background color */
 }
 
 .container {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Horizontally center the items */
-  justify-content: flex-start; /* Align items to the top within the container */
   width: 100%;
-  max-width: 900px; /* Set a maximum width for the container */
-  min-height: 100vh; /* Ensure the container takes up at least the full height of the viewport */
-  padding: 20px; /* Optional padding to avoid content touching edges */
-  box-sizing: border-box; /* Include padding/borders in size calculations */
+  max-width: 900px; /* Max width of the content */
+  min-height: 100vh; /* Take at least the full height of the viewport */
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+  justify-content: flex-start; /* Align content to the top */
+  align-items: center; /* Center horizontally */
+  padding: 20px; /* Padding around the content */
+  box-sizing: border-box; /* Include padding and borders in the element's total width and height */
 }
 
 .search-container {
