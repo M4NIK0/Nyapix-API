@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS nyapixcontent_sources ( -- content sources table
     name TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE (name)
+
 );
 
 CREATE TABLE IF NOT EXISTS nyapixcontent (
