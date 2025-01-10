@@ -24,7 +24,7 @@ services:
   client_web:
     build: ./Front/
     ports:
-      - "8081:8081"
+      - "${FRONT_PORT}:8081"
     restart: unless-stopped
     volumes:
       - .env:/app/.env
