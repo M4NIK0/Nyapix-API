@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { defineProps } from 'vue';
-import { onMounted, ref } from 'vue';
+import { defineProps, ref, onMounted, watch, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 import NavBar from "@/components/NavBar.vue";
 import router from "@/router";
@@ -12,12 +11,20 @@ const isEditOverlayVisible = ref(false);
 const editForm = ref({
   title: '',
   description: '',
-  source_id: 0,
+  source: '',
   is_private: false,
   tags: '',
   characters: '',
   authors: ''
 });
+
+const sources = ref<{ id: number; name: string }[]>([]);
+const tagSuggestions = ref<{ id: number; name: string }[]>([]);
+const characterSuggestions = ref<{ id: number; name: string }[]>([]);
+const authorSuggestions = ref<{ id: number; name: string }[]>([]);
+const showTagSuggestions = ref(false);
+const showCharacterSuggestions = ref(false);
+const showAuthorSuggestions = ref(false);
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL + '/v1';
 const getAuthHeader = () => {
@@ -27,7 +34,7 @@ const getAuthHeader = () => {
 
 const deleteContent = async () => {
   try {
-    const response = await axios.delete(`${API_BASE}/content/${props.id}`, {
+    await axios.delete(`${API_BASE}/content/${props.id}`, {
       headers: getAuthHeader(),
     });
     alert('Content deleted successfully');
@@ -80,7 +87,6 @@ const fetchContent = async () => {
       headers: getAuthHeader(),
     });
     content.value = response.data;
-    console.log('Content:', content.value);
 
     const tagNames = await Promise.all(content.value.tags.map(fetchTagDetails));
     content.value.tagNames = tagNames.filter(name => name !== null);
@@ -104,33 +110,143 @@ const fetchContent = async () => {
   }
 };
 
-const showEditOverlay = () => {
-  editForm.value = {
-    title: content.value.title,
-    description: content.value.description,
-    source_id: content.value.source,
-    is_private: content.value.is_private,
-    tags: content.value.tags.join(', '),
-    characters: content.value.characters.join(', '),
-    authors: content.value.authors.join(', ')
-  };
-  isEditOverlayVisible.value = true;
+const fetchSources = async () => {
+  try {
+    const response = await axios.get(`${API_BASE}/sources`, {
+      headers: getAuthHeader(),
+    });
+    sources.value = response.data;
+  } catch (error) {
+    console.error('Error fetching sources:', error);
+  }
 };
 
-const hideEditOverlay = () => {
-  isEditOverlayVisible.value = false;
+const fetchTagSuggestions = async (query: string) => {
+  try {
+    const response = await axios.get(`${API_BASE}/tags/search`, {
+      headers: getAuthHeader(),
+      params: {
+        tag_name: query,
+        max_results: 5,
+      },
+    });
+    tagSuggestions.value = response.data.tags;
+    showTagSuggestions.value = true;
+  } catch (error) {
+    console.error('Error fetching tag suggestions:', error);
+  }
+};
+
+const fetchCharacterSuggestions = async (query: string) => {
+  try {
+    const response = await axios.get(`${API_BASE}/characters/search`, {
+      headers: getAuthHeader(),
+      params: {
+        character_name: query,
+        max_results: 5,
+      },
+    });
+    characterSuggestions.value = response.data.characters;
+    showCharacterSuggestions.value = true;
+  } catch (error) {
+    console.error('Error fetching character suggestions:', error);
+  }
+};
+
+const fetchAuthorSuggestions = async (query: string) => {
+  try {
+    const response = await axios.get(`${API_BASE}/authors/search`, {
+      headers: getAuthHeader(),
+      params: {
+        author_name: query,
+        max_results: 5,
+      },
+    });
+    authorSuggestions.value = response.data.authors;
+    showAuthorSuggestions.value = true;
+  } catch (error) {
+    console.error('Error fetching author suggestions:', error);
+  }
+};
+
+const selectTagSuggestion = (tag: { id: number; name: string }) => {
+  const tagList = editForm.value.tags.split(',').map(tag => tag.trim());
+  tagList[tagList.length - 1] = tag.name;
+  editForm.value.tags = tagList.join(', ');
+  showTagSuggestions.value = false;
+};
+
+const selectCharacterSuggestion = (character: { id: number; name: string }) => {
+  const characterList = editForm.value.characters.split(',').map(character => character.trim());
+  characterList[characterList.length - 1] = character.name;
+  editForm.value.characters = characterList.join(', ');
+  showCharacterSuggestions.value = false;
+};
+
+const selectAuthorSuggestion = (author: { id: number; name: string }) => {
+  const authorList = editForm.value.authors.split(',').map(author => author.trim());
+  authorList[authorList.length - 1] = author.name;
+  editForm.value.authors = authorList.join(', ');
+  showAuthorSuggestions.value = false;
+};
+
+const getOrCreateId = async (name: string, type: 'tags' | 'characters' | 'authors') => {
+  try {
+    const searchResponse = await axios.get(`${API_BASE}/${type}/search`, {
+      headers: getAuthHeader(),
+      params: {
+        [`${type.slice(0, -1)}_name`]: name,
+        max_results: 10,
+      },
+    });
+
+    if (searchResponse.data[type].length > 0) {
+      return searchResponse.data[type][0].id;
+    } else {
+      try {
+        const createResponse = await axios.post(`${API_BASE}/${type}`, null, {
+          headers: getAuthHeader(),
+          params: {
+            [`${type.slice(0, -1)}_name`]: name,
+          },
+        });
+        return createResponse.data.id;
+      } catch (createError: any) {
+        if (createError.response && createError.response.status === 409) {
+          const retrySearchResponse = await axios.get(`${API_BASE}/${type}/search`, {
+            headers: getAuthHeader(),
+            params: {
+              [`${type.slice(0, -1)}_name`]: name,
+              max_results: 10,
+            },
+          });
+          if (retrySearchResponse.data[type].length > 0) {
+            return retrySearchResponse.data[type][0].id;
+          }
+        }
+        throw createError;
+      }
+    }
+  } catch (error) {
+    console.error(`Error fetching or creating ${type.slice(0, -1)}:`, error);
+    throw error;
+  }
 };
 
 const updateContent = async () => {
   try {
+    const tagIds = await Promise.all(editForm.value.tags.split(',').map(tag => getOrCreateId(tag.trim(), 'tags')));
+    const characterIds = await Promise.all(editForm.value.characters.split(',').map(character => getOrCreateId(character.trim(), 'characters')));
+    const authorIds = await Promise.all(editForm.value.authors.split(',').map(author => getOrCreateId(author.trim(), 'authors')));
+
     const updatedContent = {
       title: editForm.value.title,
       description: editForm.value.description,
-      source_id: editForm.value.source_id,
+      source_id: sources.value.find(source => source.name === editForm.value.source)?.id,
       is_private: editForm.value.is_private,
-      tags: editForm.value.tags.split(',').map(tag => parseInt(tag.trim())),
-      characters: editForm.value.characters.split(',').map(character => parseInt(character.trim())),
-      authors: editForm.value.authors.split(',').map(author => parseInt(author.trim()))
+      tags: tagIds,
+      characters: characterIds,
+      authors: authorIds
     };
     await axios.put(`${API_BASE}/content/${props.id}`, updatedContent, {
       headers: {
@@ -148,8 +264,67 @@ const updateContent = async () => {
   }
 };
 
+const showEditOverlay = () => {
+  editForm.value = {
+    title: content.value.title,
+    description: content.value.description,
+    source: sources.value.find(source => source.id === content.value.source_id)?.name || '',
+    is_private: content.value.is_private,
+    tags: content.value.tagNames.join(', '),
+    characters: content.value.characterNames.join(', '),
+    authors: content.value.authorNames.join(', ')
+  };
+  isEditOverlayVisible.value = true;
+};
+
+const hideEditOverlay = () => {
+  isEditOverlayVisible.value = false;
+};
+
+watch(() => editForm.value.tags, (newTags: string) => {
+  const lastTag = newTags.split(',').pop()?.trim();
+  if (lastTag) {
+    fetchTagSuggestions(lastTag);
+  } else {
+    showTagSuggestions.value = false;
+  }
+});
+
+watch(() => editForm.value.characters, (newCharacters: string) => {
+  const lastCharacter = newCharacters.split(',').pop()?.trim();
+  if (lastCharacter) {
+    fetchCharacterSuggestions(lastCharacter);
+  } else {
+    showCharacterSuggestions.value = false;
+  }
+});
+
+watch(() => editForm.value.authors, (newAuthors: string) => {
+  const lastAuthor = newAuthors.split(',').pop()?.trim();
+  if (lastAuthor) {
+    fetchAuthorSuggestions(lastAuthor);
+  } else {
+    showAuthorSuggestions.value = false;
+  }
+});
+
+const closeDropdown = (event: MouseEvent) => {
+  const overlayContent = document.querySelector('.overlay-content');
+  if (overlayContent && !overlayContent.contains(event.target as Node)) {
+    showTagSuggestions.value = false;
+    showCharacterSuggestions.value = false;
+    showAuthorSuggestions.value = false;
+  }
+};
+
 onMounted(() => {
   fetchContent();
+  fetchSources();
+  document.addEventListener('mousedown', closeDropdown);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mousedown', closeDropdown);
 });
 </script>
 
@@ -197,8 +372,8 @@ onMounted(() => {
           <textarea v-model="editForm.description"></textarea>
         </label>
         <label>
-          Source ID:
-          <input v-model="editForm.source_id" type="number" />
+          Source:
+          <input v-model="editForm.source" type="text" placeholder="Source name" />
         </label>
         <label>
           Is Private:
@@ -207,14 +382,29 @@ onMounted(() => {
         <label>
           Tags:
           <input v-model="editForm.tags" type="text" placeholder="Comma separated tags" />
+          <ul v-if="showTagSuggestions" class="suggestions">
+            <li v-for="suggestion in tagSuggestions" :key="suggestion.id" @click="selectTagSuggestion(suggestion)">
+              {{ suggestion.name }}
+            </li>
+          </ul>
         </label>
         <label>
           Characters:
           <input v-model="editForm.characters" type="text" placeholder="Comma separated characters" />
+          <ul v-if="showCharacterSuggestions" class="suggestions">
+            <li v-for="suggestion in characterSuggestions" :key="suggestion.id" @click="selectCharacterSuggestion(suggestion)">
+              {{ suggestion.name }}
+            </li>
+          </ul>
         </label>
         <label>
           Authors:
           <input v-model="editForm.authors" type="text" placeholder="Comma separated authors" />
+          <ul v-if="showAuthorSuggestions" class="suggestions">
+            <li v-for="suggestion in authorSuggestions" :key="suggestion.id" @click="selectAuthorSuggestion(suggestion)">
+              {{ suggestion.name }}
+            </li>
+          </ul>
         </label>
         <button @click="updateContent" class="save-button">Save</button>
         <button @click="hideEditOverlay" class="cancel-button">Cancel</button>
@@ -230,132 +420,59 @@ onMounted(() => {
   display: block;
   margin: 0 auto;
 }
-</style>
 
-<style scoped>
-.content-view {
-  display: flex;
-  flex-direction: column;
-}
-
-.content-main {
-  display: flex;
-}
-
-.tags {
-  flex: 0 0 10%;
-  padding: 10px;
-}
-
-.content-details {
-  flex: 1;
-  padding: 10px;
-}
-
-.tags h3 {
-  margin-top: 0;
-}
-
-.tags ul {
-  list-style-type: none;
+.suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  list-style: none;
+  margin: 0;
   padding: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  z-index: 1001; /* Ensure the dropdown is in front */
 }
 
-.tags li {
-  margin: 5px 0;
+.suggestions li {
   padding: 5px;
-  border-radius: 4px;
-}
-
-.character {
-  color: green;
-}
-
-.author {
-  color: blue;
-}
-
-.responsive-image {
-  max-width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto;
-}
-
-.delete-button, .edit-button {
-  background-color: red;
-  color: white;
-  border: none;
-  padding: 10px 20px;
   cursor: pointer;
-  margin-bottom: 20px;
-  border-radius: 4px;
+  color: black;
 }
 
-.edit-button {
-  background-color: blue;
-}
-
-.delete-button:hover {
-  background-color: darkred;
-}
-
-.edit-button:hover {
-  background-color: darkblue;
+.suggestions li:hover {
+  background: #eee;
 }
 
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000; /* Ensure the overlay is behind the suggestions */
 }
 
 .overlay-content {
+  background: grey;
   padding: 20px;
-  border-radius: 8px;
-  width: 80%;
-  max-width: 500px;
-}
-
-.overlay-content label {
-  display: block;
-  margin-bottom: 10px;
-}
-
-.overlay-content input[type="text"],
-.overlay-content input[type="number"],
-.overlay-content textarea {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  margin-bottom: 15px;
-}
-
-.save-button, .cancel-button {
-  background-color: green;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  margin-right: 10px;
   border-radius: 4px;
+  text-align: center;
+  position: relative;
 }
 
-.cancel-button {
-  background-color: gray;
-}
-
-.save-button:hover {
-  background-color: darkgreen;
-}
-
-.cancel-button:hover {
-  background-color: darkgray;
+.overlay-content input,
+.overlay-content select {
+  margin-bottom: 10px;
+  padding: 5px;
+  width: 100%;
+  box-sizing: border-box;
+  color: black;
 }
 </style>
