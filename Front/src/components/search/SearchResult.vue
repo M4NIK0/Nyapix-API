@@ -90,17 +90,20 @@ const handleClick = (result: { id: number, title: string }) => {
 <style scoped>
 .search-result-container {
   display: flex;
-  flex-wrap: wrap; /* Allow items to wrap when they exceed the screen width */
+  flex-wrap: wrap; /* Allow items to wrap */
   gap: 20px; /* Space between items */
+  justify-content: space-around; /* Add space between rows */
 }
 
 .result-item {
-  width: calc(20% - 20px); /* Adjust for 5 items per row */
+  flex: 1 1 calc(20% - 20px); /* Set flexible width */
+  max-width: calc(20% - 20px); /* Ensure items don't grow too large */
   cursor: pointer;
   background-color: #f4f4f4;
   border-radius: 8px;
   overflow: hidden;
   transition: transform 0.3s ease-in-out;
+  box-sizing: border-box; /* Include padding and borders in size */
 }
 
 .result-item:hover {
@@ -136,4 +139,5 @@ const handleClick = (result: { id: number, title: string }) => {
   font-size: 0.9rem;
   color: #555;
 }
+
 </style>
