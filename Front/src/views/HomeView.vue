@@ -20,12 +20,10 @@ const updateSearchResults = (results: any[]) => {
 
     <!-- Main Content -->
     <main class="main-content">
-      <aside class="sidebar">
-        <div class="searchbar">
-          <SearchBar @update:searchResults="updateSearchResults" />
-          <AddButton />
-        </div>
-      </aside>
+      <div class="searchbar">
+        <SearchBar @update:searchResults="updateSearchResults" />
+        <AddButton />
+      </div>
       <section class="content">
         <h1>Search Results</h1>
         <SearchResult :searchResults="searchResults" />
