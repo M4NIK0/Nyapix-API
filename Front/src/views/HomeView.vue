@@ -23,7 +23,6 @@ const updateSearchResults = (results: any[]) => {
       <!-- Search Bar Section -->
       <div class="searchbar">
         <SearchBar @update:searchResults="updateSearchResults" />
-        <AddButton />
       </div>
 
       <!-- Search Results Section -->
@@ -76,7 +75,7 @@ html, body {
 /* Search Bar */
 .searchbar {
   padding: 20px;
-  background: #f9f9f9;
+  background: #f9f9f9;w
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;

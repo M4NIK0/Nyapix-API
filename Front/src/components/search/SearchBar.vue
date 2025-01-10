@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
+import AddButton from '@/components/search/AddButton.vue'
 
 const emit = defineEmits<{
   (event: 'update:searchResults', searchResults: any): void;
@@ -300,6 +301,7 @@ const validateSearchResults = async () => {
       </li>
     </ul>
     <button @click="validateSearchResults" class="validate_button">Search</button>
+    <AddButton />
   </div>
 </template>
 
