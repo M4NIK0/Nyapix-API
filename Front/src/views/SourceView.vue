@@ -193,5 +193,6 @@ onMounted(() => {
 .sources-container {
   justify-content: center;
   align-items: center;
+  vertical-align: middle;
 }
 </style>
