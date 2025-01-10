@@ -178,7 +178,14 @@ async def get_content_endpoint(request: fastapi.Request, content_id: int) -> Con
         if content is None:
             return Response(status_code=404)
 
+        is_https = os.getenv("IS_HTTPS")
+        if is_https  == "yes":
+            is_https = True
+        else:
+            is_https = False
         content.url = f"{request.base_url}{content.url}"
+        if is_https:
+            content.url = content.url.replace("http://", "https://")
 
         return content
     except Exception as e:
