@@ -42,10 +42,12 @@ const updateSearchResults = (results: any[]) => {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  width: 100%;
+  width: 100vw; /* Use vw to ensure it spans the entire viewport */
   margin: 0;
   padding: 0;
+  box-sizing: border-box; /* Ensure padding doesn’t shrink the width */
 }
+
 
 /* Navbar */
 .navbar {
@@ -80,5 +82,11 @@ const updateSearchResults = (results: any[]) => {
   padding: 20px; /* Padding for results */
   overflow-y: auto; /* Scroll results if content exceeds viewport */
   background: #fff; /* Background color for results */
+}
+
+.main-content, .searchbar, .content {
+  margin: 0;
+  padding: 0;
+  width: 100%;
 }
 </style>
