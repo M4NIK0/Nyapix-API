@@ -53,7 +53,7 @@ const getOrCreateId = async (name: string, type: 'tags' | 'characters' | 'author
           },
         });
         return createResponse.data.id;
-      } catch (createError) {
+      } catch (createError: any) {
         if (createError.response && createError.response.status === 409) {
           const retrySearchResponse = await axios.get(`http://localhost:5000/v1/${type}/search`, {
             headers: getAuthHeader(),
