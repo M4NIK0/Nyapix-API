@@ -3,13 +3,14 @@ import { useRouter } from 'vue-router';
 import { onMounted } from 'vue';
 import axios from 'axios';
 
+const API_BASE = import.meta.env.VITE_BACKEND_URL + '/v1';
 const router = useRouter();
 
 const logout = async () => {
   const token = localStorage.getItem('token');
   if (token) {
     try {
-      await axios.delete('http://localhost:5000/v1/logout', {
+      await axios.delete(`${API_BASE}/logout`, {
         headers: {
           'accept': 'application/json',
           'Authorization': `Bearer ${token}`
