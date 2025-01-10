@@ -3,6 +3,7 @@ import NavBar from "@/components/NavBar.vue";
 import SearchBar from "@/components/search/SearchBar.vue";
 import {ref} from "vue";
 import SearchResult from "@/components/search/SearchResult.vue";
+import AddButton from "@/components/search/AddButton.vue";
 
 const searchResults = ref<Array<{ id: number, title: string, description: string, source: number, tags: number[], characters: number[], authors: number[], is_private: boolean, url: string }>>([]);
 const updateSearchResults = (results: any[]) => {
@@ -22,6 +23,7 @@ const updateSearchResults = (results: any[]) => {
       <aside class="sidebar">
         <div class="searchbar">
           <SearchBar @update:searchResults="updateSearchResults" />
+          <AddButton />
         </div>
       </aside>
       <section class="content">

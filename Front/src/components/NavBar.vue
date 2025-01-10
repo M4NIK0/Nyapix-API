@@ -4,7 +4,10 @@
       <router-link to="/" class="navbar-logo">Nyapix</router-link>
       <ul class="navbar-menu">
         <li class="navbar-item">
-          <router-link to="/" class="navbar-link">Home</router-link>
+          <router-link to="/" class="navbar-link">Search</router-link>
+        </li>
+        <li class="navbar-item">
+          <router-link to="/albums" class="navbar-link">Albums</router-link>
         </li>
         <li class="navbar-item">
           <router-link to="/tags" class="navbar-link">Tags</router-link>
@@ -14,6 +17,9 @@
         </li>
         <li class="navbar-item">
           <router-link to="/profile" class="navbar-link">My Profile</router-link>
+        </li>
+        <li class="navbar-item">
+          <router-link to="/admin" class="navbar-link">Admin</router-link>
         </li>
         <li class="navbar-item">
           <router-link to="/logout" class="navbar-link">Logout</router-link>

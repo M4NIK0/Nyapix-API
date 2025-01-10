@@ -360,29 +360,16 @@ onMounted(() => {
 
 .delete-button {
   color: red;
-  background: none;
-  border: none;
   cursor: pointer;
 }
 
 .edit-button {
-  color: #9900ff;
-  background: none;
-  border: none;
   cursor: pointer;
 }
 
 .page-button {
   margin-top: 20px;
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
   cursor: pointer;
-}
-
-.page-button:hover {
-  background-color: #45a049;
 }
 
 .button-container {
@@ -392,16 +379,8 @@ onMounted(() => {
 }
 
 .button-container button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 4px;
   cursor: pointer;
   padding: 10px;
-}
-
-.button-container button:hover {
-  background-color: #45a049;
 }
 
 .edit-popup {

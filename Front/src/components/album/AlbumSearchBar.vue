@@ -228,7 +228,7 @@ const validateSearchResults = async () => {
     }
 
     // Send the request to the API with custom serialization for arrays
-    const response = await axios.get(`${API_BASE}/content/search`, {
+    const response = await axios.get(`${API_BASE}/albums/search`, {
       params,
       headers: getAuthHeader(),
       paramsSerializer: (params) => {
@@ -247,7 +247,7 @@ const validateSearchResults = async () => {
       },
     });
 
-    const results = response.data.contents;
+    const results = response.data.albums;
     searchResults.value = results;
     emit('update:searchResults', results); // Emit the results to the parent component
   } catch (error) {
