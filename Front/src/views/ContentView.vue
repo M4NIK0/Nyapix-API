@@ -389,37 +389,58 @@ onBeforeUnmount(() => {
 
 
 <style scoped>
-.content-view {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
-  padding: 20px;
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
 }
 
-.content-main {
+/* Body styling */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f7f7f7;
   display: flex;
-  gap: 20px;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+/* Main container */
+.main-container {
   width: 80%;
   max-width: 1200px;
   background-color: #fff;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Content section */
+.content-main {
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  flex-wrap: nowrap; /* Prevent wrapping */
 }
 
 .tags {
-  flex: 1;
-  max-width: 300px;
+  flex: 0 0 300px; /* Fixed width for tags */
+  background-color: #f4f4f4;
+  padding: 15px;
+  border-radius: 8px;
 }
 
 .content-details {
-  flex: 2;
-}
-
-.content-details h1 {
-  margin-top: 0;
+  flex: 1; /* Take up the remaining space */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .responsive-image,
@@ -429,45 +450,50 @@ onBeforeUnmount(() => {
   margin-top: 20px;
 }
 
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+.responsive-media {
+  flex-shrink: 0; /* Prevent shrinking */
 }
 
-.overlay-content {
-  background: grey;
-  padding: 20px;
-  border-radius: 10px;
-  text-align: center;
-  max-width: 500px;
-  width: 100%;
-}
-
-.overlay-content input,
-.overlay-content select,
-.overlay-content textarea {
+/* Title, metadata, and other text styling */
+.title {
+  font-size: 2rem;
+  font-weight: bold;
   margin-bottom: 10px;
-  padding: 10px;
-  width: 100%;
-  box-sizing: border-box;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  color: black;
 }
 
-.delete-button,
-.edit-button,
-.save-button,
-.cancel-button {
-  margin-top: 10px;
+.metadata {
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 20px;
+}
+
+/* Tag styling */
+.tags-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tags-list li {
+  display: inline-block;
+  background-color: #007bff;
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: 5px;
+  margin-right: 10px;
+  font-size: 0.9rem;
+}
+
+/* Responsive design adjustments */
+@media (max-width: 768px) {
+  .content-main {
+    flex-direction: column;
+  }
+
+  .tags {
+    width: 100%;
+    margin-bottom: 20px;
+  }
 }
 
 </style>
