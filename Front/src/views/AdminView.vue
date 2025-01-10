@@ -216,7 +216,7 @@ html, body {
   padding: 20px; /* Padding to prevent elements from touching edges */
   box-sizing: border-box; /* Include padding and borders in width/height calculation */
   vertical-align: middle;
-  background-color: white;
+  background-color: #2d2d2d;
 }
 
 .search-container {
