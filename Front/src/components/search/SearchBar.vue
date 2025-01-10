@@ -399,4 +399,22 @@ input {
   cursor: pointer;
 }
 
+.center-container {
+  display: flex;
+  justify-content: flex-end; /* Align content to the right */
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  padding: 20px; /* Optional: Add padding */
+  box-sizing: border-box;
+}
+
+.center-container > div {
+  max-width: 800px; /* Set a maximum width for content */
+  width: 100%; /* Allow it to shrink for smaller screens */
+  background: #2c2c2c; /* Optional: White background for contrast */
+  border-radius: 8px; /* Optional: Rounded corners */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow */
+  padding: 20px;
+}
+
 </style>
