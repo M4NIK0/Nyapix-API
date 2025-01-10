@@ -93,6 +93,7 @@ onMounted(() => {
   <header>
     <NavBar />
   </header>
+  <div class="sources-container">
   <div>
     <div class="button-container">
       <button @click="isAddSourcePopupVisible = true">Add Source</button>
@@ -127,6 +128,7 @@ onMounted(() => {
       <button @click="updateSource">Save</button>
       <button @click="isEditSourcePopupVisible = false">Cancel</button>
     </div>
+  </div>
   </div>
 </template>
 
@@ -186,5 +188,10 @@ onMounted(() => {
 .button-group {
   display: flex;
   gap: 5px;
+}
+
+.sources-container {
+  justify-content: center;
+  align-items: center;
 }
 </style>
