@@ -99,7 +99,6 @@ const handleClick = (result: { id: number, title: string }) => {
   flex: 1 1 250px; /* Minimum width of 250px */
   max-width: 300px; /* Limit maximum width to ensure uniformity */
   cursor: pointer;
-  background-color: #f4f4f4;
   border-radius: 8px;
   overflow: hidden;
   transition: transform 0.3s ease-in-out;
@@ -113,7 +112,6 @@ const handleClick = (result: { id: number, title: string }) => {
 .image-wrapper {
   width: 100%;
   height: 200px;
-  background-color: #ddd; /* Light gray background if no image is found */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -137,6 +135,5 @@ const handleClick = (result: { id: number, title: string }) => {
 
 .result-info p {
   font-size: 0.9rem;
-  color: #555;
 }
 </style>

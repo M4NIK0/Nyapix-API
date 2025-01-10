@@ -305,14 +305,12 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .popup-content {
-  background: grey;
   padding: 20px;
   border-radius: 4px;
   text-align: center;
@@ -324,7 +322,6 @@ onBeforeUnmount(() => {
   padding: 5px;
   width: 100%;
   box-sizing: border-box;
-  color: black;
 }
 
 .tag-input,
@@ -338,8 +335,6 @@ onBeforeUnmount(() => {
   top: 100%;
   left: 0;
   right: 0;
-  background: white;
-  border: 1px solid #ccc;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -351,10 +346,6 @@ onBeforeUnmount(() => {
 .suggestions li {
   padding: 5px;
   cursor: pointer;
-  color: black;
 }
 
-.suggestions li:hover {
-  background: #eee;
-}
 </style>

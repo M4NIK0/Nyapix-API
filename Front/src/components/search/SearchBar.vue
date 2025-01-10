@@ -316,10 +316,9 @@ const validateSearchResults = async () => {
 input {
   width: 100%;
   padding: 0.8rem;
-  border: 1px solid #ccc;
+  border: 1px solid;
   border-radius: 6px;
   font-size: 1rem;
-  color: black;
 }
 
 .dropdown {
@@ -329,9 +328,8 @@ input {
   right: 0;
   max-height: 300px; /* Allow more space for dropdown items */
   overflow-y: auto;
-  border: 1px solid #ccc;
+  border: 1px solid;
   border-top: none;
-  background: white;
   list-style: none;
   padding: 0;
   margin: 0;
@@ -344,10 +342,6 @@ input {
   padding: 0.7rem 1rem; /* Adjust padding for larger clickable area */
   cursor: pointer;
   font-size: 1rem; /* Larger font for better readability */
-}
-
-.dropdown li:hover {
-  background-color: #f0f0f0;
 }
 
 .dropdown span {
@@ -379,8 +373,7 @@ input {
   display: inline-flex;
   align-items: center;
   padding: 0.4rem 0.8rem;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
+  border: 1px solid;
   border-radius: 6px;
   font-size: 0.95rem;
 }
@@ -400,16 +393,10 @@ input {
 .validate_button {
   margin-top: 1rem;
   padding: 0.8rem 1.5rem;
-  background-color: #007bff;
-  color: white;
   border: none;
   border-radius: 6px;
   font-size: 1rem;
   cursor: pointer;
-}
-
-.validate_button:hover {
-  background-color: #0056b3;
 }
 
 </style>
