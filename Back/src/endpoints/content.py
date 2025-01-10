@@ -86,7 +86,7 @@ async def search_content_endpoint(request: fastapi.Request,
             authors_to_exclude = []
 
         content = content_db.search_content(db, needed_tags, needed_characters, needed_authors,
-                                            tags_to_exclude, characters_to_exclude, authors_to_exclude, max_results, page)
+                                            tags_to_exclude, characters_to_exclude, authors_to_exclude, max_results, page, request.state.user.id)
 
         if content is None:
             return Response(status_code=500)
@@ -109,7 +109,7 @@ async def get_content_thumb_endpoint(request: fastapi.Request, content_id: int):
     try:
         db = connect_db()
 
-        if not has_user_access(db, request.state.user.id, content_id):
+        if not has_user_access(db, content_id, request.state.user.id):
             return Response(status_code=403)
 
         miniature = content_db.get_miniature(db, content_id)
@@ -340,7 +340,7 @@ async def get_video_endpoint(request: fastapi.Request, video_id: int):
     try:
         db = connect_db()
 
-        if not has_user_access(db, request.state.user.id, get_video_content_id(db, video_id)):
+        if not has_user_access(db, get_video_content_id(db, video_id), request.state.user.id):
             return Response(status_code=403)
 
         video = video_db.get_video(db, video_id)
@@ -361,7 +361,7 @@ async def get_image_endpoint(request: fastapi.Request, image_id: int):
     try:
         db = connect_db()
 
-        if not has_user_access(db, request.state.user.id, get_image_content_id(db, image_id)):
+        if not has_user_access(db, get_image_content_id(db, image_id), request.state.user.id):
             return Response(status_code=403)
 
         image = video_db.get_image(db, image_id)
@@ -405,7 +405,7 @@ async def get_video_content_id_endpoint(request: fastapi.Request, video_id: int)
         content_id = get_video_content_id(db, video_id)
         if content_id is None:
             return Response(status_code=404)
-        if not has_user_access(db, request.state.user.id, content_id):
+        if not has_user_access(db, content_id, request.state.user.id):
             return Response(status_code=403)
         return Response(content=str(content_id))
     except Exception as e:
@@ -424,7 +424,7 @@ async def get_image_content_id_endpoint(request: fastapi.Request, image_id: int)
         content_id = get_image_content_id(db, image_id)
         if content_id is None:
             return Response(status_code=404)
-        if not has_user_access(db, request.state.user.id, content_id):
+        if not has_user_access(db, content_id, request.state.user.id):
             return Response(status_code=403)
         return Response(content=str(content_id))
     except Exception as e:
@@ -443,7 +443,7 @@ async def get_audio_content_id_endpoint(request: fastapi.Request, audio_id: int)
         content_id = get_audio_content_id(db, audio_id)
         if content_id is None:
             return Response(status_code=404)
-        if not has_user_access(db, request.state.user.id, content_id):
+        if not has_user_access(db, content_id, request.state.user.id):
             return Response(status_code=403)
         return Response(content=str(audio_id))
     except Exception as e:

@@ -297,7 +297,7 @@ def has_author(db, content_id: int, author_id: int) -> bool:
 # content = content_db.search_content(db, title_regex, description_regex, needed_tags, needed_characters, needed_authors,
 #                                             tags_to_exclude, characters_to_exclude, authors_to_exclude, allowed_sources, max_results, page)
 def search_content(db, needed_tags: list[int], needed_characters: list[int], needed_authors: list[int],
-                   tags_to_exclude: list[int], characters_to_exclude: list[int], authors_to_exclude: list[int], max_results: int, page: int) -> Union[ContentPageModel, None]:
+                   tags_to_exclude: list[int], characters_to_exclude: list[int], authors_to_exclude: list[int], max_results: int, page: int, user_id: int) -> Union[ContentPageModel, None]:
     cursor = db.cursor()
     try:
         logger.info("Searching using: tags: " + str(needed_tags) + " characters: " + str(needed_characters) + " authors: " + str(needed_authors) + " tags to avoid:" + str(tags_to_exclude) + " characters to exclude: " + str(characters_to_exclude) + " authors to exclude: " + str(authors_to_exclude))
@@ -440,7 +440,7 @@ def search_content(db, needed_tags: list[int], needed_characters: list[int], nee
         logger.info("After excluding authors: " + str(after_exclude_authors))
 
         # Remove content that user does not have access to
-        after_exclude_authors = [item for item in after_exclude_authors if has_user_access(db, item, 1)]
+        after_exclude_authors = [item for item in after_exclude_authors if has_user_access(db, item, user_id)]
         logger.info("After excluding access: " + str(after_exclude_authors))
 
         final_list = [get_content(db, item) for item in after_exclude_authors]

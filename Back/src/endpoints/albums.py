@@ -88,7 +88,7 @@ async def search_content_endpoint(request: fastapi.Request,
             authors_to_exclude = []
 
         content = albums_db.search_album(db, needed_tags, needed_characters, needed_authors,
-                                         tags_to_exclude, characters_to_exclude, authors_to_exclude, max_results, page)
+                                         tags_to_exclude, characters_to_exclude, authors_to_exclude, max_results, page, request.state.user.id)
 
         if content is None:
             return Response(status_code=500)

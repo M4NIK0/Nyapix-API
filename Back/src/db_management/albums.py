@@ -175,8 +175,8 @@ def get_content_linked_albums(db, content_id: int) -> List[int]:
         cursor.close()
 
 def search_album(db, needed_tags: list[int], needed_characters: list[int], needed_authors: list[int],
-                   tags_to_exclude: list[int], characters_to_exclude: list[int], authors_to_exclude: list[int], max_results: int, page: int) -> Union[AlbumPageModel, None]:
-    available_content = search_content(db, needed_tags, needed_characters, needed_authors, tags_to_exclude, characters_to_exclude, authors_to_exclude, max_results, page)
+                   tags_to_exclude: list[int], characters_to_exclude: list[int], authors_to_exclude: list[int], max_results: int, page: int, user_id: int) -> Union[AlbumPageModel, None]:
+    available_content = search_content(db, needed_tags, needed_characters, needed_authors, tags_to_exclude, characters_to_exclude, authors_to_exclude, max_results, page, user_id)
     if available_content is None:
         return None
 
