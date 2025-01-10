@@ -4,10 +4,16 @@ import axios from 'axios';
 import NavBar from "@/components/NavBar.vue";
 
 const API_BASE = import.meta.env.VITE_BACKEND_URL + '/v1';
-const sources = ref([]);
+
+interface Source {
+  id: number;
+  name: string;
+}
+
+const sources = ref<Source[]>([]);
 const newSourceName = ref('');
 const isAddSourcePopupVisible = ref(false);
-const sourceToEdit = ref(null);
+const sourceToEdit = ref<Source | null>(null);
 const isEditSourcePopupVisible = ref(false);
 
 const getAuthHeader = () => {
@@ -72,7 +78,7 @@ const deleteSource = async (sourceId: number) => {
   }
 };
 
-const editSource = (source) => {
+const editSource = (source: Source) => {
   sourceToEdit.value = source;
   newSourceName.value = source.name;
   isEditSourcePopupVisible.value = true;

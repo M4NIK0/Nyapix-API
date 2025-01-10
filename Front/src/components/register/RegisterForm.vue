@@ -37,7 +37,7 @@ const register = async () => {
       const errorData = await response.json();
       formError.value = errorData.message || 'Registration failed';
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Registration failed:', error);
     formError.value = error.message || 'Registration failed';
   }

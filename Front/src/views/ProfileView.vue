@@ -37,7 +37,7 @@ const fetchUserData = async () => {
       headers: getAuthHeader(),
     });
     user.value = response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.log(`Error fetching user data: ${error.response?.data?.message || error.message}`);
   }
 };
@@ -58,7 +58,7 @@ const updateUserProfile = async () => {
       fetchUserData();
       isEditProfilePopupVisible.value = false;
       router.push('/logout');
-    } catch (error) {
+    } catch (error: any) {
       alert(`Error updating user profile: ${error.response?.data?.message || error.message}`);
     }
   }
@@ -83,7 +83,7 @@ const deleteUserAccount = async () => {
       });
       alert('Your account has been deleted.');
       router.push('/logout');
-    } catch (error) {
+    } catch (error: any) {
       alert(`Error deleting account: ${error.response?.data?.message || error.message}`);
     }
   }
