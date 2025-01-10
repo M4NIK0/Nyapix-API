@@ -81,6 +81,18 @@ onMounted(async () => {
   text-align: center;
 }
 
+.flex {
+  display: flex;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.items-center {
+  align-items: center;
+}
+
 .login-link a, .register-link a {
   color: #fff;
 }
