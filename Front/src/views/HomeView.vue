@@ -37,17 +37,25 @@ const updateSearchResults = (results: any[]) => {
 
 
 <style>
+/* Reset margins and padding for body and html */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box; /* Include padding/borders in size calculations */
+}
+
 /* General Layout */
 .home-view {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  width: 100vw; /* Use vw to ensure it spans the entire viewport */
+  width: 100vw; /* Ensure full viewport width */
   margin: 0;
   padding: 0;
-  box-sizing: border-box; /* Ensure padding doesn’t shrink the width */
+  box-sizing: border-box;
 }
-
 
 /* Navbar */
 .navbar {
@@ -67,26 +75,21 @@ const updateSearchResults = (results: any[]) => {
 
 /* Search Bar */
 .searchbar {
-  padding: 20px; /* Add padding around the search bar */
-  background: #f9f9f9; /* Optional background color */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow for separation */
-  z-index: 1; /* Ensure it’s above other elements */
-  position: sticky; /* Make it sticky if scrolling is required */
+  padding: 20px;
+  background: #f9f9f9;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: sticky;
   top: 0;
-  width: 100%; /* Full width */
+  width: 100%; /* Ensure full width */
 }
 
 /* Search Results */
 .content {
   flex: 1;
-  padding: 20px; /* Padding for results */
-  overflow-y: auto; /* Scroll results if content exceeds viewport */
-  background: #fff; /* Background color for results */
+  padding: 20px;
+  overflow-y: auto;
+  background: #fff;
+  width: 100%; /* Ensure full width */
 }
 
-.main-content, .searchbar, .content {
-  margin: 0;
-  padding: 0;
-  width: 100%;
-}
 </style>
