@@ -156,7 +156,7 @@ async def get_content_endpoint(request: fastapi.Request, content_id: int) -> Con
     try:
         db = connect_db()
 
-        if not has_user_access(db, request.state.user.id, content_id):
+        if not has_user_access(db, content_id, request.state.user.id):
             return Response(status_code=403)
 
         content = content_db.get_content(db, content_id)
