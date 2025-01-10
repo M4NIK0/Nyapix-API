@@ -74,7 +74,6 @@ html, body {
 /* Search Bar */
 .searchbar {
   padding: 20px;
-  background: #f9f9f9;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
@@ -86,7 +85,6 @@ html, body {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
-  background: #fff;
   width: 100%; /* Ensure full width */
 }
 
