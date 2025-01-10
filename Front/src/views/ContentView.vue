@@ -400,6 +400,7 @@ onBeforeUnmount(() => {
 
 .content-main {
   display: flex;
+  flex-direction: row-reverse;
   gap: 20px;
   width: 80%;
   max-width: 1200px;
@@ -409,12 +410,12 @@ onBeforeUnmount(() => {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.tags {
+.info-section {
   flex: 1;
   max-width: 300px;
 }
 
-.content-details {
+.media-section {
   flex: 2;
 }
 
@@ -469,5 +470,4 @@ onBeforeUnmount(() => {
 .cancel-button {
   margin-top: 10px;
 }
-
 </style>
