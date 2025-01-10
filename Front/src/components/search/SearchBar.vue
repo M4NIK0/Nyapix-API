@@ -307,15 +307,16 @@ const validateSearchResults = async () => {
 .search-bar-container {
   position: relative;
   width: 100%;
-  max-width: 400px;
+  max-width: 600px; /* Increase the container width */
   margin: 0 auto;
 }
 
 input {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.8rem;
   border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
+  font-size: 1rem;
   color: black;
 }
 
@@ -324,7 +325,7 @@ input {
   top: 100%;
   left: 0;
   right: 0;
-  max-height: 200px;
+  max-height: 300px; /* Allow more space for dropdown items */
   overflow-y: auto;
   border: 1px solid #ccc;
   border-top: none;
@@ -336,8 +337,11 @@ input {
 }
 
 .dropdown li {
-  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  padding: 0.7rem 1rem; /* Adjust padding for larger clickable area */
   cursor: pointer;
+  font-size: 1rem; /* Larger font for better readability */
 }
 
 .dropdown li:hover {
@@ -345,25 +349,26 @@ input {
 }
 
 .dropdown span {
-  font-size: 0.9rem;
+  font-size: 1rem; /* Adjust size for uniformity */
 }
 
 .character {
-  color: green; /* Characters will be green */
+  color: green;
 }
 
 .author {
-  color: blue; /* Authors will be blue */
+  color: blue;
 }
 
 .tag {
-  color: black; /* Regular tags will be black */
+  color: black;
 }
 
 .selected-items {
   display: flex;
   flex-wrap: wrap;
   margin-bottom: 0.5rem;
+  gap: 0.5rem; /* Add consistent spacing between selected items */
 }
 
 .tag-item,
@@ -371,12 +376,11 @@ input {
 .author-item {
   display: inline-flex;
   align-items: center;
-  margin: 0 0.5rem 0.5rem 0;
-  padding: 0.2rem 0.5rem;
+  padding: 0.4rem 0.8rem;
   background-color: #f0f0f0;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 0.9rem;
+  border-radius: 6px;
+  font-size: 0.95rem;
 }
 
 .tag-item {
@@ -390,4 +394,20 @@ input {
 .author-item {
   color: blue;
 }
+
+.validate_button {
+  margin-top: 1rem;
+  padding: 0.8rem 1.5rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.validate_button:hover {
+  background-color: #0056b3;
+}
+
 </style>
