@@ -11,12 +11,6 @@ def connect_db():
         port = os.getenv('POSTGRES_PORT')
         db = os.getenv('POSTGRES_DB')
 
-        logger.info("user: " + user)
-        logger.info("password: " + password)
-        logger.info("host: " + host)
-        logger.info("port: " + port)
-        logger.info("db: " + db)
-
         conn = psycopg2.connect(
             user=user,
             password=password,
