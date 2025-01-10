@@ -209,13 +209,11 @@ html, body {
 .container {
   width: 100%;
   max-width: 900px; /* Max width for the container */
-  height: 100%; /* Full height of the page */
   display: flex;
   flex-direction: column; /* Stack content vertically */
   align-items: center; /* Center horizontally */
   padding: 20px; /* Padding to prevent elements from touching edges */
   box-sizing: border-box; /* Include padding and borders in width/height calculation */
-  overflow: auto; /* Ensure no content overflows */
 }
 
 .search-container {
