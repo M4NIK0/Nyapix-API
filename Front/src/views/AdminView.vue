@@ -209,6 +209,7 @@ html, body {
 .container {
   width: 100%;
   max-width: 900px; /* Max width for the container */
+  max-height: 50%;
   flex-direction: column; /* Stack content vertically */
   align-items: center; /* Center horizontally */
   padding: 20px; /* Padding to prevent elements from touching edges */
