@@ -376,7 +376,7 @@ onMounted(() => {
 }
 
 .edit-popup-content {
-  background: #595959;
+  background: #2c2c2c;
   padding: 20px;
   border-radius: 4px;
   text-align: center;
@@ -412,7 +412,7 @@ onMounted(() => {
 .center-container > div {
   max-width: 800px; /* Set a maximum width for content */
   width: 100%; /* Allow it to shrink for smaller screens */
-  background: #595959; /* Optional: White background for contrast */
+  background: #2c2c2c; /* Optional: White background for contrast */
   border-radius: 8px; /* Optional: Rounded corners */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Optional: Add a shadow */
   padding: 20px;
