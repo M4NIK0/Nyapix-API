@@ -98,7 +98,7 @@ onMounted(() => {
   <header>
     <NavBar />
   </header>
-  <div v-if="user">
+  <div v-if="user" class="profile-container">
     <h1>{{ user.username }}</h1>
     <p>Nickname: {{ user.nickname }}</p>
     <p>Type: {{ user.type }}</p>
@@ -129,6 +129,25 @@ onMounted(() => {
 </template>
 
 <style scoped>
+/* Ensure the whole page takes full height */
+body, html {
+  height: 100%;
+  margin: 0;
+}
+
+.profile-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Make the profile container take the full height of the viewport */
+}
+
+.profile-container h1, .profile-container p, .profile-container button {
+  margin: 5px 0;
+}
+
+/* Edit popup */
 .edit-popup {
   position: fixed;
   top: 0;
@@ -139,7 +158,7 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh; /* Make sure it takes up the full height of the viewport */
+  min-height: 100vh;
 }
 
 .edit-popup-content {
