@@ -381,8 +381,52 @@ onBeforeUnmount(() => {
     </div>
     <div v-if="isEditOverlayVisible" class="overlay">
       <div class="overlay-content">
-        <h2>Edit Content</h2>
-        <!-- Edit Form -->
+        <label>
+          Title:
+          <input v-model="editForm.title" type="text" />
+        </label>
+        <label>
+          Description:
+          <textarea v-model="editForm.description"></textarea>
+        </label>
+        <label>
+          Source:
+          <select v-model="editForm.sourceId">
+            <option v-for="source in sources" :key="source.id" :value="source.id">{{ source.name }}</option>
+          </select>
+        </label>
+        <label>
+          Is Private:
+          <input v-model="editForm.is_private" type="checkbox" />
+        </label>
+        <label>
+          Tags:
+          <input v-model="editForm.tags" type="text" placeholder="Comma separated tags" />
+          <ul v-if="showTagSuggestions" class="suggestions">
+            <li v-for="suggestion in tagSuggestions" :key="suggestion.id" @click="selectTagSuggestion(suggestion)">
+              {{ suggestion.name }}
+            </li>
+          </ul>
+        </label>
+        <label>
+          Characters:
+          <input v-model="editForm.characters" type="text" placeholder="Comma separated characters" />
+          <ul v-if="showCharacterSuggestions" class="suggestions">
+            <li v-for="suggestion in characterSuggestions" :key="suggestion.id" @click="selectCharacterSuggestion(suggestion)">
+              {{ suggestion.name }}
+            </li>
+          </ul>
+        </label>
+        <label>
+          Authors:
+          <input v-model="editForm.authors" type="text" placeholder="Comma separated authors" />
+          <ul v-if="showAuthorSuggestions" class="suggestions">
+            <li v-for="suggestion in authorSuggestions" :key="suggestion.id" @click="selectAuthorSuggestion(suggestion)">
+              {{ suggestion.name }}
+            </li>
+          </ul>
+        </label>
+        <button @click="updateContent" class="save-button">Save</button>
         <button @click="hideEditOverlay" class="cancel-button">Cancel</button>
       </div>
     </div>
