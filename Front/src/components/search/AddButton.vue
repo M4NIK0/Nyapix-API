@@ -346,6 +346,13 @@ onBeforeUnmount(() => {
 .suggestions li {
   padding: 5px;
   cursor: pointer;
+  background-color: #f0f0f0; /* Light gray background */
+  color: #333; /* Dark text color */
+  border: 1px solid #ccc; /* Optional: Add a border for better visibility */
+}
+
+.suggestions li:hover {
+  background-color: #e0e0e0; /* Slightly darker gray on hover */
 }
 
 </style>
