@@ -116,19 +116,19 @@ def get_content(db, content_id: int) -> Union[ContentModel, None]:
         result = cursor.fetchone()
 
         if result is not None:
-            to_return.url = f"v1/video/{result[0]}"
+            to_return.url = f"v1/content/video/{result[0]}"
 
         cursor.execute("SELECT id FROM nyapiximage WHERE content_id = %s", (content_id,))
         result = cursor.fetchone()
 
         if result is not None:
-            to_return.url = f"v1/image/{result[0]}"
+            to_return.url = f"v1/content/image/{result[0]}"
 
         cursor.execute("SELECT id FROM nyapixaudio WHERE content_id = %s", (content_id,))
         result = cursor.fetchone()
 
         if result is not None:
-            to_return.url = f"v1/audio/{result[0]}"
+            to_return.url = f"v1/content/audio/{result[0]}"
 
         return to_return
     except Exception as e:
