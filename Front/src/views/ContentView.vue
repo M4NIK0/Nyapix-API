@@ -433,10 +433,14 @@ onBeforeUnmount(() => {
 
 .responsive-image,
 .responsive-media {
-  width: 100%;
+  max-width: 100%;
+  max-height: 600px; /* You can adjust the height as needed */
+  width: auto;
   height: auto;
   margin-top: 20px;
+  object-fit: contain; /* Ensures the aspect ratio is maintained */
 }
+
 
 .overlay {
   position: fixed;
