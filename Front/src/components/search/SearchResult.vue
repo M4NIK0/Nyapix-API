@@ -92,12 +92,12 @@ const handleClick = (result: { id: number, title: string }) => {
   display: flex;
   flex-wrap: wrap; /* Allow items to wrap */
   gap: 20px; /* Space between items */
-  justify-content: space-around; /* Add space between rows */
+  justify-content: center; /* Center the items if there's extra space */
 }
 
 .result-item {
-  flex: 1 1 calc(20% - 20px); /* Set flexible width */
-  max-width: calc(20% - 20px); /* Ensure items don't grow too large */
+  flex: 1 1 250px; /* Minimum width of 250px */
+  max-width: 300px; /* Limit maximum width to ensure uniformity */
   cursor: pointer;
   background-color: #f4f4f4;
   border-radius: 8px;
@@ -139,5 +139,4 @@ const handleClick = (result: { id: number, title: string }) => {
   font-size: 0.9rem;
   color: #555;
 }
-
 </style>
