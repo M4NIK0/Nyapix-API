@@ -12,6 +12,7 @@ This tagging system permits to search for content with those parameters:
 - ffmpeg (image/video compression and conversion)
 - docker (project deployment)
 - python (api/backend)
+- uvicorn + fastapi (api/backend)
 - vuejs (frontend)
 - postgresql (database)
 
