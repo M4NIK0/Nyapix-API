@@ -53,10 +53,9 @@ const addSource = async () => {
 const updateSource = async () => {
   if (sourceToEdit.value && newSourceName.value) {
     try {
-      await axios.put(`${API_BASE}/sources/${sourceToEdit.value.id}`, null, {
+      await axios.put(`${API_BASE}/sources/${sourceToEdit.value.id}?source_name=${newSourceName.value}`, null, {
         headers: {
           ...getAuthHeader(),
-          'source_name': newSourceName.value,
         },
       });
       fetchSources();
