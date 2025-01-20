@@ -44,22 +44,33 @@ const fetchUserData = async () => {
 
 const updateUserProfile = async () => {
   if (user.value) {
-    try {
-      await axios.put(`${API_BASE}/users/me`, {
-        username: editedUsername.value,
-        nickname: editedNickname.value,
-        password: editedPassword.value,
-      }, {
-        headers: {
-          ...getAuthHeader(),
-          'Content-Type': 'application/json',
-        },
-      });
-      fetchUserData();
-      isEditProfilePopupVisible.value = false;
-      router.push('/logout');
-    } catch (error: any) {
-      alert(`Error updating user profile: ${error.response?.data?.message || error.message}`);
+    const updatedFields: { [key: string]: string } = {};
+    if (editedUsername.value !== user.value.username) {
+      updatedFields.username = editedUsername.value;
+    }
+    if (editedNickname.value !== user.value.nickname) {
+      updatedFields.nickname = editedNickname.value;
+    }
+    if (editedPassword.value) {
+      updatedFields.password = editedPassword.value;
+    }
+
+    if (Object.keys(updatedFields).length > 0) {
+      try {
+        await axios.put(`${API_BASE}/users/me`, updatedFields, {
+          headers: {
+            ...getAuthHeader(),
+            'Content-Type': 'application/json',
+          },
+        });
+        await fetchUserData();
+        isEditProfilePopupVisible.value = false;
+        router.push('/logout');
+      } catch (error: any) {
+        alert(`Error updating user profile: ${error.response?.data?.message || error.message}`);
+      }
+    } else {
+      alert('No changes detected.');
     }
   }
 };
