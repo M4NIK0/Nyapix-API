@@ -403,7 +403,7 @@ async def get_audio_endpoint(request: fastapi.Request, audio_id: int):
     try:
         db = connect_db()
 
-        if not has_user_access(db, request.state.user.id, audio_id):
+        if not has_user_access(db, get_audio_content_id(db, audio_id), request.state.user.id):
             return Response(status_code=403)
 
         audio = video_db.get_audio(db, audio_id)
