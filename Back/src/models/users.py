@@ -15,9 +15,9 @@ class UserRegisterModel(BaseModel):
     password: str
 
 class UserUpdateModel(BaseModel):
-    username: Optional[str]
-    nickname: Optional[str]
-    password: Optional[str]
+    username: Optional[str] = None
+    nickname: Optional[str] = None
+    password: Optional[str] = None
 
 class UserLoginModel(BaseModel):
     username: str
