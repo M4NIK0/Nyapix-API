@@ -115,7 +115,7 @@ async def delete_tags_endpoint(request: Request, tag_id: int):
         if db is not None:
             db.close()
 
-@router.get("/{tag_name}", tags=["Tags management"])
+@router.get("/id/{tag_name}", tags=["Tags management"])
 async def get_tag_by_name_endpoint(request: Request, tag_name: str) -> content_models.TagModel:
     db = None
     try:

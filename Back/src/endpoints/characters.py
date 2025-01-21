@@ -110,7 +110,7 @@ async def delete_characters_endpoint(request: fastapi.Request, character_id: int
         if db is not None:
             db.close()
 
-@router.get("/{character_name}", tags=["Characters management"])
+@router.get("/id/{character_name}", tags=["Characters management"])
 async def get_character_by_name_endpoint(request: fastapi.Request, character_name: str):
     db = None
     try:
