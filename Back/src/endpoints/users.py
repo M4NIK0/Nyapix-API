@@ -122,7 +122,7 @@ async def put_user_account_type_endpoint(request: Request, user_id: int, account
 
 @router.put("/{user_id}", tags=["Administration"])
 @users_type.admin_required
-async def put_user_endpoint(user_id: int, request: Request, user_query: UserUpdateModel = fastapi.Body(...)):
+async def put_user_endpoint(request: Request, user_query: UserUpdateModel = fastapi.Body(...), user_id: int = fastapi.Path(...)):
     db = None
     try:
         db = connect_db()
