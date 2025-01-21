@@ -93,3 +93,18 @@ def edit_character(db, character_id: int, name: str) -> bool:
         return False
     finally:
         cursor.close()
+
+def get_character_by_name(db, character_name: str) -> Union[CharacterModel, None]:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT id FROM nyapixcharacter WHERE character_name = %s", (character_name,))
+        result = cursor.fetchone()
+        if result is None:
+            return None
+        return CharacterModel(name=character_name, id=result[0])
+    except Exception as e:
+        logger.error("Error getting character by name")
+        logger.error(e)
+        return None
+    finally:
+        cursor.close()

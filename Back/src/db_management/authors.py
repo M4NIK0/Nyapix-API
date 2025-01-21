@@ -93,3 +93,18 @@ def edit_author(db, author_id: int, name: str) -> bool:
         return False
     finally:
         cursor.close()
+
+def get_author_by_name(db, author_name: str) -> Union[AuthorModel, None]:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT author_name, id FROM nyapixauthor WHERE author_name = %s", (author_name,))
+        result = cursor.fetchone()
+        if result is None:
+            return None
+        return AuthorModel(name=result[0], id=result[1])
+    except Exception as e:
+        logger.error("Error getting author")
+        logger.error(e)
+        return None
+    finally:
+        cursor.close()

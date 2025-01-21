@@ -138,3 +138,18 @@ def search_tags(db, query, max_results) -> TagPageModel:
         return TagPageModel(tags=[], total_pages=0, total_tags=0)
     finally:
         cursor.close()
+
+def get_tag_by_name(db, tag_name) -> Union[TagModel, None]:
+    cursor = db.cursor()
+    try:
+        cursor.execute("SELECT tag_name, id FROM nyapixtag WHERE tag_name = %s", (tag_name,))
+        result = cursor.fetchone()
+        if result is None:
+            return None
+        return TagModel(name=result[0], id=result[1])
+    except Exception as e:
+        logger.error("Error getting tag by name")
+        logger.error(e)
+        return None
+    finally:
+        cursor.close()

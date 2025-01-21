@@ -114,3 +114,20 @@ async def delete_tags_endpoint(request: Request, tag_id: int):
     finally:
         if db is not None:
             db.close()
+
+@router.get("/{tag_name}", tags=["Tags management"])
+async def get_tag_by_name_endpoint(request: Request, tag_name: str) -> content_models.TagModel:
+    db = None
+    try:
+        db = connect_db()
+        tag = tags_db.get_tag_by_name(db, tag_name)
+        if tag is None:
+            return fastapi.responses.Response(status_code=404)
+        return tag
+    except Exception as e:
+        logger.error("Error getting tag")
+        logger.error(e)
+        return fastapi.responses.Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()

@@ -108,3 +108,20 @@ async def delete_authors_endpoint(request: fastapi.Request, author_id: int):
     finally:
         if db is not None:
             db.close()
+
+@router.get("/{author_name}", tags=["Authors management"])
+async def get_author_by_name_endpoint(request: fastapi.Request, author_name: str):
+    db = None
+    try:
+        db = connect_db()
+        author = authors_db.get_author_by_name(db, author_name)
+        if author is None:
+            return fastapi.responses.Response(status_code=404)
+        return author
+    except Exception as e:
+        logger.error("Error getting author")
+        logger.error(e)
+        return fastapi.responses.Response(status_code=500)
+    finally:
+        if db is not None:
+            db.close()
