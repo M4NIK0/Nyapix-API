@@ -33,11 +33,11 @@ async def get_me_endpoint(request: Request):
             db.close()
 
 @router.put("/me", tags=["Account management"])
-async def put_me_endpoint(user: UserUpdateModel, request: Request):
+async def put_me_endpoint(user_query: UserUpdateModel, request: Request):
     db = None
     try:
         db = connect_db()
-        success = users_db.update_user(db, user, request.state.user.id)
+        success = users_db.update_user(db, user_query, request.state.user.id)
         if not success:
             return fastapi.responses.Response(status_code=409)
         return fastapi.responses.Response(status_code=200)
@@ -122,11 +122,11 @@ async def put_user_account_type_endpoint(request: Request, user_id: int, account
 
 @router.put("/{user_id}", tags=["Administration"])
 @users_type.admin_required
-async def put_user_endpoint(user: UserUpdateModel, request: Request, user_id: int):
+async def put_user_endpoint(user_query: UserUpdateModel, request: Request, user_id: int):
     db = None
     try:
         db = connect_db()
-        success = users_db.update_user(db, user, user_id)
+        success = users_db.update_user(db, user_query, user_id)
         if not success:
             return fastapi.responses.Response(status_code=409)
         return fastapi.responses.Response(status_code=200)
