@@ -122,7 +122,7 @@ async def put_user_account_type_endpoint(request: Request, user_id: int, account
 
 @router.put("/{user_id}", tags=["Administration"])
 @users_type.admin_required
-async def put_user_endpoint(user_query: UserUpdateModel, request: Request, user_id: int):
+async def put_user_endpoint(user_query: UserUpdateModel, user_id: int, request: Request):
     db = None
     try:
         db = connect_db()
