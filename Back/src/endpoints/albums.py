@@ -94,16 +94,6 @@ async def search_content_endpoint(request: fastapi.Request,
         if content is None:
             return Response(status_code=500)
 
-        is_https = os.getenv("IS_HTTPS")
-        if is_https  == "yes":
-            is_https = True
-        else:
-            is_https = False
-        for item in content.contents:
-            item.url = f"{request.base_url}{item.url}"
-            if item.cover is not None:
-                item.cover = f"{request.base_url}{item.cover}"
-
         return content
     except Exception as e:
         logger.error("Error searching content")
