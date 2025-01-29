@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
-import AddButton from '@/components/search/AddButton.vue'
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 const emit = defineEmits<{
   (event: 'update:searchResults', searchResults: any): void;
@@ -9,6 +11,7 @@ const emit = defineEmits<{
 
 const dropdownResults = ref<Array<{ name: string, type: string, id: number }>>([]);
 const isDropdownVisible = ref(false);
+const user = ref<{ user_type: number } | null>(null);
 
 // Data structure to store the search results and query
 const structuredQuery = ref({
@@ -255,6 +258,25 @@ const validateSearchResults = async () => {
     console.error('Error fetching search results:', error);
   }
 };
+
+const navigateToNewContent = () => {
+  router.push('/new/content');
+};
+
+const fetchUserData = async () => {
+  try {
+    const response = await axios.get(`${API_BASE}/users/me`, {
+      headers: getAuthHeader(),
+    });
+    user.value = response.data;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+  }
+};
+
+onMounted(async () => {
+  await fetchUserData();
+});
 </script>
 
 <template>
@@ -301,7 +323,7 @@ const validateSearchResults = async () => {
       </li>
     </ul>
     <button @click="validateSearchResults" class="validate_button">Search</button>
-    <AddButton />
+    <button v-if="user?.user_type === 1 || user?.user_type === 2" @click="navigateToNewContent" class="add-content-button">Add Content</button>
   </div>
 </template>
 

@@ -4,6 +4,7 @@ import LogoutComponent from "@/components/logout/LogoutComponent.vue";
 import HomeView from '@/views/HomeView.vue';
 import AlbumView from '@/views/AlbumView.vue';
 import ContentView from '@/views/ContentView.vue';
+import NewContentView from "@/views/NewContentView.vue";
 import SearchAlbumView from '@/views/SearchAlbumView.vue';
 import TagView from '@/views/TagView.vue';
 import RegisterForm from "@/components/register/RegisterForm.vue";
@@ -24,6 +25,11 @@ const router = createRouter({
       name: 'ContentView',
       component: ContentView,
       props: route => ({ id: Number(route.params.id) }),
+    },
+    {
+      path: '/new/content',
+      name: 'NewContentView',
+      component: NewContentView,
     },
     {
       path: '/album/:id',
