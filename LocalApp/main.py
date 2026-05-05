@@ -1,8 +1,11 @@
 import json, os
 import argparse
+from src.login import login
+from src.logger import setlogger
 import logging
 
 config = {}
+logger = logging.getLogger("main")
 
 if not os.path.isfile("config.json"):
     default_config = {
@@ -29,6 +32,12 @@ parser = argparse.ArgumentParser(
 )
 
 parser.add_argument("-t", "--token", help="Nyapix API token")
-parser.add_argument("-l", "--log", help="Log level applied (0-5)", type=int, choices=range(0, 6), default=3)
+parser.add_argument("-l", "--log", help="Log level applied (0-5)", type=int, choices=range(0, 2), default=2)
+parser.add_argument("-u", "--url", help="API URL")
 
-parser.parse_args()
+arguments = parser.parse_args()
+setlogger(arguments.log)
+
+logger.info("App started")
+
+login()
