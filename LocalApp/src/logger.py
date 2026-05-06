@@ -22,7 +22,8 @@ def setlogger(level: int):
     ch.setLevel(logging.WARNING)
     # create formatter and add it to the handlers
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s')
-    ch.setFormatter(formatter)
+    cformatter = logging.Formatter('%(levelname)s: %(message)s')
+    ch.setFormatter(cformatter)
     fh.setFormatter(formatter)
     # add the handlers to logger
     logger.addHandler(ch)

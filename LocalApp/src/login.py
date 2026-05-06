@@ -2,6 +2,7 @@ import getpass
 import json
 from typing import Union
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -36,3 +37,17 @@ def login() -> Union[str, None]:
             success = True
 
     return token
+
+def check_token(api_url: str, token: str) -> bool:
+    if token == "":
+        logger.error("Token is empty")
+        return False
+
+    resp = requests.get(api_url + "/v1/users/me", headers={"Authorization": "Bearer " + token})
+    if resp.status_code == 200:
+        logger.info("Token validation success")
+        return True
+
+    logger.error("Token validation failed (Error " + str(resp.status_code) + ")")
+    logger.warning(resp.text)
+    return False
