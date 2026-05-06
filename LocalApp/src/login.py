@@ -6,39 +6,34 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-# TODO: Add real login
-# Login function to get token from server
-def login() -> Union[str, None]:
-    success = False
-    token = ""
-    while not success:
-        username = input("Username: ")
-        password = getpass.getpass("Password: ", echo_char="*")
+def login(api_url: str, username: str, password: str) -> Union[str, None]:
+    """
+    Login function to get token from server using given credentials
+    :param api_url: API base URL
+    :param username: Username
+    :param password: Password
+    :return: Token as string if success, None otherwise
+    """
+    if username == "" or password == "":
+        logger.error("Username or password is empty")
+        return None
+    logger.info("Logging in")
+    resp = requests.post(api_url + "/v1/login", json={"username": username, "password": password})
+    if resp.status_code == 200:
+        logger.info("Login success")
+        return resp.json()["access_token"]
 
-        # Request here login
-        print("Logging in...")
-        token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uX2lkIjoyLCJ1c2VyX2lkIjoxfQ.0DUrHmrnkkRpMRWZsIBg6v6VjJdoGGzXBxrHA2Ip79g"
-        success = True
-        logger.info("Successfully logged in")
-        print("Login successful")
-
-    success = False
-    while not success:
-        save = input("Do you want to save the credentials? (In config.json) [y/n]: ").lower()
-        if save == "y":
-            cfg = json.load(open("config.json", "r"))
-            cfg["token"] = token
-            json.dump(cfg, open("config.json", "w"))
-            logger.info("Saved credentials")
-            print("Saved credentials")
-            success = True
-        elif save == "n":
-            logger.info("Credentials not saved")
-            success = True
-
-    return token
+    logger.error("Login failed (Error " + str(resp.status_code) + ")")
+    logger.warning(resp.text)
+    return None
 
 def check_token(api_url: str, token: str) -> bool:
+    """
+    Check if token is valid
+    :param api_url: API base URL
+    :param token: Token
+    :return: True if valid, False otherwise
+    """
     if token == "":
         logger.error("Token is empty")
         return False

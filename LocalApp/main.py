@@ -41,8 +41,6 @@ if __name__ == "__main__":
 
     logger.info("App started")
 
-    check_token(config["api_url"], config["token"])
-
 else:
     logger.error("This file should not be imported as a module.")
     exit(1)

@@ -3,7 +3,15 @@ import logging
 filename = 'logs/app.log'
 
 # Setup logger
-def setlogger(level: int):
+def setlogger(level: int) -> None:
+    """
+    Setup logger with given log level
+    :param level: Log level
+    - 0: Error
+    - 1: Warning
+    - 2: Info
+    :return: None
+    """
     logger = logging.getLogger()
     logger.setLevel(logging.DEBUG)
     # create file handler which logs even debug messages
@@ -20,11 +28,13 @@ def setlogger(level: int):
     # create console handler with a higher log level
     ch = logging.StreamHandler()
     ch.setLevel(logging.WARNING)
+
     # create formatter and add it to the handlers
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s: %(message)s')
     cformatter = logging.Formatter('%(levelname)s: %(message)s')
     ch.setFormatter(cformatter)
     fh.setFormatter(formatter)
+
     # add the handlers to logger
     logger.addHandler(ch)
     logger.addHandler(fh)
