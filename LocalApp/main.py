@@ -1,8 +1,9 @@
 import json, os
 import argparse
-from src.login import login, check_token
-from src.logger import setlogger
+from src.utility.logger import setlogger
 import logging
+
+from src.utility.tags import get_tags
 
 config = {}
 logger = logging.getLogger("main")
@@ -40,6 +41,7 @@ if __name__ == "__main__":
     setlogger(arguments.log)
 
     logger.info("App started")
+    print(get_tags(config["api_url"], config["token"], 1))
 
 else:
     logger.error("This file should not be imported as a module.")
