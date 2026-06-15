@@ -1,31 +1,17 @@
-import json, os
 import argparse
 from src.utility.logger import setlogger
 import logging
 
-from src.utility.tags import get_tags
+import src.utility.pre_run as pre_run
+from utility.login import check_token
+from utility.tags import get_tags
 
 config = {}
 logger = logging.getLogger("main")
 
-if not os.path.isfile("config.json"):
-    default_config = {
-        "token": None,
-        "api_url": "https://api.example.com",
-        "max_thumbs": 5,
-        "download_path": "./downloads",
-        "db_path": "./database.db"
-    }
-    with open("config.json", "w") as f:
-        json.dump(default_config, f, indent=4)
-
-with open('config.json', 'r') as f:
-    config = json.load(f)
-
-if "token" not in config or "api_url" not in config or "max_thumbs" not in config or "download_path" not in config or "db_path" not in config:
-    raise ValueError("Missing required configuration parameters.")
-
 if __name__ == "__main__":
+    config = pre_run.load_config()
+
     parser = argparse.ArgumentParser(
         prog="NyapixClient",
         description="A client for interacting with the Nyapix API.",
