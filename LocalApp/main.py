@@ -3,7 +3,6 @@ from src.utility.logger import setlogger
 import logging
 
 import src.utility.pre_run as pre_run
-from utility.login import check_token
 from utility.tags import get_tags
 
 config = {}

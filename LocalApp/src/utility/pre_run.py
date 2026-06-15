@@ -1,6 +1,10 @@
 import json, os
 
 def load_config() -> dict:
+    """
+    Loads configuration from config.json and returns it as a dict, defaults and creates the file if not found.
+    :return:
+    """
     config = {}
     default_config = {}
     if not os.path.isfile("config.json"):

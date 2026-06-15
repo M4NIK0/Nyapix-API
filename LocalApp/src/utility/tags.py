@@ -25,7 +25,7 @@ def get_tags(api_url: str, token: str, page: int) -> TagListModel | None:
 
     if resp.status_code == 200:
         resp = resp.json()
-        tags = TagListModel.parse_obj(resp)
+        tags = TagListModel.model_validate(resp)
         logger.info("Tags retrieved successfully (Page " + str(page) + ")")
         return tags
 
