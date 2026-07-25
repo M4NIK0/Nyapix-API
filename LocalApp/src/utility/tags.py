@@ -54,3 +54,49 @@ def search_tags(api_url: str, token: str, query: str, page: int) -> TagListModel
         return resp
 
     return None
+
+def get_tag_id(api_url: str, token: str, tag_name: str) -> int | None:
+    """
+    Get tag ID from server
+    :param api_url: API base URL
+    :param token: Token
+    :param tag_name: Tag name
+    :return: Tag ID or None
+    """
+
+    if api_url == "" or token == "" or tag_name == "":
+        logger.error("API URL, token or tag name is invalid")
+        return None
+
+    resp = requests.get(api_url + "/v1/tags/id/" + tag_name, headers={"Authorization": f"Bearer {token}"})
+    if resp.status_code == 200:
+        resp = resp.json()
+        logger.info("Tag ID retrieved successfully")
+        return resp["id"]
+
+    logger.error("Tag ID retrieval failed (Error " + str(resp.status_code) + ")")
+    logger.warning(resp.text)
+    return None
+
+def create_tag(api_url: str, token: str, tag_name: str) -> bool:
+    """
+    Create a tag.
+    :param api_url: API base URL
+    :param token: Token
+    :param tag_name: Tag name
+    :return: False if tag creation failed (i.e. tag already exists or denied access);
+    :return: True if tag creation succeeded
+    """
+
+    if api_url == "" or token == "" or tag_name == "":
+        logger.error("API URL, token or tag name is invalid")
+        return False
+
+    resp = requests.post(api_url + "/v1/tags?tag_name=" + tag_name, headers={"Authorization": f"Bearer {token}"})
+    if resp.status_code == 200:
+        logger.info("Tag created successfully")
+        return True
+
+    logger.error("Tag creation failed (Error " + str(resp.status_code) + ")")
+    logger.warning(resp.text)
+    return False

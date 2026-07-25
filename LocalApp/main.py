@@ -3,7 +3,7 @@ from src.utility.logger import setlogger
 import logging
 
 import src.utility.pre_run as pre_run
-from utility.tags import get_tags
+from utility.tags import get_tags, search_tags, create_tag, get_tag_id
 
 config = {}
 logger = logging.getLogger("main")
@@ -25,8 +25,13 @@ if __name__ == "__main__":
     arguments = parser.parse_args()
     setlogger(arguments.log)
 
+
     logger.info("App started")
     print(get_tags(config["api_url"], config["token"], 1))
+    print(search_tags(config["api_url"], config["token"], "cu", 1))
+    print(create_tag(config["api_url"], config["token"], "test_tag"))
+    print(get_tags(config["api_url"], config["token"], 1))
+    print(get_tag_id(config["api_url"], config["token"], "test_tag"))
 
 else:
     logger.error("This file should not be imported as a module.")
