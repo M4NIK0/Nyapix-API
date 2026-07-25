@@ -223,7 +223,7 @@ async def put_content_endpoint(request: fastapi.Request, content_id: int, conten
 
         if content.source_id is not None:
             if sources_db.get_source(db, content.source_id) is None:
-                return Response(content=f"Source with id {content.source} does not exist", status_code=400)
+                return Response(content=f"Source with id {content.source_id} does not exist", status_code=400)
 
         success = content_db.update_content(db, content_id, content)
         if not success:
