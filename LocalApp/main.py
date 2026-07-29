@@ -1,16 +1,15 @@
 import argparse
+from logging import Logger
+
 from src.utility.logger import setlogger
+import src.cli.console
 import logging
+from src.utility.config import config
+import src.cli.login_commands as login_commands
 
-import src.utility.pre_run as pre_run
-from utility.tags import get_tags, search_tags, create_tag, get_tag_id
-
-config = {}
 logger = logging.getLogger("main")
 
 if __name__ == "__main__":
-    config = pre_run.load_config()
-
     parser = argparse.ArgumentParser(
         prog="NyapixClient",
         description="A client for interacting with the Nyapix API.",
@@ -25,13 +24,19 @@ if __name__ == "__main__":
     arguments = parser.parse_args()
     setlogger(arguments.log)
 
+    # logger.info("App started")
+    # print(get_characters(config["api_url"], config["token"], 1))
+    # print(search_characters(config["api_url"], config["token"], "cu", 1))
+    # print(create_character(config["api_url"], config["token"], "test_character"))
+    # print(get_characters(config["api_url"], config["token"], 1))
+    # print(get_character_id(config["api_url"], config["token"], "test_character"))
 
-    logger.info("App started")
-    print(get_tags(config["api_url"], config["token"], 1))
-    print(search_tags(config["api_url"], config["token"], "cu", 1))
-    print(create_tag(config["api_url"], config["token"], "test_tag"))
-    print(get_tags(config["api_url"], config["token"], 1))
-    print(get_tag_id(config["api_url"], config["token"], "test_tag"))
+    console = src.cli.console.Console()
+    console.create_command("check_token", "Check if token is valid", login_commands.command_check_token)
+    console.create_command("login", "Login to Nyapix and save token", login_commands.login)
+    console.create_command("logout", "Logout from Nyapix and remove token", login_commands.logout)
+
+    console.run()
 
 else:
     logger.error("This file should not be imported as a module.")
