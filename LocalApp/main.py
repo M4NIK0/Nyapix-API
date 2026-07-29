@@ -9,6 +9,7 @@ import src.cli.tags_commands as tags_commands
 import src.cli.sources_commands as sources_commands
 import src.cli.characters_commands as characters_commands
 import src.cli.config_commands as config_commands
+import src.cli.contents_commands as contents_commands
 
 logger = logging.getLogger("main")
 
@@ -69,6 +70,8 @@ if __name__ == "__main__":
     console.create_command("character_create", "Create character by name", ["name"], characters_commands.command_create_character, "Characters")
     console.create_command("character_update", "Change a character's name", ["id", "name"], characters_commands.command_update_character, "Characters")
     console.create_command("character_delete", "Delete a character by id", ["id"], characters_commands.command_delete_character, "Characters")
+
+    console.create_command("content_upload", "Upload content to database", ["file_path"], contents_commands.command_upload_content, "Contents")
 
     console.run()
 
