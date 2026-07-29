@@ -7,6 +7,7 @@ import logging
 from src.utility.config import config
 import src.cli.login_commands as login_commands
 import src.cli.authors_commands as authors_commands
+import src.cli.config_commands as config_commands
 
 logger = logging.getLogger("main")
 
@@ -33,14 +34,19 @@ if __name__ == "__main__":
     # print(get_character_id(config["api_url"], config["token"], "test_character"))
 
     console = src.cli.console.Console()
+    console.create_command("config_reload", "Reload configuration", [], config_commands.command_reload_config, "Configuration")
+    console.create_command("config_show", "Show configuration", [], config_commands.command_show_config,"Configuration")
+    console.create_command("config_set_api_uri", "Set API URI", ["url"], config_commands.command_set_api_uri, "Configuration")
+
     console.create_command("check_token", "Check if token is valid", [], login_commands.command_check_token, "Login to Nyapix")
     console.create_command("login", "Login to Nyapix and save token", [], login_commands.command_login, "Login to Nyapix")
     console.create_command("logout", "Logout from Nyapix and remove token", [], login_commands.command_logout, "Login to Nyapix")
-    console.create_command("list_authors", "List authors (page id starts at 1)", ["page"], authors_commands.command_list_authors, "Authors")
-    console.create_command("get_author_id", "Get author id by name", ["name"], authors_commands.command_get_author_id, "Authors")
-    console.create_command("create_author", "Create author by name", ["name"], authors_commands.command_create_author, "Authors")
-    console.create_command("update_author", "Change an author's name", ["id", "name"], authors_commands.command_update_author, "Authors")
-    console.create_command("delete_author", "Delete an author by id", ["id"], authors_commands.command_delete_author, "Authors")
+
+    console.create_command("authors_list", "List authors (page id starts at 1)", ["page"], authors_commands.command_list_authors, "Authors")
+    console.create_command("author_id", "Get author id by name", ["name"], authors_commands.command_get_author_id, "Authors")
+    console.create_command("author_create", "Create author by name", ["name"], authors_commands.command_create_author, "Authors")
+    console.create_command("author_update", "Change an author's name", ["id", "name"], authors_commands.command_update_author, "Authors")
+    console.create_command("author_delete", "Delete an author by id", ["id"], authors_commands.command_delete_author, "Authors")
 
     console.run()
 

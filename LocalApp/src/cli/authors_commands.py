@@ -111,6 +111,7 @@ def command_delete_author(args: List[str]):
     token = config.get("token", "")
     if len(args) < 1:
         logger.error("Author id is missing")
+        return
 
     try:
         author_id = int(args[0])

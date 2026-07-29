@@ -24,10 +24,10 @@ class Console:
     def add_command(self, command: Command, category: Union[str, None] = None):
         if category is None:
             category = "Uncategorized"
-        if (category not in self.commands.keys()):
+        if category not in self.commands.keys():
             self.logger.info(f"Adding command '{category}' to command list")
             self.commands[category] = []
-        if (command not in self.commands[category]):
+        if command not in self.commands[category]:
             self.commands[category].append(command)
             self.logger.info(f"Registered command '{command.command_name}' under category '{category}'")
         else:
@@ -42,14 +42,14 @@ class Console:
         self.add_command(command, category)
 
     def run(self):
-        exit = False
+        has_exit = False
 
         print(">>> Welcome to the Nyapix API CLI!")
         print(">>> Type 'help' for more information")
-        print(">>> Type 'exit' to exit the console\n\n")
+        print(">>> Type 'exit' to exit the console\n")
 
-        while not exit:
-            cmd = input("> ")
+        while not has_exit:
+            cmd = input("\n> ")
             cmd = cmd.strip()
             cmd = cmd.split(" ")
 
@@ -75,7 +75,7 @@ class Console:
                 self.logger.error(f"Command '{cmd[0]}' not recognized")
 
             if cmd[0] == "exit":
-                break
+                has_exit = True
 
             if cmd[0] == "help":
                 print("Available commands:")
