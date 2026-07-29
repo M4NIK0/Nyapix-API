@@ -38,7 +38,7 @@ def search_tags(api_url: str, token: str, query: str, page: int) -> TagListModel
     :param token: Token
     :param query: Search query
     :param page: Tags page number (starting from 1)
-    :return: Dictionary of tags or None
+    :return: TagListModel or None
     """
 
     page_size = 20
@@ -49,10 +49,12 @@ def search_tags(api_url: str, token: str, query: str, page: int) -> TagListModel
 
     resp = requests.get(api_url + "/v1/tags/search?tag_name=" + query + "&page=" + str(page) + "&max_results=" + str(page_size), headers={"Authorization": f"Bearer {token}"})
     if resp.status_code == 200:
-        resp = resp.json()
+        tags = TagListModel.model_validate(resp.json())
         logger.info("Tags retrieved successfully (Page " + str(page) + ")")
-        return resp
+        return tags
 
+    logger.error("Tags search failed (Error " + str(resp.status_code) + ")")
+    logger.warning(resp.text)
     return None
 
 def get_tag_id(api_url: str, token: str, tag_name: str) -> int | None:

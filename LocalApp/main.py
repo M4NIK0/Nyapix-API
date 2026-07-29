@@ -1,12 +1,12 @@
 import argparse
-from logging import Logger
 
 from src.utility.logger import setlogger
 import src.cli.console
 import logging
-from src.utility.config import config
 import src.cli.login_commands as login_commands
 import src.cli.authors_commands as authors_commands
+import src.cli.tags_commands as tags_commands
+import src.cli.sources_commands as sources_commands
 import src.cli.config_commands as config_commands
 
 logger = logging.getLogger("main")
@@ -48,6 +48,19 @@ if __name__ == "__main__":
     console.create_command("author_create", "Create author by name", ["name"], authors_commands.command_create_author, "Authors")
     console.create_command("author_update", "Change an author's name", ["id", "name"], authors_commands.command_update_author, "Authors")
     console.create_command("author_delete", "Delete an author by id", ["id"], authors_commands.command_delete_author, "Authors")
+
+    console.create_command("tag_list", "List tags (page id starts at 1)", ["page"], tags_commands.command_list_tags, "Tags")
+    console.create_command("tag_search", "Search tags by name (page id starts at 1)", ["name", "page"], tags_commands.command_search_tag, "Tags")
+    console.create_command("tag_id", "Get tag id by name", ["name"], tags_commands.command_get_tag_id, "Tags")
+    console.create_command("tag_create", "Create tag by name", ["name"], tags_commands.command_create_tag, "Tags")
+    console.create_command("tag_update", "Change a tag's name", ["id", "name"], tags_commands.command_update_tag, "Tags")
+    console.create_command("tag_delete", "Delete a tag by id", ["id"], tags_commands.command_delete_tag, "Tags")
+
+    console.create_command("source_list", "List sources", [], sources_commands.command_list_sources, "Sources")
+    console.create_command("source_id", "Get source id by name", ["name"], sources_commands.command_get_source_id, "Sources")
+    console.create_command("source_create", "Create source by name", ["name"], sources_commands.command_create_source, "Sources")
+    console.create_command("source_update", "Change a source's name", ["id", "name"], sources_commands.command_update_source, "Sources")
+    console.create_command("source_delete", "Delete a source by id", ["id"], sources_commands.command_delete_source, "Sources")
 
     console.run()
 
