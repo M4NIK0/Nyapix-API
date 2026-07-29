@@ -100,3 +100,26 @@ def create_tag(api_url: str, token: str, tag_name: str) -> bool:
     logger.error("Tag creation failed (Error " + str(resp.status_code) + ")")
     logger.warning(resp.text)
     return False
+
+def edit_tag(api_url: str, token: str, tag_id: int, new_tag_name: str) -> bool:
+    """
+    Edit a tag
+    :param api_url: API base URL
+    :param token: Token
+    :param tag_id: Tag ID
+    :param new_tag_name: New tag name
+    :return: False if tag creation failed (i.e. tag already exists or denied access);
+    """
+
+    if api_url == "" or token == "" or tag_id < 1 or new_tag_name == "":
+        logger.error("API URL, token, tag ID or new tag name is invalid")
+        return False
+
+    resp = requests.put(api_url + "/v1/tags/" + str(tag_id) + "?tag_name=" + new_tag_name, headers={"Authorization": f"Bearer {token}"})
+    if resp.status_code == 200:
+        logger.info("Tag edited successfully")
+        return True
+
+    logger.error("Tag edit failed (Error " + str(resp.status_code) + ")")
+    logger.warning(resp.text)
+    return False
