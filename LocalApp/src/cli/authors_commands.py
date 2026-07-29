@@ -122,3 +122,27 @@ def command_delete_author(args: List[str]):
             print(f"Author deleted with ID: {author_id}")
     except ValueError:
         logger.error("Author id is not an integer")
+
+def command_search_author(args: List[str]):
+    """
+    Search author
+    :param args: Query (str), page (int)
+    :return: None
+    """
+    api_url = config.get("api_url", "")
+    token = config.get("token", "")
+    if len(args) < 2:
+        logger.error("Query or page is missing")
+        return
+
+    try:
+        page = int(args[1])
+    except ValueError:
+        logger.error("Page is not an integer")
+        return
+
+    res = authors_utils.search_authors(api_url, token, args[0], page)
+    if res is not None:
+        print(f"Authors (Page {page}/{res.total_pages}):")
+    for author in res.authors:
+        print(f"- {author.name} (ID: {author.id})")

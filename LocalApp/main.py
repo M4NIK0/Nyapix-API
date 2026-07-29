@@ -42,7 +42,8 @@ if __name__ == "__main__":
     console.create_command("login", "Login to Nyapix and save token", [], login_commands.command_login, "Login to Nyapix")
     console.create_command("logout", "Logout from Nyapix and remove token", [], login_commands.command_logout, "Login to Nyapix")
 
-    console.create_command("authors_list", "List authors (page id starts at 1)", ["page"], authors_commands.command_list_authors, "Authors")
+    console.create_command("author_list", "List authors (page id starts at 1)", ["page"], authors_commands.command_list_authors, "Authors")
+    console.create_command("author_search", "Search authors by name (page id starts at 1)", ["name", "page"], authors_commands.command_search_author, "Authors")
     console.create_command("author_id", "Get author id by name", ["name"], authors_commands.command_get_author_id, "Authors")
     console.create_command("author_create", "Create author by name", ["name"], authors_commands.command_create_author, "Authors")
     console.create_command("author_update", "Change an author's name", ["id", "name"], authors_commands.command_update_author, "Authors")
