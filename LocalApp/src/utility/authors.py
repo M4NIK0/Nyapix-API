@@ -146,3 +146,30 @@ def edit_author(api_url: str, token: str, author_id: int, new_author_name: str) 
     logger.warning(resp.text)
     return False
 
+
+def delete_author(api_url: str, token: str, author_id: int) -> bool:
+    """
+    Delete an author
+    :param api_url: API base URL
+    :param token: Token
+    :param author_id: Author ID
+    :return: True if author deletion succeeded; False otherwise
+    """
+
+    if api_url == "" or token == "" or author_id < 1:
+        logger.error("API URL, token or author ID is invalid")
+        return False
+
+    resp = requests.delete(
+        f"{api_url}/v1/authors/{author_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    if resp.status_code == 200:
+        logger.info("Author deleted successfully")
+        return True
+
+    logger.error("Author deletion failed (Error " + str(resp.status_code) + ")")
+    logger.warning(resp.text)
+    return False
+
+

@@ -123,3 +123,27 @@ def edit_tag(api_url: str, token: str, tag_id: int, new_tag_name: str) -> bool:
     logger.error("Tag edit failed (Error " + str(resp.status_code) + ")")
     logger.warning(resp.text)
     return False
+
+
+def delete_tag(api_url: str, token: str, tag_id: int) -> bool:
+    """
+    Delete a tag
+    :param api_url: API base URL
+    :param token: Token
+    :param tag_id: Tag ID
+    :return: True if tag deletion succeeded; False otherwise
+    """
+
+    if api_url == "" or token == "" or tag_id < 1:
+        logger.error("API URL, token or tag ID is invalid")
+        return False
+
+    resp = requests.delete(api_url + "/v1/tags/" + str(tag_id), headers={"Authorization": f"Bearer {token}"})
+    if resp.status_code == 200:
+        logger.info("Tag deleted successfully")
+        return True
+
+    logger.error("Tag deletion failed (Error " + str(resp.status_code) + ")")
+    logger.warning(resp.text)
+    return False
+

@@ -146,3 +146,27 @@ def edit_character(api_url: str, token: str, character_id: int, new_character_na
     logger.warning(resp.text)
     return False
 
+def delete_character(api_url: str, token: str, character_id: int) -> bool:
+    """
+    Delete a character
+    :param api_url: API base URL
+    :param token: Token
+    :param character_id: Character ID
+    :return: True if character deletion succeeded, False otherwise
+    """
+
+    if api_url == "" or token == "" or character_id < 1:
+        logger.error("API URL, token or character ID is invalid")
+        return False
+
+    resp = requests.delete(
+        f"{api_url}/v1/characters/{character_id}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    if resp.status_code == 200:
+        logger.info("Character deleted successfully")
+        return True
+
+    logger.error("Character deletion failed (Error " + str(resp.status_code) + ")")
+    logger.warning(resp.text)
+    return False
