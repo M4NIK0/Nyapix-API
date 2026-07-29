@@ -25,7 +25,7 @@ def command_check_token(args: List[str]):
     else:
         logger.error("Token is invalid")
 
-def login(args: List[str]):
+def command_login(args: List[str]):
     """
     Loging to nyapix and save token
     :param args: Username and password as string
@@ -50,7 +50,7 @@ def login(args: List[str]):
     else:
         logger.error("Login failed")
 
-def logout(args: List[str]):
+def command_logout(args: List[str]):
     """
     Logout from nyapix and save token
     :param args: Empty list
