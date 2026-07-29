@@ -7,6 +7,7 @@ import src.cli.login_commands as login_commands
 import src.cli.authors_commands as authors_commands
 import src.cli.tags_commands as tags_commands
 import src.cli.sources_commands as sources_commands
+import src.cli.characters_commands as characters_commands
 import src.cli.config_commands as config_commands
 
 logger = logging.getLogger("main")
@@ -61,6 +62,13 @@ if __name__ == "__main__":
     console.create_command("source_create", "Create source by name", ["name"], sources_commands.command_create_source, "Sources")
     console.create_command("source_update", "Change a source's name", ["id", "name"], sources_commands.command_update_source, "Sources")
     console.create_command("source_delete", "Delete a source by id", ["id"], sources_commands.command_delete_source, "Sources")
+
+    console.create_command("character_list", "List characters (page id starts at 1)", ["page"], characters_commands.command_list_characters, "Characters")
+    console.create_command("character_search", "Search characters by name (page id starts at 1)", ["name", "page"], characters_commands.command_search_character, "Characters")
+    console.create_command("character_id", "Get character id by name", ["name"], characters_commands.command_get_character_id, "Characters")
+    console.create_command("character_create", "Create character by name", ["name"], characters_commands.command_create_character, "Characters")
+    console.create_command("character_update", "Change a character's name", ["id", "name"], characters_commands.command_update_character, "Characters")
+    console.create_command("character_delete", "Delete a character by id", ["id"], characters_commands.command_delete_character, "Characters")
 
     console.run()
 
