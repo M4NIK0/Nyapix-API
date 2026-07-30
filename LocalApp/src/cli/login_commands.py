@@ -44,7 +44,7 @@ def command_login(args: List[str]):
     token = login_func(api_url, username, password)
 
     if token is not None:
-        config.set("token", token)
+        config["token"] = token
         save_config(config)
         print("Login success")
     else:
