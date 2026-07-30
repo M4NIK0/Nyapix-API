@@ -1,4 +1,5 @@
 import logging
+import mimetypes
 from typing import List
 import os
 
@@ -170,4 +171,21 @@ def command_upload_content(args: List[str]):
         logger.error("File not found")
         return
 
-    contents_utils.create_content(api_url, token, title, description, authors, characters, source, tags, file_path, is_private, 
+    with open(file_path, "rb") as f:
+        file_size = os.path.getsize(file_path)
+        if file_size > 1000 * 1024 * 1024:  # 1000 MB
+            logger.error("File size exceeds 100 MB")
+            return
+        mime_type = mimetypes.guess_type(file_path)[0] or "application/octet-stream"
+        contents_utils.create_content(
+            api_url,
+            token,
+            title,
+            description,
+            source,
+            tags,
+            characters,
+            authors,
+            is_private,
+            {"file": (os.path.basename(file_path), f, mime_type)},
+        )

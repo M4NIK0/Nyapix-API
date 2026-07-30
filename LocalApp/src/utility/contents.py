@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Any
 
@@ -244,7 +245,7 @@ def create_content(
         logger.error("API URL, token or files payload is invalid")
         return False
 
-    form_data = {
+    content_data = {
         "title": title,
         "description": description,
         "source_id": source_id,
@@ -252,6 +253,10 @@ def create_content(
         "characters": characters,
         "authors": authors,
         "is_private": is_private,
+    }
+    
+    form_data = {
+        "content": json.dumps(content_data),
     }
 
     resp = requests.post(
