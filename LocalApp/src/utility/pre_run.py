@@ -15,7 +15,7 @@ def load_config() -> dict:
             "token": None,
             "api_url": "https://api.example.com",
             "max_thumbs": 5,
-            "download_path": "./downloads",
+            "download_path": "./downloads/",
             "db_path": "./database.db"
         }
         with open("config.json", "w") as f:
@@ -27,6 +27,9 @@ def load_config() -> dict:
     if "token" not in config or "api_url" not in config or "max_thumbs" not in config or "download_path" not in config or "db_path" not in config:
         logger.error("Missing required configuration parameters.")
         raise ValueError("Missing required configuration parameters.")
+
+    if config["download_path"][-1] != "/":
+        config["download_path"] += "/"
 
     logger.info("Configuration loaded successfully.")
 

@@ -172,4 +172,24 @@ def delete_author(api_url: str, token: str, author_id: int) -> bool:
     logger.warning(resp.text)
     return False
 
+def get_author_name(api_url: str, token: str, author_ID: int) -> str | None:
+    """
+    Get author name from ID
+    :param api_url: API base URL
+    :param token: Token
+    :return: Author name
+    """
+    if api_url == "" or token == "" or author_ID == "":
+        logger.error("API URL, token or author ID is invalid")
+        return None
+    resp = requests.get(
+        f"{api_url}/v1/authors/{author_ID}",
+        headers={"Authorization": f"Bearer {token}"},
+    )
 
+    if resp.status_code == 200:
+        data = resp.json()
+        logger.info("Author name retrieved successfully")
+        return data["name"]
+    else:
+        logger.error("Author name retrieval failed (Error " + str(resp.status_code) + ")")

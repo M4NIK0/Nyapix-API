@@ -170,3 +170,28 @@ def delete_character(api_url: str, token: str, character_id: int) -> bool:
     logger.error("Character deletion failed (Error " + str(resp.status_code) + ")")
     logger.warning(resp.text)
     return False
+
+def get_character_name(api_url: str, token: str, character_id: int) -> str | None:
+    """
+    Get a character name from ID
+    :param api_url: API base URL
+    :param token: Token
+    :param character_id: Character ID
+    :return: Character name or None if character retrieval failed
+    """
+
+    if api_url == "" or token == "" or character_id < 1:
+        logger.error("API URL, token or character ID is invalid")
+        return None
+    resp = requests.get(
+        f"{api_url}/v1/characters/{character_id}",
+        headers={"Authorization": f"Bearer {token}"}
+    )
+
+    if resp.status_code == 200:
+        data = resp.json()
+        logger.info("Character name retrieved successfully")
+        return data["name"]
+    else:
+        logger.error("Failed to retrieve character name")
+        return None

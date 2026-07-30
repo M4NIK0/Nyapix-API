@@ -132,3 +132,29 @@ def delete_source(api_url: str, token: str, source_id: int) -> bool:
     logger.warning(resp.text)
     return False
 
+def get_source_name(api_url: str, token: str, source_id: int) -> str | None:
+    """
+    Get source name from server
+    :param api_url: API base URL
+    :param token: Token
+    :param source_id: Source ID
+    :return: Source name or None
+    """
+
+    if api_url == "" or token == "" or source_id < 1:
+        logger.error("API URL, token or source ID is invalid")
+        return None
+
+    url = f"{api_url}/v1/sources"
+    resp = requests.get(url, headers={"Authorization": f"Bearer {token}"})
+    if resp.status_code == 200:
+        data = resp.json()
+        for item in data:
+            if item.get("id") == source_id:
+                logger.info("Source name retrieved successfully")
+                return item.get("name")
+        logger.error("Source not found")
+    else:
+        logger.error("Source name retrieval failed (Error " + str(resp.status_code) + ")")
+        logger.warning(resp.text)
+    return None

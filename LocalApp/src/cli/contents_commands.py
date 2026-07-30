@@ -9,6 +9,8 @@ from src.utility.tags import get_tags
 from src.utility.config import config
 from src.utility.characters import get_characters
 from src.utility.authors import get_authors
+from src.utility.tags import get_tag_name
+from src.utility.authors import get_author_name
 
 import src.utility.contents as contents_utils
 
@@ -189,3 +191,141 @@ def command_upload_content(args: List[str]):
             is_private,
             {"file": (os.path.basename(file_path), f, mime_type)},
         )
+
+def command_download_content(args: List[str]):
+    """
+    Download content from Nyapix using ID
+    :param args: Content ID (int)
+    :return: None
+    """
+    if len(args) < 1:
+        logger.error("Content ID is required")
+        return
+
+    try:
+        int(args[0])
+    except ValueError:
+        logger.error("Content ID is invalid")
+        return
+
+    content_id = int(args[0])
+
+    token = config.get("token", "")
+    api_url = config.get("api_url", "")
+    download_folder = config.get("download_path", "")
+
+    # Get content download URL
+    content_info = contents_utils.get_content(api_url, token, content_id)
+    if not content_info:
+        logger.error("Content with this ID not found")
+        return
+    url = content_info.url
+    print("Downloading content from url: " + url)
+
+    # Download content from url
+    contents_utils.download_content(url, token, download_folder + content_info.title)
+
+def command_download_thumb(args: List[str]):
+    """
+    Download content thumbnails from Nyapix using ID(s)
+    :param args: Content ID (int) (can put multiple IDs)
+    :return:
+    """
+    if len(args) < 1:
+        logger.error("At least one ID is required")
+        return
+
+    try:
+        for i in args:
+            int(i)
+    except ValueError:
+        logger.error("All IDs must be integers")
+        return
+
+    token = config.get("token", "")
+    api_url = config.get("api_url", "")
+    download_folder = config.get("download_path", "")
+
+    for content_id in args:
+        contents_utils.download_thumb(api_url, token, int(content_id), download_folder + "thumb_" + str(content_id))
+        print("Downloaded thumbnail for ID " + str(content_id))
+
+def command_content_mine(args: List[str]):
+    """
+    Get a list of my content
+    :param args: Index of page (int)
+    :return:
+    """
+    if len(args) < 1:
+        logger.error("Page index is missing")
+        return
+
+    try:
+        page = int(args[0])
+    except ValueError:
+        logger.error("Page index is not an integer")
+        return
+
+    token = config.get("token", "")
+    api_url = config.get("api_url", "")
+
+    contents = contents_utils.get_my_contents(api_url, token, page)
+    if contents is not None:
+        print(f"My Contents (Page {page}/{contents.total_pages}):")
+        for content in contents.contents:
+            print(f"- {content.title} (ID: {content.id})")
+
+def command_content_info(args: List[str]):
+    """
+    Get full information about an item
+    :param args: Content ID (int)
+    :return: None
+    """
+    if len(args) < 1:
+        logger.error("Content ID is required")
+        return
+
+    try:
+        int(args[0])
+    except ValueError:
+        logger.error("Content ID is invalid")
+        return
+
+    token = config.get("token", "")
+    api_url = config.get("api_url", "")
+    content_id = int(args[0])
+
+    res = contents_utils.get_content(api_url, token, content_id)
+    if not res:
+        logger.error("Content with this ID not found")
+        return
+
+    content_tags = []
+
+    for i in res.tags:
+        tag_name = get_tag_name(api_url, token, i)
+        if tag_name:
+            content_tags.append(tag_name)
+
+    content_authors = []
+
+    for i in res.authors:
+        author_name = get_author_name(api_url, token, i)
+        if author_name:
+            content_authors.append(author_name)
+
+    content_characters = []
+
+    for i in res.characters:
+        character_name = get_character_name(api_url, token, i)
+        if character_name:
+            content_characters.append(character_name)
+
+    source = get_source_name(api_url, token, res.source)
+
+    print("Title: " + res.title)
+    print("Description: " + res.description)
+    print("Tags: " + ", ".join(content_tags))
+    print("Characters: " + ", ".join(content_characters))
+    print("Authors: " + ", ".join(content_authors))
+    print("Source: " + source)

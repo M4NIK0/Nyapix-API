@@ -10,6 +10,7 @@ import src.cli.sources_commands as sources_commands
 import src.cli.characters_commands as characters_commands
 import src.cli.config_commands as config_commands
 import src.cli.contents_commands as contents_commands
+import src.utility.config as config_utils
 
 logger = logging.getLogger("main")
 
@@ -72,6 +73,8 @@ if __name__ == "__main__":
     console.create_command("character_delete", "Delete a character by id", ["id"], characters_commands.command_delete_character, "Characters")
 
     console.create_command("content_upload", "Upload content to database", ["file_path"], contents_commands.command_upload_content, "Contents")
+    console.create_command("content_download", "Download content from database", ["content_id"], contents_commands.command_download_content, "Contents")
+    console.create_command("content_thumbs", "Download content thumbnails", ["content_ids ..."], contents_commands.command_download_thumb, "Contents")
 
     console.run()
 

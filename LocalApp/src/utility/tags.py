@@ -149,3 +149,25 @@ def delete_tag(api_url: str, token: str, tag_id: int) -> bool:
     logger.warning(resp.text)
     return False
 
+def get_tag_name(api_url: str, token: str, tag_id: int) -> str | None:
+    """
+    Get tag name from server
+    :param api_url: API base URL
+    :param token: Token
+    :param tag_id: Tag ID
+    :return: Tag name or None
+    """
+
+    if api_url == "" or token == "" or tag_id < 1:
+        logger.error("API URL, token or tag ID is invalid")
+        return None
+
+    resp = requests.get(api_url + "/v1/tags/" + str(tag_id), headers={"Authorization": f"Bearer {token}"})
+    if resp.status_code == 200:
+        resp = resp.json()
+        logger.info("Tag name retrieved successfully")
+        return resp["name"]
+
+    logger.error("Tag name retrieval failed (Error " + str(resp.status_code) + ")")
+    logger.warning(resp.text)
+    return None

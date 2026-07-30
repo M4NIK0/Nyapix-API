@@ -122,6 +122,7 @@ def get_content(api_url: str, token: str, content_id: int) -> Content | None:
     )
 
     if resp.status_code == 200:
+        print(resp.json())
         content = Content.model_validate(resp.json())
         logger.info("Content retrieved successfully")
         return content
@@ -157,6 +158,73 @@ def get_content_owner(api_url: str, token: str, content_id: int) -> dict[str, An
     logger.warning(resp.text)
     return None
 
+def download_content(target_url: str, token: str, file_path: str) -> None:
+    """
+    Download content from a target URL.
+    :param target_url: Target URL
+    :param token: Token
+    :param file_path: Path of the file to save, not including extension
+    """
+
+    if target_url == "" or token == "" or file_path == "":
+        logger.error("Target URL, token or file name is invalid")
+        return
+
+    resp = requests.get(
+        target_url,
+        headers={"Authorization": f"Bearer {token}"},
+        stream=True,
+    )
+
+    if "image" in target_url:
+        if not file_path.endswith(".png"):
+            file_path += ".png"
+    if "video" in target_url:
+        if not file_path.endswith(".mp4"):
+            file_path += ".mp4"
+    if "audio" in target_url:
+        if not file_path.endswith(".wav"):
+            file_path += ".wav"
+
+    if resp.status_code == 200:
+        with open(file_path, "wb") as f:
+            for chunk in resp.iter_content(chunk_size=8192):
+                f.write(chunk)
+        logger.info("Content downloaded successfully to " + file_path)
+    else:
+        logger.error("Content download failed (Error " + str(resp.status_code) + ")")
+        logger.warning(resp.text)
+
+def download_thumb(api_url: str, token: str, content_id: int, file_path: str) -> None:
+    """
+    Download content thumb by ID.
+    :param api_url: API base URL
+    :param token: Token
+    :param content_id: Content ID
+    :param file_path: Path of the file to save, not including extension
+    """
+
+    if api_url == "" or token == "" or content_id < 1 or file_path == "":
+        logger.error("API URL, token, content ID or file name is invalid")
+        return
+
+    resp = requests.get(
+        f"{api_url}/v1/content/{content_id}/thumb",
+        headers={"Authorization": f"Bearer {token}"},
+        stream=True,
+    )
+
+    if not file_path.endswith(".png"):
+        file_path += ".png"
+
+    if resp.status_code == 200:
+        with open(file_path, "wb") as f:
+            for chunk in resp.iter_content(chunk_size=8192):
+                f.write(chunk)
+        logger.info("Content thumb downloaded successfully to " + file_path)
+    else:
+        logger.error("Content thumb download failed (Error " + str(resp.status_code) + ")")
+        logger.warning(resp.text)
 
 def update_content(api_url: str, token: str, content_id: int, content_update: dict[str, Any]) -> bool:
     """
@@ -299,86 +367,5 @@ def get_content_thumb(api_url: str, token: str, content_id: int) -> bytes | None
         return resp.content
 
     logger.error("Content thumb retrieval failed (Error " + str(resp.status_code) + ")")
-    logger.warning(resp.text)
-    return None
-
-
-def get_video(api_url: str, token: str, video_id: int) -> bytes | None:
-    """
-    Get video by ID.
-    :param api_url: API base URL
-    :param token: Token
-    :param video_id: Video ID
-    :return: Raw video bytes or None
-    """
-
-    if api_url == "" or token == "" or video_id < 1:
-        logger.error("API URL, token or video ID is invalid")
-        return None
-
-    resp = requests.get(
-        f"{api_url}/v1/content/video/{video_id}",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-
-    if resp.status_code == 200:
-        logger.info("Video retrieved successfully")
-        return resp.content
-
-    logger.error("Video retrieval failed (Error " + str(resp.status_code) + ")")
-    logger.warning(resp.text)
-    return None
-
-
-def get_image(api_url: str, token: str, image_id: int) -> bytes | None:
-    """
-    Get image by ID.
-    :param api_url: API base URL
-    :param token: Token
-    :param image_id: Image ID
-    :return: Raw image bytes or None
-    """
-
-    if api_url == "" or token == "" or image_id < 1:
-        logger.error("API URL, token or image ID is invalid")
-        return None
-
-    resp = requests.get(
-        f"{api_url}/v1/content/image/{image_id}",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-
-    if resp.status_code == 200:
-        logger.info("Image retrieved successfully")
-        return resp.content
-
-    logger.error("Image retrieval failed (Error " + str(resp.status_code) + ")")
-    logger.warning(resp.text)
-    return None
-
-
-def get_audio(api_url: str, token: str, audio_id: int) -> bytes | None:
-    """
-    Get audio by ID.
-    :param api_url: API base URL
-    :param token: Token
-    :param audio_id: Audio ID
-    :return: Raw audio bytes or None
-    """
-
-    if api_url == "" or token == "" or audio_id < 1:
-        logger.error("API URL, token or audio ID is invalid")
-        return None
-
-    resp = requests.get(
-        f"{api_url}/v1/content/audio/{audio_id}",
-        headers={"Authorization": f"Bearer {token}"},
-    )
-
-    if resp.status_code == 200:
-        logger.info("Audio retrieved successfully")
-        return resp.content
-
-    logger.error("Audio retrieval failed (Error " + str(resp.status_code) + ")")
     logger.warning(resp.text)
     return None

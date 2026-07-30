@@ -5,9 +5,13 @@ from typing import List, Optional
 class Content(BaseModel):
     id: int
     title: str
-    summary: Optional[str] = None
-    author_id: Optional[int] = None
-    tag_ids: Optional[List[int]] = None
+    description: str
+    source: int
+    tags: list[int]
+    characters: list[int]
+    authors: list[int]
+    is_private: bool
+    url: str
 
 
 class ContentListModel(BaseModel):
