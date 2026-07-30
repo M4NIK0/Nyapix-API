@@ -3,7 +3,7 @@ from typing import Any
 
 import requests
 
-from src.models.contents import Content, ContentListModel
+from src.models.contents import Content, ContentListModel, ContentPostModel
 
 logger = logging.getLogger()
 
@@ -216,14 +216,26 @@ def delete_content(api_url: str, token: str, content_id: int) -> bool:
 def create_content(
         api_url: str,
         token: str,
-        form_data: dict[str, Any],
+        title: str,
+        description: str,
+        source_id: int,
+        tags: list[int],
+        characters: list[int],
+        authors: list[int],
+        is_private: bool,
         files: dict[str, Any],
 ) -> bool:
     """
     Create content using multipart/form-data.
     :param api_url: API base URL
     :param token: Token
-    :param form_data: Multipart form fields
+    :param title: Content title
+    :param description: Content description
+    :param source_id: Source ID
+    :param tags: Tag IDs
+    :param characters: Character IDs
+    :param authors: Author IDs
+    :param is_private: Whether content is private
     :param files: Multipart files map
     :return: True if creation succeeded; False otherwise
     """
@@ -231,6 +243,16 @@ def create_content(
     if api_url == "" or token == "" or len(files) == 0:
         logger.error("API URL, token or files payload is invalid")
         return False
+
+    form_data = {
+        "title": title,
+        "description": description,
+        "source_id": source_id,
+        "tags": tags,
+        "characters": characters,
+        "authors": authors,
+        "is_private": is_private,
+    }
 
     resp = requests.post(
         f"{api_url}/v1/content",
@@ -246,6 +268,7 @@ def create_content(
     logger.error("Content creation failed (Error " + str(resp.status_code) + ")")
     logger.warning(resp.text)
     return False
+
 
 
 def get_content_thumb(api_url: str, token: str, content_id: int) -> bytes | None:

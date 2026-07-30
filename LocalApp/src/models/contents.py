@@ -15,3 +15,13 @@ class ContentListModel(BaseModel):
     total_pages: int
     total_contents: int
 
+
+class ContentPostModel(BaseModel):
+    title: str
+    description: str
+    source_id: int
+    tags: list[int]
+    characters: list[int]
+    authors: list[int]
+    is_private: bool
+

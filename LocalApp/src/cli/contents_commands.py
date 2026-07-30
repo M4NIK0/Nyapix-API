@@ -1,5 +1,6 @@
 import logging
 from typing import List
+import os
 
 from src.utility.misc import yes_no
 from src.utility.sources import get_sources
@@ -7,6 +8,8 @@ from src.utility.tags import get_tags
 from src.utility.config import config
 from src.utility.characters import get_characters
 from src.utility.authors import get_authors
+
+import src.utility.contents as contents_utils
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +40,8 @@ def command_upload_content(args: List[str]):
 
     title = input("Title: ")
     description = input("Description: ")
+
+    is_private = yes_no("Is this content private?")
 
     know_source_id = yes_no("Do you know the source ID?")
     know_tags_id = yes_no("Do you know all the tags ID?")
@@ -159,3 +164,10 @@ def command_upload_content(args: List[str]):
                     continue
 
     print(f"Title: {title}\nDescription: {description}\nAuthors: {', '.join(str(author) for author in authors)}\nCharacters: {', '.join(str(character) for character in characters)}\nSource: {source}\nTags: {', '.join(str(tag) for tag in tags)}")
+
+    # Check the file exists
+    if not os.path.exists(file_path):
+        logger.error("File not found")
+        return
+
+    contents_utils.create_content(api_url, token, title, description, authors, characters, source, tags, file_path, is_private, 
