@@ -24,11 +24,12 @@ def get_my_contents(api_url: str, token: str, page: int, max_results: int = 10) 
         return None
 
     resp = requests.get(
-        f"{api_url}/v1/content/my?page={page}&max_results={max_results}",
+        f"{api_url}/v1/content/my?page={page-1}&max_results={max_results}",
         headers={"Authorization": f"Bearer {token}"},
     )
 
     if resp.status_code == 200:
+        print(resp.json())
         contents = ContentListModel.model_validate(resp.json())
         logger.info("My contents retrieved successfully (Page " + str(page) + ")")
         return contents
