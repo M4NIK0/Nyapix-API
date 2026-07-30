@@ -1,5 +1,7 @@
 # Nyapix API
 
+### NOW WITH CLI CLIENT!
+
 This project is made to store, sort and tag content according to your needs.
 This tagging system permits to search for content with those parameters:
 - Tags (General info about the content)
@@ -49,3 +51,39 @@ Setup Nginx reverse proxy (do not forget to override the max body size)
 ```
 client_max_body_size 10G;
 ```
+
+## CLI Setup
+
+Since the access to the app through the website can be complicated, a CLI client is available (WIP) to access, download and upload content to Nyapix API.
+
+### Requirements
+
+- Python 13+
+- PDM
+
+### Setup
+
+#### Config
+
+```bash
+cd LocalApp
+cp config.json.example config.json
+```
+
+Don't forget to setup the configuration file `config.json`, replacing the API base URL with your own.
+
+You can leave the token empty as it will be generated when you login to the API.
+
+```bash
+pdm install
+```
+
+PDM is used for now as a package is not ready yet, but it will be available soon when the API and CLI features matches.
+
+### Run
+
+```bash
+pdm run main.py
+```
+
+The CLI should run fine if your configuration is correct, and you can now use it to login, upload and download content from the API.
