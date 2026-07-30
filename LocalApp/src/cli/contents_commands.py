@@ -4,13 +4,14 @@ from typing import List
 import os
 
 from src.utility.misc import yes_no
-from src.utility.sources import get_sources
 from src.utility.tags import get_tags
 from src.utility.config import config
 from src.utility.characters import get_characters
 from src.utility.authors import get_authors
 from src.utility.tags import get_tag_name
 from src.utility.authors import get_author_name
+from src.utility.characters import get_character_name
+from src.utility.sources import get_source_name
 
 import src.utility.contents as contents_utils
 

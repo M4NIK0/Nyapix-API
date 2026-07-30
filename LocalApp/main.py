@@ -75,6 +75,7 @@ if __name__ == "__main__":
     console.create_command("content_upload", "Upload content to database", ["file_path"], contents_commands.command_upload_content, "Contents")
     console.create_command("content_download", "Download content from database", ["content_id"], contents_commands.command_download_content, "Contents")
     console.create_command("content_thumbs", "Download content thumbnails", ["content_ids ..."], contents_commands.command_download_thumb, "Contents")
+    console.create_command("content_info", "Get information about a content item", ["content_id"], contents_commands.command_content_info, "Contents")
 
     console.run()
 

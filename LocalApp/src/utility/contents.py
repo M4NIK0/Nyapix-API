@@ -122,7 +122,6 @@ def get_content(api_url: str, token: str, content_id: int) -> Content | None:
     )
 
     if resp.status_code == 200:
-        print(resp.json())
         content = Content.model_validate(resp.json())
         logger.info("Content retrieved successfully")
         return content
