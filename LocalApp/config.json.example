@@ -1,0 +1,7 @@
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uX2lkIjozLCJ1c2VyX2lkIjoxfQ.Tu_A_ZBhv0tFIX2mAs7IIQjAt6Qv7IgIopt51McUaxc",
+    "api_url": "https://api.nyapix.lesdissidents.eu",
+    "max_thumbs": 5,
+    "download_path": "./downloads/",
+    "db_path": "./database.db"
+}
