@@ -1,3 +1,5 @@
+from os import environ
+
 import fastapi
 import utility.token as token_utility
 from db_management.users import check_user_exists
@@ -13,25 +15,26 @@ from fastapi import Request
 
 router = fastapi.APIRouter()
 
-@router.post("/register", tags=["Login"])
-async def post_register_endpoint(new_user: users_models.UserRegisterModel):
-    db = None
-    try:
-        db = connect_db()
-        exists = users_db.check_user_exists(db, new_user.username)
-        if exists:
-            return fastapi.responses.Response(status_code=409)
-        result = users_db.register(db, new_user.username, new_user.nickname, new_user.password)
-        if result is None:
-            return fastapi.responses.Response(status_code=409)
-    except Exception as e:
-        logger.error("Error registering user")
-        logger.error(e)
-        return fastapi.responses.Response(status_code=500)
-    finally:
-        if db is not None:
-            db.close()
-    return fastapi.responses.Response(status_code=200)
+if environ.get("ALLOW_REGISTER") == "yes":
+    @router.post("/register", tags=["Login"])
+    async def post_register_endpoint(new_user: users_models.UserRegisterModel):
+        db = None
+        try:
+            db = connect_db()
+            exists = users_db.check_user_exists(db, new_user.username)
+            if exists:
+                return fastapi.responses.Response(status_code=409)
+            result = users_db.register(db, new_user.username, new_user.nickname, new_user.password)
+            if result is None:
+                return fastapi.responses.Response(status_code=409)
+        except Exception as e:
+            logger.error("Error registering user")
+            logger.error(e)
+            return fastapi.responses.Response(status_code=500)
+        finally:
+            if db is not None:
+                db.close()
+        return fastapi.responses.Response(status_code=200)
 
 @router.post("/login", tags=["Login"])
 async def post_login_endpoint(login: users_models.UserLoginModel):
