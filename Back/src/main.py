@@ -25,7 +25,7 @@ from utility.users import get_session
 import fastapi.middleware.cors as cors
 
 app = None
-if environ.get("SWAGGER") == "yes":
+if environ.get("DISABLE_SWAGGER") is not None:
     app = fastapi.FastAPI(debug=True, docs_url=None)
 else:
     app = fastapi.FastAPI(debug=True)

@@ -15,7 +15,7 @@ from fastapi import Request
 
 router = fastapi.APIRouter()
 
-if environ.get("ALLOW_REGISTER") == "yes":
+if environ.get("ALLOW_REGISTER") is not None:
     @router.post("/register", tags=["Login"])
     async def post_register_endpoint(new_user: users_models.UserRegisterModel):
         db = None
