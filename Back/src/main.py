@@ -6,6 +6,7 @@ from fastapi.security import APIKeyHeader
 import time
 
 from starlette.responses import JSONResponse
+from os import environ
 
 import endpoints.login as login_endpoints
 import endpoints.users as users_endpoints
@@ -23,7 +24,12 @@ from db_management.setup import setup_admin_user
 from utility.users import get_session
 import fastapi.middleware.cors as cors
 
-app = fastapi.FastAPI(debug=True)
+app = None
+if environ.get("SWAGGER") == "yes":
+    app = fastapi.FastAPI(debug=True, docs_url=None)
+else:
+    app = fastapi.FastAPI(debug=True)
+
 bg_task = None
 
 api_key_scheme = APIKeyHeader(name="Authorization", auto_error=False)
