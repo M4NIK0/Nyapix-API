@@ -30,6 +30,8 @@ cp .env.example .env
 cp Front/.env.example Front/.env
 ```
 
+> #### DO NOT FORGET TO SET YOUR OWN PASSWORDS AND SECRETS IN THE .ENV FILES
+
 #### Database environment variables
 - `POSTGRES_USER`: Username for the database (default: postgres)
 - `POSTGRES_PASSWORD`: Database password (default: postgres)
@@ -56,7 +58,7 @@ Start docker compose of the project
 docker compose up --build
 ```
 
-> Since it is your first startup, the backend will generate an admin account for you to use to finish the whole setup from the frontend.
+> Since it is your first startup, the backend will generate an admin account for you to use to finish the whole setup from the frontend, do not forget to change the password after the setup is complete and all tests have been conducted properly.
 
 ### Step 3
 
