@@ -30,6 +30,24 @@ cp .env.example .env
 cp Front/.env.example Front/.env
 ```
 
+#### Database environment variables
+- `POSTGRES_USER`: Username for the database (default: postgres)
+- `POSTGRES_PASSWORD`: Database password (default: postgres)
+- `POSTGRES_DB`: Database name (default: postgres)
+- `POSTGRES_HOST`: Database hostname (default: db)
+- `POSTGRES_PORT`: Database access port (default: 5432)
+
+#### Backend environment variables
+- `API_PORT`: API access port (default: 5000)
+- `API_HOST`: API hostname (default: backend)
+- `JWT_SECRET`: JWT secret key (default: secret)
+- `IS_HTTPS`: Set if the API is running on HTTPS (default: false)
+- `ALLOW_REGISTER`: Set to allow user registration
+- `DISABLE_SWAGGER`: Set to disable swagger documentation
+
+#### Frontend environment variables (broken)
+- `FRONT_PORT`: Frontend access port (default: 8081)
+
 ### Step 2
 
 Start docker compose of the project
