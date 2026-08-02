@@ -11,7 +11,7 @@ from src.utility.authors import get_authors
 from src.utility.tags import get_tag_name
 from src.utility.authors import get_author_name
 from src.utility.characters import get_character_name
-from src.utility.sources import get_source_name
+from src.utility.sources import get_source_name, get_sources
 
 import src.utility.contents as contents_utils
 
@@ -93,9 +93,11 @@ def command_upload_content(args: List[str]):
                 try:
                     to_add = int(usrin.strip())
                     if to_add in tags:
-                        raise Exception
+                        raise ValueError
                     else:
                         tags.append(to_add)
+                    tags.sort()
+                    print("Current tags: " + ", ".join(str(tag) for tag in tags))
                 except ValueError:
                     logger.error("Invalid input")
                     continue
@@ -131,6 +133,8 @@ def command_upload_content(args: List[str]):
                         raise Exception
                     else:
                         authors.append(to_add)
+                    authors.sort()
+                    print("Current authors: " + ", ".join(str(author) for author in authors))
                 except ValueError:
                     logger.error("Invalid input")
                     continue
@@ -163,6 +167,8 @@ def command_upload_content(args: List[str]):
                         raise Exception
                     else:
                         characters.append(to_add)
+                    characters.sort()
+                    print("Current characters: " + ", ".join(str(character) for character in characters))
                 except ValueError:
                     logger.error("Invalid input")
                     continue
@@ -271,6 +277,7 @@ def command_content_mine(args: List[str]):
     api_url = config.get("api_url", "")
 
     contents = contents_utils.get_my_contents(api_url, token, page)
+    print(contents)
     if contents is not None:
         print(f"My Contents (Page {page}/{contents.total_pages}):")
         for content in contents.contents:

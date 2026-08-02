@@ -53,7 +53,7 @@ async def get_my_content_endpoint(request: fastapi.Request, page: int = Query(..
 
         for item in content.contents:
             is_https = os.getenv("IS_HTTPS")
-            if is_https  == "yes":
+            if is_https is not None:
                 is_https = True
             else:
                 is_https = False

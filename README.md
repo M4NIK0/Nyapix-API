@@ -30,6 +30,26 @@ cp .env.example .env
 cp Front/.env.example Front/.env
 ```
 
+> #### DO NOT FORGET TO SET YOUR OWN PASSWORDS AND SECRETS IN THE .ENV FILES
+
+#### Database environment variables
+- `POSTGRES_USER`: Username for the database (default: postgres)
+- `POSTGRES_PASSWORD`: Database password (default: postgres)
+- `POSTGRES_DB`: Database name (default: postgres)
+- `POSTGRES_HOST`: Database hostname (default: db)
+- `POSTGRES_PORT`: Database access port (default: 5432)
+
+#### Backend environment variables
+- `API_PORT`: API access port (default: 5000)
+- `API_HOST`: API hostname (default: backend)
+- `JWT_SECRET`: JWT secret key (default: secret)
+- `IS_HTTPS`: Set if the API is running on HTTPS (default: false)
+- `ALLOW_REGISTER`: Set to allow user registration
+- `DISABLE_SWAGGER`: Set to disable swagger documentation
+
+#### Frontend environment variables (broken)
+- `FRONT_PORT`: Frontend access port (default: 8081)
+
 ### Step 2
 
 Start docker compose of the project
@@ -38,7 +58,7 @@ Start docker compose of the project
 docker compose up --build
 ```
 
-> Since it is your first startup, the backend will generate an admin account for you to use to finish the whole setup from the frontend.
+> Since it is your first startup, the backend will generate an admin account for you to use to finish the whole setup from the frontend, do not forget to change the password after the setup is complete and all tests have been conducted properly.
 
 ### Step 3
 
