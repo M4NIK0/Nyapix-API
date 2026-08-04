@@ -10,6 +10,7 @@ import src.cli.sources_commands as sources_commands
 import src.cli.characters_commands as characters_commands
 import src.cli.config_commands as config_commands
 import src.cli.contents_commands as contents_commands
+from typing import List
 import src.utility.config as config_utils
 
 logger = logging.getLogger("main")
@@ -25,16 +26,10 @@ if __name__ == "__main__":
     parser.add_argument("-t", "--token", help="Nyapix API token")
     parser.add_argument("-l", "--log", help="Log level applied (0-5)", type=int, choices=range(0, 2), default=2)
     parser.add_argument("-u", "--url", help="API URL")
+    parser.add_argument("-cmd", "--command", help="Command to execute and then arguments", nargs=argparse.REMAINDER)
 
     arguments = parser.parse_args()
     setlogger(arguments.log)
-
-    # logger.info("App started")
-    # print(get_characters(config["api_url"], config["token"], 1))
-    # print(search_characters(config["api_url"], config["token"], "cu", 1))
-    # print(create_character(config["api_url"], config["token"], "test_character"))
-    # print(get_characters(config["api_url"], config["token"], 1))
-    # print(get_character_id(config["api_url"], config["token"], "test_character"))
 
     console = src.cli.console.Console()
     console.create_command("config_reload", "Reload configuration", [], config_commands.command_reload_config, "Configuration")
@@ -78,7 +73,11 @@ if __name__ == "__main__":
     console.create_command("content_info", "Get information about a content item", ["content_id"], contents_commands.command_content_info, "Contents")
     console.create_command("content_my", "Get a list of your uploaded content", ["page"], contents_commands.command_content_mine, "Contents")
 
-    console.run()
+    if not arguments.command:
+        console.run()
+    else:
+        print(arguments.command)
+        console.run_command(arguments.command)
 
 else:
     logger.error("This file should not be imported as a module.")
