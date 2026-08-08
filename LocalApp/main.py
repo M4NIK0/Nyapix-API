@@ -72,6 +72,7 @@ if __name__ == "__main__":
     console.create_command("content_thumbs", "Download content thumbnails", ["content_ids ..."], contents_commands.command_download_thumb, "Contents")
     console.create_command("content_info", "Get information about a content item", ["content_id"], contents_commands.command_content_info, "Contents")
     console.create_command("content_my", "Get a list of your uploaded content", ["page"], contents_commands.command_content_mine, "Contents")
+    console.create_command("content_delete", "Delete a content item", ["content_id"], contents_commands.command_content_delete, "Contents")
 
     if not arguments.command:
         console.run()
