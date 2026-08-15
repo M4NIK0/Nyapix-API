@@ -310,6 +310,8 @@ async def post_content_endpoint(
         # Determine file type
         file_type = file.content_type
 
+        file = None
+
         # Validate file type
         if not is_file_valid(file_type):
             # Clean up file
