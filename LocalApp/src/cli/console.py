@@ -41,6 +41,32 @@ class Console:
         command.command_func = func
         self.add_command(command, category)
 
+    def run_command(self, data: List[str]):
+        if len(data) == 0:
+            return
+        has_run = False
+        for category in self.commands:
+            for i in self.commands[category]:
+                if i.command_name == data[0]:
+                    try:
+                        i.command_func(data[1:])
+                    except Exception as e:
+                        self.logger.error(f"Error occurred while executing command '{i.command_name}': {e}")
+                    has_run = True
+                    break
+        if not has_run and data[0] != "help" and data[0] != "exit":
+            self.logger.error(f"Command '{data[0]}' not recognized")
+
+        if data[0] == "help":
+            print("Available commands:")
+            for category in self.commands:
+                print(f"\n{category}:")
+                for i in self.commands[category]:
+                    args_str = ""
+                    if len(i.command_args_list) > 0:
+                        args_str = " ".join([f"<{arg}>" for arg in i.command_args_list])
+                    print(f"  {i.command_name} {args_str}: {i.command_description}" if args_str != "" else f"  {i.command_name}: {i.command_description}")
+
     def run(self):
         has_exit = False
 
@@ -58,31 +84,6 @@ class Console:
                 if i != "":
                     cmd_tmp.append(i)
             cmd = cmd_tmp
-
-            if len(cmd) == 0:
-                continue
-            has_run = False
-            for category in self.commands:
-                for i in self.commands[category]:
-                    if i.command_name == cmd[0]:
-                        try:
-                            i.command_func(cmd[1:])
-                        except Exception as e:
-                            self.logger.error(f"Error occurred while executing command '{i.command_name}': {e}")
-                        has_run = True
-                        break
-            if not has_run and cmd[0] != "help" and cmd[0] != "exit":
-                self.logger.error(f"Command '{cmd[0]}' not recognized")
-
+            self.run_command(cmd)
             if cmd[0] == "exit":
                 has_exit = True
-
-            if cmd[0] == "help":
-                print("Available commands:")
-                for category in self.commands:
-                    print(f"\n{category}:")
-                    for i in self.commands[category]:
-                        args_str = ""
-                        if len(i.command_args_list) > 0:
-                            args_str = " ".join([f"<{arg}>" for arg in i.command_args_list])
-                        print(f"  {i.command_name} {args_str}: {i.command_description}" if args_str != "" else f"  {i.command_name}: {i.command_description}")

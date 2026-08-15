@@ -41,8 +41,20 @@ def is_file_valid(file_type: str) -> bool:
     return is_video(file_type) or is_image(file_type) or is_audio(file_type)
 
 def compute_file_hash(file_path: str) -> str:
+    hasher = hashlib.sha256()
     with open(file_path, "rb") as f:
-        return hashlib.sha256(f.read()).hexdigest()
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+async def write_upload_to_disk(upload_file: UploadFile, destination_path: str) -> None:
+    with open(destination_path, "wb") as out_file:
+        while True:
+            chunk = await upload_file.read(1024 * 1024)
+            if not chunk:
+                break
+            out_file.write(chunk)
 
 @router.get("/my", tags=["Content management"])
 async def get_my_content_endpoint(request: fastapi.Request, page: int = Query(...), max_results: int = Query(10)) -> models.ContentPageModel:
@@ -297,6 +309,8 @@ async def post_content_endpoint(
 
         # Determine file type
         file_type = file.content_type
+
+        file = None
 
         # Validate file type
         if not is_file_valid(file_type):

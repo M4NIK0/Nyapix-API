@@ -337,3 +337,26 @@ def command_content_info(args: List[str]):
     print("Characters: " + ", ".join(content_characters))
     print("Authors: " + ", ".join(content_authors))
     print("Source: " + source)
+
+def command_content_delete(args: List[str]):
+    """
+    Delete content from Nyapix using ID
+    :param args: Content ID (int)
+    :return: None
+    """
+    if len(args) < 1:
+        logger.error("Content ID is required")
+        return
+
+    try:
+        int(args[0])
+    except ValueError:
+        logger.error("Content ID is invalid")
+        return
+
+    content_id = int(args[0])
+
+    token = config.get("token", "")
+    api_url = config.get("api_url", "")
+
+    contents_utils.delete_content(api_url, token, content_id)
